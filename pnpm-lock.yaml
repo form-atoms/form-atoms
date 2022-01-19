@@ -1,0 +1,7 @@
+lockfileVersion: 5.3
+
+specifiers:
+  '@lunde/create-react-pkg': link:/Users/jared/.pnpm-store/v3/tmp/_npx/46529/5/node_modules/.pnpm/@lunde+create-react-pkg@1.7.13/node_modules/@lunde/create-react-pkg/
+
+devDependencies:
+  '@lunde/create-react-pkg': link:../../../.pnpm-store/v3/tmp/_npx/46529/5/node_modules/.pnpm/@lunde+create-react-pkg@1.7.13/node_modules/@lunde/create-react-pkg
