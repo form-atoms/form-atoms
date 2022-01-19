@@ -145,9 +145,7 @@
       ]
     }
   },
-  "dependencies": {},
   "devDependencies": {
-    "@lunde/create-react-pkg": "link:/Users/jared/.pnpm-store/v3/tmp/_npx/46529/5/node_modules/.pnpm/@lunde+create-react-pkg@1.7.13/node_modules/@lunde/create-react-pkg/",
     "@commitlint/cli": "latest",
     "@commitlint/config-conventional": "latest",
     "@semantic-release/changelog": "^6.0.0",
@@ -158,20 +156,20 @@
     "@testing-library/react": "latest",
     "@testing-library/react-hooks": "latest",
     "@testing-library/user-event": "latest",
+    "@types/jest": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
     "cz-conventional-changelog": "latest",
-    "jest": "latest",
     "eslint": "latest",
     "eslint-config-lunde": "latest",
     "husky": "latest",
+    "jest": "latest",
     "lint-staged": "latest",
     "lundle": "latest",
     "prettier": "latest",
     "react": "latest",
     "react-dom": "latest",
     "react-test-renderer": "latest",
-    "@types/jest": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
     "typescript": "latest"
   },
   "peerDependencies": {
