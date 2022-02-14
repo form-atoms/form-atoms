@@ -2,7 +2,7 @@
 
 # form-atoms
 
-> 
+> Form primitives for Jotai
 
 ```sh
 npm i form-atoms
@@ -34,12 +34,12 @@ npm i form-atoms
 ## Quick start
 
 ```js
-import _ from 'form-atoms'
+import { fieldAtom, useFieldAtom } from "form-atoms";
 ```
 
 ## API
 
-### someFunction()
+### fieldAtom()
 
 #### Arguments
 

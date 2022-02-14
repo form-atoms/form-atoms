@@ -1,7 +1,7 @@
 {
   "name": "form-atoms",
   "version": "0.1.0",
-  "description": "",
+  "description": "Form primitives for Jotai",
   "license": "MIT",
   "author": "Jared Lunde <jared.lunde@gmail.com> (https://jaredlunde.com/)",
   "homepage": "https://github.com/jaredLunde/form-atoms#readme",
@@ -96,8 +96,7 @@
       "types": "./types/index.d.ts",
       "default": "./dist/main/index.js"
     },
-    "./package.json": "./package.json",
-    "./": "./"
+    "./package.json": "./package.json"
   },
   "jest": {
     "collectCoverageFrom": [
