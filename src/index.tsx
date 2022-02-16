@@ -6,11 +6,98 @@ import type {
   WritableAtom,
 } from "jotai";
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
-import { atomWithReset, RESET, splitAtom } from "jotai/utils";
+import { atomWithReset, RESET, useResetAtom } from "jotai/utils";
 import * as React from "react";
 
-export function formAtom<Fields extends FieldAtom<any>[]>(fields: Fields) {
-  return splitAtom(atom(fields));
+export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
+  fields: Fields
+): FormAtom<Fields> {
+  const fieldsAtom = atomWithReset(fields);
+  const valuesAtom = atom((get) => {
+    const values = {} as Record<keyof Fields, Fields[keyof Fields]>;
+
+    for (const key in fields) {
+      const fieldAtom = get(fields[key]);
+      values[key] = get(fieldAtom.value);
+    }
+
+    return values;
+  });
+  const errorsAtom = atom((get) => {
+    const errors = {} as Record<keyof Fields, string[]>;
+
+    for (const key in fields) {
+      const fieldAtom = get(fields[key]);
+      errors[key] = get(fieldAtom.errors);
+    }
+
+    return errors;
+  });
+  const resetAtom = atom(undefined, (get, set) => {
+    for (const key in fields) {
+      const fieldAtom = get(fields[key]);
+      set(fieldAtom.value, RESET);
+      set(fieldAtom.touched, RESET);
+      set(fieldAtom.errors, "change");
+    }
+  });
+
+  return atom({
+    fields: fieldsAtom,
+    values: valuesAtom,
+    errors: errorsAtom,
+    reset: resetAtom,
+  });
+}
+
+export type FormAtom<Fields extends Record<string, FieldAtom<any>>> = Atom<{
+  fields: WritableAtom<
+    Fields,
+    Fields | typeof RESET | ((prev: Fields) => Fields),
+    void
+  >;
+  values: Atom<Record<keyof Fields, Fields[keyof Fields]>>;
+  errors: Atom<Record<keyof Fields, string[]>>;
+  reset: WritableAtom<undefined, undefined>;
+}>;
+
+export function useFormErrors<Fields extends Record<string, FieldAtom<any>>>(
+  atom: FormAtom<Fields>
+) {
+  const form = useAtomValue(atom);
+  return useAtomValue(form.errors);
+}
+
+export function useFormValues<Fields extends Record<string, FieldAtom<any>>>(
+  atom: FormAtom<Fields>
+) {
+  const form = useAtomValue(atom);
+  return useAtomValue(form.values);
+}
+
+export function useFormAtom<Fields extends Record<string, FieldAtom<any>>>(
+  atom: FormAtom<Fields>
+) {
+  const form = useAtomValue(atom);
+  const [fieldAtoms, updateFields] = useAtom(form.fields);
+  const reset = useSetAtom(form.reset);
+
+  function addField<FieldName extends keyof Fields>(
+    fieldName: FieldName,
+    atom: Fields[FieldName]
+  ) {
+    updateFields((current) => ({ ...current, [fieldName]: atom }));
+  }
+
+  function removeField<FieldName extends keyof Fields>(fieldName: FieldName) {
+    updateFields((current) => {
+      const next = { ...current };
+      delete next[fieldName];
+      return next;
+    });
+  }
+
+  return { fieldAtoms, addField, removeField, reset };
 }
 
 export function useSubmitForm<Fields extends FieldAtom<any>[]>(
@@ -82,8 +169,6 @@ export type FieldAtom<Value> = Atom<{
 
 export type ValidateOn = "blur" | "change" | "submit";
 
-export function useFormAtom(atom: ReturnType<typeof formAtom>) {}
-
 export function useFieldAtom<Value>(
   atom: FieldAtom<Value>,
   scope?: Scope
@@ -128,6 +213,7 @@ export function useFieldAtomActions<Value>(
         reset() {
           setValue(RESET);
           setTouched(RESET);
+          validate("change");
         },
       } as const),
     [setValue, setTouched, ref, setValue, validate, setTouched]
