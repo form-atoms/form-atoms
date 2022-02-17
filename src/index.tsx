@@ -220,6 +220,7 @@ export function useFormAtomState<Fields extends Record<string, FieldAtom<any>>>(
   const form = useAtomValue(formAtom, scope);
   const fieldAtoms = useAtomValue(form.fields, scope);
   const submitStatus = useAtomValue(form.submitStatus, scope);
+  const submitCount = useAtomValue(form.submitCount, scope);
   const validateStatus = useAtomValue(form.validateStatus, scope);
   const values = useAtomValue(form.values, scope);
   const errors = useAtomValue(form.errors, scope);
@@ -229,10 +230,11 @@ export function useFormAtomState<Fields extends Record<string, FieldAtom<any>>>(
       fieldAtoms: fieldAtoms as Fields,
       values: values as any,
       errors: errors as any,
+      submitCount,
       submitStatus,
       validateStatus,
     }),
-    [fieldAtoms, values, errors, submitStatus, validateStatus]
+    [fieldAtoms, values, errors, submitCount, submitStatus, validateStatus]
   );
 }
 
@@ -612,6 +614,7 @@ interface FormAtomState<Fields extends Record<string, FieldAtom<any>>> {
   fieldAtoms: Fields;
   values: ExtractAtomValue<ExtractAtomValue<FormAtom<Fields>>["values"]>;
   errors: ExtractAtomValue<ExtractAtomValue<FormAtom<Fields>>["errors"]>;
+  submitCount: number;
   validateStatus: FormAtomValidateStatus;
   submitStatus: FormAtomSubmitStatus;
 }
