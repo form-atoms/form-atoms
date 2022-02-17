@@ -33,16 +33,20 @@ export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
     return values;
   });
 
-  async function validateField(
+  async function isFieldValid(
     get: Getter,
     set: Setter,
     event: FieldAtomValidateOn,
     field: FieldAtom<any>
   ) {
     const fieldAtom = get(field);
-    set(fieldAtom.validateStatus, "validating");
     const value = get(fieldAtom.value);
     const dirty = get(fieldAtom.dirty);
+    set(fieldAtom.validateStatus, "validating");
+    // This pointer prevents a stale validation result from being
+    // set after the most recent validation has been performed.
+    const ptr = get(fieldAtom._validateCount) + 1;
+    set(fieldAtom._validateCount, ptr);
 
     if (event === "user" || event === "submit") {
       set(fieldAtom.touched, true);
@@ -56,39 +60,47 @@ export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
       event,
     });
 
-    set(fieldAtom.errors, errors ?? []);
+    if (ptr === get(fieldAtom._validateCount)) {
+      const err = errors ?? [];
+      set(fieldAtom.errors, err);
+      set(fieldAtom.validateStatus, err.length > 0 ? "invalid" : "valid");
+    }
 
     if (errors && errors.length) {
-      set(fieldAtom.validateStatus, "invalid");
       return false;
     }
 
-    set(fieldAtom.validateStatus, "valid");
     return true;
   }
 
+  async function validateFields(
+    get: Getter,
+    set: Setter,
+    event: FieldAtomValidateOn
+  ) {
+    set(validateResultAtom, "validating");
+    // This pointer prevents a stale validation result from being
+    // set after the most recent validation has been performed.
+    const ptr = get(validateCountAtom) + 1;
+    set(validateCountAtom, ptr);
+
+    const fieldsAreValid = await Promise.all(
+      Object.values(fields).map((field) => isFieldValid(get, set, event, field))
+    );
+
+    ptr === get(validateCountAtom) &&
+      set(
+        validateResultAtom,
+        fieldsAreValid.every((value) => value) ? "valid" : "invalid"
+      );
+  }
+
+  const validateCountAtom = atom(0);
   const validateResultAtom = atom<FormAtomValidateStatus>("idle");
-  const validateAtom = atom<undefined, FieldAtomValidateOn>(
-    () => undefined,
+  const validateAtom = atom<null, void | FieldAtomValidateOn>(
+    null,
     (get, set, event = "user") => {
-      if (get(validateResultAtom) === "validating") return;
-
-      async function resolveErrors() {
-        set(validateResultAtom, "validating");
-
-        const fieldsAreValid = await Promise.all(
-          Object.values(fields).map((field) =>
-            validateField(get, set, event, field)
-          )
-        );
-
-        set(
-          validateResultAtom,
-          fieldsAreValid.every((value) => value) ? "valid" : "invalid"
-        );
-      }
-
-      resolveErrors();
+      validateFields(get, set, event!);
     }
   );
 
@@ -103,55 +115,56 @@ export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
     return errors;
   });
 
+  const submitCountAtom = atom(0);
+  const submitStatusCountAtom = atom(0);
   const submitResultAtom = atom<FormAtomSubmitStatus>("idle");
   const submitAtom = atom<
-    undefined,
+    null,
     (
       values: Record<
         keyof Fields,
         ExtractAtomValue<ExtractAtomValue<Fields[keyof Fields]>["value"]>
       >
     ) => void | Promise<void>
-  >(undefined, (get, set, onSubmit) => {
-    if (get(submitResultAtom) === "submitting") return;
-
-    async function resolveErrors() {
+  >(null, (get, set, onSubmit) => {
+    async function resolveSubmit() {
       set(submitResultAtom, "submitting");
-      set(validateResultAtom, "validating");
-
-      const fieldsAreValid = await Promise.all(
-        Object.values(fields).map((field) =>
-          validateField(get, set, "submit", field)
-        )
-      );
-
-      set(
-        validateResultAtom,
-        fieldsAreValid.every((value) => value) ? "valid" : "invalid"
-      );
+      // This pointer prevents a stale validation result from being
+      // set after the most recent validation has been performed.
+      const ptr = get(submitStatusCountAtom) + 1;
+      set(submitStatusCountAtom, ptr);
+      set(submitCountAtom, (count) => ++count);
+      await validateFields(get, set, "submit");
 
       try {
         await Promise.resolve(onSubmit(get(valuesAtom)));
+        // eslint-disable-next-line no-empty
       } catch (err) {
-        set(submitResultAtom, "submitted");
       } finally {
-        set(submitResultAtom, "submitted");
+        get(submitStatusCountAtom) === ptr &&
+          set(submitResultAtom, "submitted");
       }
     }
 
-    resolveErrors();
+    resolveSubmit();
   });
 
-  const resetAtom = atom(undefined, (get, set) => {
+  const resetAtom = atom(null, (get, set) => {
     for (const key in fields) {
       const fieldAtom = get(fields[key]);
       set(fieldAtom.value, RESET);
       set(fieldAtom.touched, RESET);
       set(fieldAtom.errors, []);
+      // Need to set a new validateCount to prevent stale validation results
+      // from being set after this invocation.
+      set(fieldAtom._validateCount, (current) => ++current);
       set(fieldAtom.validateStatus, "idle");
-      set(validateResultAtom, "idle");
-      set(submitResultAtom, "idle");
     }
+
+    set(validateCountAtom, (current) => ++current);
+    set(validateResultAtom, "idle");
+    set(submitStatusCountAtom, (current) => ++current);
+    set(submitResultAtom, "idle");
   });
 
   return atom({
@@ -162,6 +175,7 @@ export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
     validateStatus: validateResultAtom,
     submit: submitAtom,
     submitStatus: submitResultAtom,
+    submitCount: submitCountAtom,
     reset: resetAtom,
   });
 }
@@ -177,11 +191,14 @@ export function useFormAtom<Fields extends Record<string, FieldAtom<any>>>(
   const handleSubmit = useSetAtom(form.submit, scope);
   const submitStatus = useAtomValue(form.submitStatus, scope);
   const validateStatus = useAtomValue(form.validateStatus, scope);
+  const [, startTransition] = useTransition();
 
   return React.useMemo(
     () => ({
       fieldAtoms: fieldAtoms as Fields,
-      validate,
+      validate() {
+        startTransition(() => validate("user"));
+      },
       reset,
       submit(onSubmit) {
         return (e) => {
@@ -235,6 +252,7 @@ export function useFormAtomActions<
       },
     [handleSubmit]
   );
+  const [, startTransition] = useTransition();
 
   return React.useMemo(
     () => ({
@@ -249,7 +267,11 @@ export function useFormAtomActions<
         });
       },
       reset,
-      validate,
+      validate() {
+        startTransition(() => {
+          validate("user");
+        });
+      },
       submit,
     }),
     [updateFields, reset, validate, submit]
@@ -299,12 +321,18 @@ export function fieldAtom<Value>(
     return get(valueAtom) !== config.value;
   });
   const errorsAtom = atom<string[]>([]);
+
+  const validateCountAtom = atom(0);
   const validateResultAtom = atom<FormAtomValidateStatus>("idle");
-  const validateAtom = atom<undefined, FieldAtomValidateOn>(
-    undefined,
+  const validateAtom = atom<null, void | FieldAtomValidateOn>(
+    null,
     (get, set, event = "user") => {
       async function resolveErrors() {
         set(validateResultAtom, "validating");
+        // This pointer prevents a stale validation result from being
+        // set to state after the most recent invocation of validate.
+        const ptr = get(validateCountAtom) + 1;
+        set(validateCountAtom, ptr);
         const dirty = get(dirtyAtom);
         const value = get(valueAtom);
 
@@ -318,16 +346,19 @@ export function fieldAtom<Value>(
             dirty,
             touched: get(touchedAtom),
             value,
-            event,
+            event: event!,
           })) ?? [];
 
-        set(errorsAtom, errors);
-        set(validateResultAtom, errors.length > 0 ? "invalid" : "valid");
+        if (ptr === get(validateCountAtom)) {
+          set(errorsAtom, errors);
+          set(validateResultAtom, errors.length > 0 ? "invalid" : "valid");
+        }
       }
 
       resolveErrors();
     }
   );
+
   const refAtom = atom<
     HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null
   >(null);
@@ -342,6 +373,7 @@ export function fieldAtom<Value>(
     errors: errorsAtom,
     ref: refAtom,
     _validateCallback: config.validate,
+    _validateCount: validateCountAtom,
   } as const);
 }
 
@@ -353,7 +385,7 @@ export type FieldAtom<Value> = Atom<{
     boolean | typeof RESET | ((prev: boolean) => boolean)
   >;
   dirty: Atom<boolean>;
-  validate: WritableAtom<undefined, FieldAtomValidateOn>;
+  validate: WritableAtom<null, void | FieldAtomValidateOn>;
   validateStatus: WritableAtom<FormAtomValidateStatus, FormAtomValidateStatus>;
   errors: WritableAtom<string[], string[] | ((value: string[]) => string[])>;
   ref: WritableAtom<
@@ -366,6 +398,7 @@ export type FieldAtom<Value> = Atom<{
         value: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null
       ) => HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null)
   >;
+  _validateCount: WritableAtom<number, number | ((current: number) => number)>;
   _validateCallback?: FieldAtomConfig<Value>["validate"];
 }>;
 
@@ -379,12 +412,18 @@ export function useFieldAtomActions<Value>(
   const setErrors = useSetAtom(field.errors, scope);
   const validate = useSetAtom(field.validate, scope);
   const setValidateStatus = useSetAtom(field.validateStatus, scope);
+  const setValidateCount = useSetAtom(field._validateCount, scope);
   const ref = useAtomValue(field.ref, scope);
+  const [, startTransition] = useTransition();
 
   return React.useMemo(
     () =>
       ({
-        validate,
+        validate() {
+          startTransition(() => {
+            validate("user");
+          });
+        },
         setValue(value) {
           setValue(value);
           validate("change");
@@ -401,10 +440,21 @@ export function useFieldAtomActions<Value>(
           setErrors([]);
           setTouched(RESET);
           setValue(RESET);
+          // Need to set a new pointer to prevent stale validation results
+          // from being set to state after this invocation.
+          setValidateCount((count) => ++count);
           setValidateStatus("idle");
         },
       } as const),
-    [validate, setErrors, setValue, setTouched, ref, setValidateStatus]
+    [
+      validate,
+      setErrors,
+      setValue,
+      setTouched,
+      ref,
+      setValidateCount,
+      setValidateStatus,
+    ]
   );
 }
 
@@ -494,6 +544,11 @@ export function useFieldAtom<Value>(
   );
 }
 
+const useTransition: () => [boolean, typeof React.startTransition] =
+  typeof React.useTransition === "function"
+    ? React.useTransition
+    : () => [false, (fn) => fn()];
+
 export type FormAtomSubmitStatus = "idle" | "submitting" | "submitted";
 export type FormAtomValidateStatus =
   | "idle"
@@ -520,11 +575,11 @@ export type FormAtom<Fields extends Record<string, FieldAtom<any>>> = Atom<{
     >
   >;
   errors: Atom<Record<keyof Fields, string[]>>;
-  reset: WritableAtom<undefined, undefined>;
-  validate: WritableAtom<undefined, FieldAtomValidateOn>;
+  reset: WritableAtom<null, void>;
+  validate: WritableAtom<null, void | FieldAtomValidateOn>;
   validateStatus: WritableAtom<FormAtomValidateStatus, FormAtomValidateStatus>;
   submit: WritableAtom<
-    undefined,
+    null,
     (
       values: Record<
         keyof Fields,
@@ -532,6 +587,7 @@ export type FormAtom<Fields extends Record<string, FieldAtom<any>>> = Atom<{
       >
     ) => void | Promise<void>
   >;
+  submitCount: Atom<number>;
   submitStatus: WritableAtom<FormAtomSubmitStatus, FormAtomSubmitStatus>;
 }>;
 
@@ -544,8 +600,8 @@ interface UseFormAtom<Fields extends Record<string, FieldAtom<any>>> {
       >[0]
     ) => void | Promise<void>
   ): (e?: React.FormEvent<HTMLFormElement>) => void;
-  validate(update?: FieldAtomValidateOn): void;
-  reset(update?: undefined): void;
+  validate(): void;
+  reset(): void;
   validateStatus: FormAtomValidateStatus;
   submitStatus: FormAtomSubmitStatus;
 }
@@ -573,8 +629,8 @@ interface FormAtomActions<Fields extends Record<string, FieldAtom<any>>> {
       >[0]
     ) => void | Promise<void>
   ): (e?: React.FormEvent<HTMLFormElement>) => void;
-  validate(update: FieldAtomValidateOn): void;
-  reset(update?: undefined): void;
+  validate(): void;
+  reset(): void;
 }
 
 export interface UseFieldAtom<Value> {
@@ -599,9 +655,7 @@ export interface FieldAtomProps<Value> {
 }
 
 export interface FieldAtomActions<Value> {
-  validate(
-    value?: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["validate"]>
-  ): void;
+  validate(): void;
   setValue(
     value: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["value"]>
   ): void;
