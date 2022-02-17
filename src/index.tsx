@@ -79,7 +79,12 @@ export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
   const submitResultAtom = atom<FormSubmitStatus>("idle");
   const submitAtom = atom<
     undefined,
-    (values: ExtractAtomValue<typeof valuesAtom>) => void | Promise<void>
+    (
+      values: Record<
+        keyof Fields,
+        ExtractAtomValue<ExtractAtomValue<Fields[keyof Fields]>["value"]>
+      >
+    ) => void | Promise<void>
   >(undefined, (get, set, onSubmit) => {
     if (get(submitResultAtom) === "submitting") return;
 
@@ -165,13 +170,18 @@ export type FormAtom<Fields extends Record<string, FieldAtom<any>>> = Atom<{
   validate: WritableAtom<undefined, ValidateOn>;
   submit: WritableAtom<
     undefined,
-    (values: Record<keyof Fields, Fields[keyof Fields]>) => void | Promise<void>
+    (
+      values: Record<
+        keyof Fields,
+        ExtractAtomValue<ExtractAtomValue<Fields[keyof Fields]>["value"]>
+      >
+    ) => void | Promise<void>
   >;
 }>;
 
 export function useFormAtom<Fields extends Record<string, FieldAtom<any>>>(
   atom: FormAtom<Fields>
-) {
+): FormAtomState<Fields> {
   const form = useAtomValue(atom);
   const [fieldAtoms, updateFields] = useAtom(form.fields);
   const reset = useSetAtom(form.reset);
@@ -179,11 +189,8 @@ export function useFormAtom<Fields extends Record<string, FieldAtom<any>>>(
 
   return React.useMemo(
     () => ({
-      fieldAtoms,
-      addField<FieldName extends keyof Fields>(
-        fieldName: FieldName,
-        atom: Fields[FieldName]
-      ) {
+      fieldAtoms: fieldAtoms as Fields,
+      addField(fieldName, atom) {
         updateFields((current) => ({ ...current, [fieldName]: atom }));
       },
       removeField<FieldName extends keyof Fields>(fieldName: FieldName) {
@@ -200,6 +207,17 @@ export function useFormAtom<Fields extends Record<string, FieldAtom<any>>>(
   );
 }
 
+interface FormAtomState<Fields extends Record<string, FieldAtom<any>>> {
+  fieldAtoms: Fields;
+  addField<FieldName extends keyof Fields>(
+    name: FieldName,
+    atom: Fields[FieldName]
+  ): void;
+  removeField<FieldName extends keyof Fields>(name: FieldName): void;
+  validate(update: ValidateOn): void;
+  reset(update?: undefined): void;
+}
+
 export function useFormErrors<Fields extends Record<string, FieldAtom<any>>>(
   atom: FormAtom<Fields>
 ) {
@@ -214,11 +232,19 @@ export function useFormValues<Fields extends Record<string, FieldAtom<any>>>(
   return useAtomValue(form.values);
 }
 
-export function useSubmitForm<Fields extends Record<string, FieldAtom<any>>>(
+export function useFormSubmit<Fields extends Record<string, FieldAtom<any>>>(
   atom: FormAtom<Fields>
 ) {
   const form = useAtomValue(atom);
-  return useSetAtom(form.submit);
+  const handleSubmit = useSetAtom(form.submit);
+  return React.useCallback(
+    (values: Parameters<typeof handleSubmit>[0]) =>
+      (e?: React.FormEvent<HTMLFormElement>) => {
+        e?.preventDefault();
+        handleSubmit(values);
+      },
+    [handleSubmit]
+  );
 }
 
 export function fieldAtom<Value>(
@@ -316,6 +342,7 @@ export function useFieldAtomActions<Value>(
   const atoms = useAtomValue(fieldAtom, scope);
   const setValue = useSetAtom(atoms.value, scope);
   const setTouched = useSetAtom(atoms.touched, scope);
+  const setErrors = useSetAtom(atoms.errors, scope);
   const validate = useSetAtom(atoms.validate, scope);
   const ref = useAtomValue(atoms.ref, scope);
 
@@ -331,16 +358,17 @@ export function useFieldAtomActions<Value>(
           setTouched(touched);
           validate("touch");
         },
+        setErrors,
         focus() {
           ref?.focus();
         },
         reset() {
-          setValue(RESET);
+          setErrors([]);
           setTouched(RESET);
-          validate("change");
+          setValue(RESET);
         },
       } as const),
-    [setValue, setTouched, ref, validate]
+    [validate, setErrors, setValue, setTouched, ref]
   );
 }
 
@@ -423,6 +451,9 @@ export interface FieldAtomActions<Value> {
   ): void;
   setTouched(
     value: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["touched"]>
+  ): void;
+  setErrors(
+    value: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["errors"]>
   ): void;
   focus(): void;
   reset(): void;

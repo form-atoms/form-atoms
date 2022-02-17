@@ -7,12 +7,87 @@ import type {
 } from "jotai";
 import { RESET } from "jotai/utils";
 import * as React from "react";
-export declare function formAtom<Fields extends FieldAtom<any>[]>(
+export declare function formAtom<Fields extends Record<string, FieldAtom<any>>>(
   fields: Fields
-): Atom<Atom<FieldAtom<any>>[]>;
-export declare function useSubmitForm<Fields extends FieldAtom<any>[]>(
-  formAtom: Atom<Fields>
-): void;
+): FormAtom<Fields>;
+export declare type FormSubmitStatus = "idle" | "submitting" | "submitted";
+export declare type ValidationStatus =
+  | "idle"
+  | "validating"
+  | "valid"
+  | "invalid";
+export declare type FormAtom<Fields extends Record<string, FieldAtom<any>>> =
+  Atom<{
+    fields: WritableAtom<
+      Fields,
+      Fields | typeof RESET | ((prev: Fields) => Fields),
+      void
+    >;
+    values: Atom<
+      Record<
+        keyof Fields,
+        ExtractAtomValue<ExtractAtomValue<Fields[keyof Fields]>["value"]>
+      >
+    >;
+    errors: Atom<Record<keyof Fields, string[]>>;
+    reset: WritableAtom<undefined, undefined>;
+    validate: WritableAtom<undefined, ValidateOn>;
+    submit: WritableAtom<
+      undefined,
+      (
+        values: Record<
+          keyof Fields,
+          ExtractAtomValue<ExtractAtomValue<Fields[keyof Fields]>["value"]>
+        >
+      ) => void | Promise<void>
+    >;
+  }>;
+export declare function useFormAtom<
+  Fields extends Record<string, FieldAtom<any>>
+>(
+  atom: FormAtom<Fields>
+): {
+  fieldAtoms: Fields extends Promise<infer V> ? V : Fields;
+  addField<FieldName extends keyof Fields>(
+    fieldName: FieldName,
+    atom: Fields[FieldName]
+  ): void;
+  removeField<FieldName_1 extends keyof Fields>(fieldName: FieldName_1): void;
+  validate: (update: ValidateOn) => void;
+  reset: (update?: undefined) => void;
+};
+export declare function useFormErrors<
+  Fields extends Record<string, FieldAtom<any>>
+>(
+  atom: FormAtom<Fields>
+): Record<keyof Fields, string[]> extends Promise<infer V>
+  ? V
+  : Record<keyof Fields, string[]>;
+export declare function useFormValues<
+  Fields extends Record<string, FieldAtom<any>>
+>(
+  atom: FormAtom<Fields>
+): Record<
+  keyof Fields,
+  ExtractAtomValue<ExtractAtomValue<Fields[keyof Fields]>["value"]>
+> extends Promise<infer V>
+  ? V
+  : Record<
+      keyof Fields,
+      ExtractAtomValue<ExtractAtomValue<Fields[keyof Fields]>["value"]>
+    >;
+export declare function useFormSubmit<
+  Fields extends Record<string, FieldAtom<any>>
+>(
+  atom: FormAtom<Fields>
+): (
+  values: (
+    values: Record<
+      keyof Fields,
+      ExtractAtomValue<ExtractAtomValue<Fields[keyof Fields]>["value"]>
+    >
+  ) => void | Promise<void>
+) => (e?: React.FormEvent<HTMLFormElement> | undefined) => void;
 export declare function fieldAtom<Value>(
   config: FieldAtomConfig<Value>
 ): FieldAtom<Value>;
@@ -24,7 +99,8 @@ export declare type FieldAtom<Value> = Atom<{
     boolean | typeof RESET | ((prev: boolean) => boolean)
   >;
   dirty: Atom<boolean>;
-  errors: WritableAtom<string[], ValidateOn>;
+  validate: WritableAtom<undefined, ValidateOn>;
+  errors: WritableAtom<string[], string[] | ((value: string[]) => string[])>;
   ref: WritableAtom<
     HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null,
     | HTMLInputElement
@@ -35,9 +111,9 @@ export declare type FieldAtom<Value> = Atom<{
         value: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null
       ) => HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null)
   >;
+  _validate?: FieldAtomConfig<Value>["validate"];
 }>;
-export declare type ValidateOn = "blur" | "change" | "submit";
-export declare function useFormAtom(atom: ReturnType<typeof formAtom>): void;
+export declare type ValidateOn = "blur" | "change" | "touch" | "submit";
 export declare function useFieldAtom<Value>(
   atom: FieldAtom<Value>,
   scope?: Scope
@@ -75,7 +151,7 @@ export interface FieldAtomProps<Value> {
 }
 export interface FieldAtomActions<Value> {
   validate(
-    value: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["errors"]>
+    value: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["validate"]>
   ): void;
   setValue(
     value: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["value"]>
