@@ -3,11 +3,16 @@ import type {
   ExtractAtomUpdate,
   ExtractAtomValue,
   Getter,
+  Setter,
   WritableAtom,
 } from "jotai";
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { atomWithReset, RESET } from "jotai/utils";
 import * as React from "react";
+
+//
+// Forms
+//
 
 export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
   fields: Fields
@@ -28,37 +33,59 @@ export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
     return values;
   });
 
-  const validateResultAtom = atom<ValidationStatus>("idle");
-  const validateAtom = atom<undefined, ValidateOn>(
+  async function validateField(
+    get: Getter,
+    set: Setter,
+    event: FieldAtomValidateOn,
+    field: FieldAtom<any>
+  ) {
+    const fieldAtom = get(field);
+    set(fieldAtom.validateStatus, "validating");
+    const value = get(fieldAtom.value);
+    const dirty = get(fieldAtom.dirty);
+
+    if (event === "user" || event === "submit") {
+      set(fieldAtom.touched, true);
+    }
+
+    const errors = await fieldAtom._validateCallback?.({
+      get,
+      value,
+      dirty,
+      touched: get(fieldAtom.touched),
+      event,
+    });
+
+    set(fieldAtom.errors, errors ?? []);
+
+    if (errors && errors.length) {
+      set(fieldAtom.validateStatus, "invalid");
+      return false;
+    }
+
+    set(fieldAtom.validateStatus, "valid");
+    return true;
+  }
+
+  const validateResultAtom = atom<FormAtomValidateStatus>("idle");
+  const validateAtom = atom<undefined, FieldAtomValidateOn>(
     () => undefined,
-    (get, set, event) => {
+    (get, set, event = "user") => {
       if (get(validateResultAtom) === "validating") return;
 
       async function resolveErrors() {
         set(validateResultAtom, "validating");
-        let valid = true;
 
-        for (const field of Object.values(fields)) {
-          const fieldAtom = get(field);
-          const value = get(fieldAtom.value);
-          const dirty = get(fieldAtom.dirty);
-          const touched = get(fieldAtom.touched);
-          const errors = await fieldAtom._validate?.({
-            get,
-            value,
-            dirty,
-            touched,
-            event,
-          });
+        const fieldsAreValid = await Promise.all(
+          Object.values(fields).map((field) =>
+            validateField(get, set, event, field)
+          )
+        );
 
-          set(fieldAtom.errors, errors ?? get(fieldAtom.errors));
-
-          if (errors && errors.length) {
-            valid = false;
-          }
-        }
-
-        set(validateResultAtom, valid ? "valid" : "invalid");
+        set(
+          validateResultAtom,
+          fieldsAreValid.every((value) => value) ? "valid" : "invalid"
+        );
       }
 
       resolveErrors();
@@ -76,7 +103,7 @@ export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
     return errors;
   });
 
-  const submitResultAtom = atom<FormSubmitStatus>("idle");
+  const submitResultAtom = atom<FormAtomSubmitStatus>("idle");
   const submitAtom = atom<
     undefined,
     (
@@ -90,32 +117,18 @@ export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
 
     async function resolveErrors() {
       set(submitResultAtom, "submitting");
-      let valid = true;
+      set(validateResultAtom, "validating");
 
-      for (const field of Object.values(fields)) {
-        const fieldAtom = get(field);
-        const value = get(fieldAtom.value);
-        const dirty = get(fieldAtom.dirty);
-        const touched = get(fieldAtom.touched);
-        const errors = await fieldAtom._validate?.({
-          get,
-          value,
-          dirty,
-          touched,
-          event: "submit",
-        });
+      const fieldsAreValid = await Promise.all(
+        Object.values(fields).map((field) =>
+          validateField(get, set, "submit", field)
+        )
+      );
 
-        set(fieldAtom.errors, errors ?? get(fieldAtom.errors));
-
-        if (errors && errors.length) {
-          valid = false;
-        }
-      }
-
-      if (!valid) {
-        set(validateResultAtom, "invalid");
-        return set(submitResultAtom, "idle");
-      }
+      set(
+        validateResultAtom,
+        fieldsAreValid.every((value) => value) ? "valid" : "invalid"
+      );
 
       try {
         await Promise.resolve(onSubmit(get(valuesAtom)));
@@ -135,6 +148,7 @@ export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
       set(fieldAtom.value, RESET);
       set(fieldAtom.touched, RESET);
       set(fieldAtom.errors, []);
+      set(fieldAtom.validateStatus, "idle");
       set(validateResultAtom, "idle");
       set(submitResultAtom, "idle");
     }
@@ -144,52 +158,86 @@ export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
     fields: fieldsAtom,
     values: valuesAtom,
     errors: errorsAtom,
-    submit: submitAtom,
     validate: validateAtom,
+    validateStatus: validateResultAtom,
+    submit: submitAtom,
+    submitStatus: submitResultAtom,
     reset: resetAtom,
   });
 }
 
-export type FormSubmitStatus = "idle" | "submitting" | "submitted";
-export type ValidationStatus = "idle" | "validating" | "valid" | "invalid";
-
-export type FormAtom<Fields extends Record<string, FieldAtom<any>>> = Atom<{
-  fields: WritableAtom<
-    Fields,
-    Fields | typeof RESET | ((prev: Fields) => Fields),
-    void
-  >;
-  values: Atom<
-    Record<
-      keyof Fields,
-      ExtractAtomValue<ExtractAtomValue<Fields[keyof Fields]>["value"]>
-    >
-  >;
-  errors: Atom<Record<keyof Fields, string[]>>;
-  reset: WritableAtom<undefined, undefined>;
-  validate: WritableAtom<undefined, ValidateOn>;
-  submit: WritableAtom<
-    undefined,
-    (
-      values: Record<
-        keyof Fields,
-        ExtractAtomValue<ExtractAtomValue<Fields[keyof Fields]>["value"]>
-      >
-    ) => void | Promise<void>
-  >;
-}>;
-
 export function useFormAtom<Fields extends Record<string, FieldAtom<any>>>(
-  atom: FormAtom<Fields>
-): FormAtomState<Fields> {
-  const form = useAtomValue(atom);
-  const [fieldAtoms, updateFields] = useAtom(form.fields);
-  const reset = useSetAtom(form.reset);
-  const validate = useSetAtom(form.validate);
+  formAtom: FormAtom<Fields>,
+  scope?: Scope
+): UseFormAtom<Fields> {
+  const form = useAtomValue(formAtom, scope);
+  const fieldAtoms = useAtomValue(form.fields, scope);
+  const reset = useSetAtom(form.reset, scope);
+  const validate = useSetAtom(form.validate, scope);
+  const handleSubmit = useSetAtom(form.submit, scope);
+  const submitStatus = useAtomValue(form.submitStatus, scope);
+  const validateStatus = useAtomValue(form.validateStatus, scope);
 
   return React.useMemo(
     () => ({
       fieldAtoms: fieldAtoms as Fields,
+      validate,
+      reset,
+      submit(onSubmit) {
+        return (e) => {
+          e?.preventDefault();
+          return handleSubmit(onSubmit);
+        };
+      },
+      submitStatus,
+      validateStatus,
+    }),
+    [fieldAtoms, validate, reset, submitStatus, validateStatus, handleSubmit]
+  );
+}
+
+export function useFormAtomState<Fields extends Record<string, FieldAtom<any>>>(
+  formAtom: FormAtom<Fields>,
+  scope?: Scope
+): FormAtomState<Fields> {
+  const form = useAtomValue(formAtom, scope);
+  const fieldAtoms = useAtomValue(form.fields, scope);
+  const submitStatus = useAtomValue(form.submitStatus, scope);
+  const validateStatus = useAtomValue(form.validateStatus, scope);
+  const values = useAtomValue(form.values, scope);
+  const errors = useAtomValue(form.errors, scope);
+
+  return React.useMemo(
+    () => ({
+      fieldAtoms: fieldAtoms as Fields,
+      values: values as any,
+      errors: errors as any,
+      submitStatus,
+      validateStatus,
+    }),
+    [fieldAtoms, values, errors, submitStatus, validateStatus]
+  );
+}
+
+export function useFormAtomActions<
+  Fields extends Record<string, FieldAtom<any>>
+>(formAtom: FormAtom<Fields>, scope?: Scope): FormAtomActions<Fields> {
+  const form = useAtomValue(formAtom, scope);
+  const updateFields = useSetAtom(form.fields, scope);
+  const reset = useSetAtom(form.reset, scope);
+  const validate = useSetAtom(form.validate, scope);
+  const handleSubmit = useSetAtom(form.submit, scope);
+  const submit = React.useCallback(
+    (values: Parameters<typeof handleSubmit>[0]) =>
+      (e?: React.FormEvent<HTMLFormElement>) => {
+        e?.preventDefault();
+        handleSubmit(values);
+      },
+    [handleSubmit]
+  );
+
+  return React.useMemo(
+    () => ({
       addField(fieldName, atom) {
         updateFields((current) => ({ ...current, [fieldName]: atom }));
       },
@@ -200,43 +248,33 @@ export function useFormAtom<Fields extends Record<string, FieldAtom<any>>>(
           return next;
         });
       },
-      validate,
       reset,
+      validate,
+      submit,
     }),
-    [fieldAtoms, validate, reset, updateFields]
+    [updateFields, reset, validate, submit]
   );
 }
 
-interface FormAtomState<Fields extends Record<string, FieldAtom<any>>> {
-  fieldAtoms: Fields;
-  addField<FieldName extends keyof Fields>(
-    name: FieldName,
-    atom: Fields[FieldName]
-  ): void;
-  removeField<FieldName extends keyof Fields>(name: FieldName): void;
-  validate(update: ValidateOn): void;
-  reset(update?: undefined): void;
+export function useFormAtomErrors<
+  Fields extends Record<string, FieldAtom<any>>
+>(formAtom: FormAtom<Fields>, scope?: Scope) {
+  const form = useAtomValue(formAtom, scope);
+  return useAtomValue(form.errors, scope);
 }
 
-export function useFormErrors<Fields extends Record<string, FieldAtom<any>>>(
-  atom: FormAtom<Fields>
-) {
-  const form = useAtomValue(atom);
-  return useAtomValue(form.errors);
+export function useFormAtomValues<
+  Fields extends Record<string, FieldAtom<any>>
+>(formAtom: FormAtom<Fields>, scope?: Scope) {
+  const form = useAtomValue(formAtom, scope);
+  return useAtomValue(form.values, scope);
 }
 
-export function useFormValues<Fields extends Record<string, FieldAtom<any>>>(
-  atom: FormAtom<Fields>
-) {
-  const form = useAtomValue(atom);
-  return useAtomValue(form.values);
-}
-
-export function useFormSubmit<Fields extends Record<string, FieldAtom<any>>>(
-  atom: FormAtom<Fields>
-) {
-  const form = useAtomValue(atom);
-  const handleSubmit = useSetAtom(form.submit);
+export function useFormAtomSubmit<
+  Fields extends Record<string, FieldAtom<any>>
+>(formAtom: FormAtom<Fields>, scope?: Scope) {
+  const form = useAtomValue(formAtom, scope);
+  const handleSubmit = useSetAtom(form.submit, scope);
   return React.useCallback(
     (values: Parameters<typeof handleSubmit>[0]) =>
       (e?: React.FormEvent<HTMLFormElement>) => {
@@ -246,6 +284,10 @@ export function useFormSubmit<Fields extends Record<string, FieldAtom<any>>>(
     [handleSubmit]
   );
 }
+
+//
+// Fields
+//
 
 export function fieldAtom<Value>(
   config: FieldAtomConfig<Value>
@@ -257,19 +299,30 @@ export function fieldAtom<Value>(
     return get(valueAtom) !== config.value;
   });
   const errorsAtom = atom<string[]>([]);
-  const validateAtom = atom<undefined, ValidateOn>(
+  const validateResultAtom = atom<FormAtomValidateStatus>("idle");
+  const validateAtom = atom<undefined, FieldAtomValidateOn>(
     undefined,
-    (get, set, event) => {
+    (get, set, event = "user") => {
       async function resolveErrors() {
+        set(validateResultAtom, "validating");
         const dirty = get(dirtyAtom);
-        const touched = get(touchedAtom);
         const value = get(valueAtom);
 
-        set(
-          errorsAtom,
-          (await config.validate?.({ get, dirty, touched, value, event })) ??
-            get(errorsAtom)
-        );
+        if (event === "user" || event === "submit") {
+          set(touchedAtom, true);
+        }
+
+        const errors =
+          (await config.validate?.({
+            get,
+            dirty,
+            touched: get(touchedAtom),
+            value,
+            event,
+          })) ?? [];
+
+        set(errorsAtom, errors);
+        set(validateResultAtom, errors.length > 0 ? "invalid" : "valid");
       }
 
       resolveErrors();
@@ -285,9 +338,10 @@ export function fieldAtom<Value>(
     touched: touchedAtom,
     dirty: dirtyAtom,
     validate: validateAtom,
+    validateStatus: validateResultAtom,
     errors: errorsAtom,
     ref: refAtom,
-    _validate: config.validate,
+    _validateCallback: config.validate,
   } as const);
 }
 
@@ -299,7 +353,8 @@ export type FieldAtom<Value> = Atom<{
     boolean | typeof RESET | ((prev: boolean) => boolean)
   >;
   dirty: Atom<boolean>;
-  validate: WritableAtom<undefined, ValidateOn>;
+  validate: WritableAtom<undefined, FieldAtomValidateOn>;
+  validateStatus: WritableAtom<FormAtomValidateStatus, FormAtomValidateStatus>;
   errors: WritableAtom<string[], string[] | ((value: string[]) => string[])>;
   ref: WritableAtom<
     HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null,
@@ -311,40 +366,20 @@ export type FieldAtom<Value> = Atom<{
         value: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null
       ) => HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null)
   >;
-  _validate?: FieldAtomConfig<Value>["validate"];
+  _validateCallback?: FieldAtomConfig<Value>["validate"];
 }>;
-
-export type ValidateOn = "blur" | "change" | "touch" | "submit";
-
-export function useFieldAtom<Value>(
-  atom: FieldAtom<Value>,
-  scope?: Scope
-): UseFieldAtom<Value> {
-  const props = useFieldAtomProps(atom, scope);
-  const actions = useFieldAtomActions(atom, scope);
-  const state = useFieldAtomState(atom, scope);
-  return React.useMemo(
-    () => ({ props, actions, state }),
-    [props, actions, state]
-  );
-}
-
-export interface UseFieldAtom<Value> {
-  props: FieldAtomProps<Value>;
-  actions: FieldAtomActions<Value>;
-  state: FieldAtomState<Value>;
-}
 
 export function useFieldAtomActions<Value>(
   fieldAtom: FieldAtom<Value>,
   scope?: Scope
 ): FieldAtomActions<Value> {
-  const atoms = useAtomValue(fieldAtom, scope);
-  const setValue = useSetAtom(atoms.value, scope);
-  const setTouched = useSetAtom(atoms.touched, scope);
-  const setErrors = useSetAtom(atoms.errors, scope);
-  const validate = useSetAtom(atoms.validate, scope);
-  const ref = useAtomValue(atoms.ref, scope);
+  const field = useAtomValue(fieldAtom, scope);
+  const setValue = useSetAtom(field.value, scope);
+  const setTouched = useSetAtom(field.touched, scope);
+  const setErrors = useSetAtom(field.errors, scope);
+  const validate = useSetAtom(field.validate, scope);
+  const setValidateStatus = useSetAtom(field.validateStatus, scope);
+  const ref = useAtomValue(field.ref, scope);
 
   return React.useMemo(
     () =>
@@ -366,9 +401,10 @@ export function useFieldAtomActions<Value>(
           setErrors([]);
           setTouched(RESET);
           setValue(RESET);
+          setValidateStatus("idle");
         },
       } as const),
-    [validate, setErrors, setValue, setTouched, ref]
+    [validate, setErrors, setValue, setTouched, ref, setValidateStatus]
   );
 }
 
@@ -376,13 +412,13 @@ export function useFieldAtomProps<Value>(
   fieldAtom: FieldAtom<Value>,
   scope?: Scope
 ): FieldAtomProps<Value> {
-  const atoms = useAtomValue(fieldAtom, scope);
-  const name = useAtomValue(atoms.name, scope);
-  const [value, setValue] = useAtom(atoms.value, scope);
-  const setTouched = useSetAtom(atoms.touched, scope);
-  const errors = useSetAtom(atoms.errors, scope);
-  const validate = useSetAtom(atoms.validate, scope);
-  const ref = useSetAtom(atoms.ref, scope);
+  const field = useAtomValue(fieldAtom, scope);
+  const name = useAtomValue(field.name, scope);
+  const [value, setValue] = useAtom(field.value, scope);
+  const setTouched = useSetAtom(field.touched, scope);
+  const errors = useSetAtom(field.errors, scope);
+  const validate = useSetAtom(field.validate, scope);
+  const ref = useSetAtom(field.ref, scope);
 
   return React.useMemo(
     () => ({
@@ -409,11 +445,12 @@ export function useFieldAtomState<Value>(
   fieldAtom: FieldAtom<Value>,
   scope?: Scope
 ): FieldAtomState<Value> {
-  const atoms = useAtomValue(fieldAtom, scope);
-  const value = useAtomValue(atoms.value, scope);
-  const touched = useAtomValue(atoms.touched, scope);
-  const dirty = useAtomValue(atoms.dirty, scope);
-  const errors = useAtomValue(atoms.errors, scope);
+  const field = useAtomValue(fieldAtom, scope);
+  const value = useAtomValue(field.value, scope);
+  const touched = useAtomValue(field.touched, scope);
+  const dirty = useAtomValue(field.dirty, scope);
+  const validateStatus = useAtomValue(field.validateStatus, scope);
+  const errors = useAtomValue(field.errors, scope);
 
   return React.useMemo(
     () =>
@@ -421,10 +458,129 @@ export function useFieldAtomState<Value>(
         value: value as unknown as Value,
         touched,
         dirty,
+        validateStatus,
         errors,
       } as const),
-    [value, touched, dirty, errors]
+    [value, touched, dirty, validateStatus, errors]
   );
+}
+
+export function useFieldAtomValue<Value>(
+  fieldAtom: FieldAtom<Value>,
+  scope?: Scope
+) {
+  const field = useAtomValue(fieldAtom, scope);
+  return useAtomValue(field.value, scope);
+}
+
+export function useFieldAtomErrors<Value>(
+  fieldAtom: FieldAtom<Value>,
+  scope?: Scope
+) {
+  const field = useAtomValue(fieldAtom, scope);
+  return useAtomValue(field.errors, scope);
+}
+
+export function useFieldAtom<Value>(
+  fieldAtom: FieldAtom<Value>,
+  scope?: Scope
+): UseFieldAtom<Value> {
+  const props = useFieldAtomProps(fieldAtom, scope);
+  const actions = useFieldAtomActions(fieldAtom, scope);
+  const state = useFieldAtomState(fieldAtom, scope);
+  return React.useMemo(
+    () => ({ props, actions, state }),
+    [props, actions, state]
+  );
+}
+
+export type FormAtomSubmitStatus = "idle" | "submitting" | "submitted";
+export type FormAtomValidateStatus =
+  | "idle"
+  | "validating"
+  | "valid"
+  | "invalid";
+export type FieldAtomValidateOn =
+  | "user"
+  | "blur"
+  | "change"
+  | "touch"
+  | "submit";
+
+export type FormAtom<Fields extends Record<string, FieldAtom<any>>> = Atom<{
+  fields: WritableAtom<
+    Fields,
+    Fields | typeof RESET | ((prev: Fields) => Fields),
+    void
+  >;
+  values: Atom<
+    Record<
+      keyof Fields,
+      ExtractAtomValue<ExtractAtomValue<Fields[keyof Fields]>["value"]>
+    >
+  >;
+  errors: Atom<Record<keyof Fields, string[]>>;
+  reset: WritableAtom<undefined, undefined>;
+  validate: WritableAtom<undefined, FieldAtomValidateOn>;
+  validateStatus: WritableAtom<FormAtomValidateStatus, FormAtomValidateStatus>;
+  submit: WritableAtom<
+    undefined,
+    (
+      values: Record<
+        keyof Fields,
+        ExtractAtomValue<ExtractAtomValue<Fields[keyof Fields]>["value"]>
+      >
+    ) => void | Promise<void>
+  >;
+  submitStatus: WritableAtom<FormAtomSubmitStatus, FormAtomSubmitStatus>;
+}>;
+
+interface UseFormAtom<Fields extends Record<string, FieldAtom<any>>> {
+  fieldAtoms: Fields;
+  submit(
+    handleSubmit: (
+      values: Parameters<
+        ExtractAtomUpdate<ExtractAtomValue<FormAtom<Fields>>["submit"]>
+      >[0]
+    ) => void | Promise<void>
+  ): (e?: React.FormEvent<HTMLFormElement>) => void;
+  validate(update?: FieldAtomValidateOn): void;
+  reset(update?: undefined): void;
+  validateStatus: FormAtomValidateStatus;
+  submitStatus: FormAtomSubmitStatus;
+}
+
+export { Provider } from "jotai";
+
+interface FormAtomState<Fields extends Record<string, FieldAtom<any>>> {
+  fieldAtoms: Fields;
+  values: ExtractAtomValue<ExtractAtomValue<FormAtom<Fields>>["values"]>;
+  errors: ExtractAtomValue<ExtractAtomValue<FormAtom<Fields>>["errors"]>;
+  validateStatus: FormAtomValidateStatus;
+  submitStatus: FormAtomSubmitStatus;
+}
+
+interface FormAtomActions<Fields extends Record<string, FieldAtom<any>>> {
+  addField<FieldName extends keyof Fields>(
+    name: FieldName,
+    atom: Fields[FieldName]
+  ): void;
+  removeField<FieldName extends keyof Fields>(name: FieldName): void;
+  submit(
+    handleSubmit: (
+      values: Parameters<
+        ExtractAtomUpdate<ExtractAtomValue<FormAtom<Fields>>["submit"]>
+      >[0]
+    ) => void | Promise<void>
+  ): (e?: React.FormEvent<HTMLFormElement>) => void;
+  validate(update: FieldAtomValidateOn): void;
+  reset(update?: undefined): void;
+}
+
+export interface UseFieldAtom<Value> {
+  props: FieldAtomProps<Value>;
+  actions: FieldAtomActions<Value>;
+  state: FieldAtomState<Value>;
 }
 
 export interface FieldAtomProps<Value> {
@@ -444,7 +600,7 @@ export interface FieldAtomProps<Value> {
 
 export interface FieldAtomActions<Value> {
   validate(
-    value: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["validate"]>
+    value?: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["validate"]>
   ): void;
   setValue(
     value: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["value"]>
@@ -463,6 +619,9 @@ export interface FieldAtomState<Value> {
   value: ExtractAtomValue<ExtractAtomValue<FieldAtom<Value>>["value"]>;
   touched: ExtractAtomValue<ExtractAtomValue<FieldAtom<Value>>["touched"]>;
   dirty: ExtractAtomValue<ExtractAtomValue<FieldAtom<Value>>["dirty"]>;
+  validateStatus: ExtractAtomValue<
+    ExtractAtomValue<FieldAtom<Value>>["validateStatus"]
+  >;
   errors: ExtractAtomValue<ExtractAtomValue<FieldAtom<Value>>["errors"]>;
 }
 
@@ -475,7 +634,7 @@ export interface FieldAtomConfig<Value> {
     value: Value;
     dirty: boolean;
     touched: boolean;
-    event: ValidateOn;
+    event: FieldAtomValidateOn;
   }) => void | string[] | Promise<void | string[]>;
 }
 
