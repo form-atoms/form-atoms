@@ -64,9 +64,18 @@
     "typescript": "latest"
   },
   "keywords": [
+    "atomic form",
     "form atoms",
+    "form hooks",
+    "jotai",
+    "jotai form",
+    "jotai form atoms",
+    "jotai forms",
     "react",
-    "react component"
+    "react form",
+    "react form library",
+    "react hook",
+    "react hook form"
   ],
   "commitlint": {
     "extends": [

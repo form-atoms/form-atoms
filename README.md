@@ -31,11 +31,17 @@ npm i form-atoms
 
 ---
 
+## Features
+
+- [x] Atomic
+
 ## Quick start
 
 ```js
 import { fieldAtom, useFieldAtom } from "form-atoms";
 ```
+
+## Concepts
 
 ## API
 

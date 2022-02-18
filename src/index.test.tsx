@@ -474,7 +474,7 @@ describe("useFormAtom()", () => {
       hobbiesField.result.current.actions.setValue("test2");
       hobbiesField.result.current.actions.setTouched(true);
       hobbiesField.result.current.actions.setErrors(["def"]);
-      result.current.submit((values) => {});
+      result.current.submit(() => {});
     });
 
     domAct(() => {
