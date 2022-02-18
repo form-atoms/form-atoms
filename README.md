@@ -46,7 +46,7 @@ npm i form-atoms jotai
 
 ## Quick start
 
-[Check out the example on CodeSandbox](https://codesandbox.io/s/getting-started-with-form-atoms-ddhgq2?file=/src/App.tsx)
+[Check out the example on CodeSandbox ↗](https://codesandbox.io/s/getting-started-with-form-atoms-ddhgq2?file=/src/App.tsx)
 
 ```js
 import { fieldAtom, useFieldAtom, formAtom, useFormAtom } from "form-atoms";
