@@ -4,6 +4,7 @@
   "compilerOptions": {
     "target": "es5",
     "lib": ["esnext", "dom", "dom.iterable"],
+    "types": ["react/next", "react-dom/next"],
     "jsx": "react",
     "moduleResolution": "node",
     "esModuleInterop": true,
