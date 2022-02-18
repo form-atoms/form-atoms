@@ -132,21 +132,34 @@ export function formAtom<Fields extends FormAtomFields>(
     (values: FormAtomValues<Fields>) => void | Promise<void>
   >(null, (get, set, onSubmit) => {
     async function resolveSubmit() {
-      set(submitResultAtom, "submitting");
       // This pointer prevents a stale validation result from being
       // set after the most recent validation has been performed.
       const ptr = get(submitStatusCountAtom) + 1;
       set(submitStatusCountAtom, ptr);
       set(submitCountAtom, (count) => ++count);
       await validateFields(get, set, "submit");
+      const validateStatus = get(validateResultAtom);
+
+      if (validateStatus === "invalid") {
+        return (
+          ptr === get(submitStatusCountAtom) && set(submitResultAtom, "idle")
+        );
+      }
+
+      const submission = onSubmit(get(valuesAtom));
 
       try {
-        await Promise.resolve(onSubmit(get(valuesAtom)));
+        if (isPromise(submission)) {
+          ptr === get(submitStatusCountAtom) &&
+            set(submitResultAtom, "submitting");
+          await submission;
+        }
         // eslint-disable-next-line no-empty
       } catch (err) {
       } finally {
-        get(submitStatusCountAtom) === ptr &&
+        if (ptr === get(submitStatusCountAtom)) {
           set(submitResultAtom, "submitted");
+        }
       }
     }
 
