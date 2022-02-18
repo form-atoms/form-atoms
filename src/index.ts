@@ -16,11 +16,12 @@ import { setPath } from "./utils";
 //
 
 /**
- * `formAtom` is a Jotai atom that contains fields atoms and field action atoms
- * for the form.
+ * An atom that derives its state fields atoms and allows you to submit,
+ * validate, and reset your form.
  *
- * @param {FormAtomFields} fields - An object containing field atoms to be included
- *   in the form. Field atomss can be deeply nested in objects and arrays.
+ * @param {FormAtomFields} fields - An object containing field atoms to
+ *   be included in the form. Field atoms can be deeply nested in
+ *   objects and arrays.
  * @returns The `formAtom` function returns a Jotai `Atom`
  *   comprised of other atoms for managing the state of the form.
  */
@@ -204,7 +205,7 @@ export function formAtom<Fields extends FormAtomFields>(
  * A hook that returns an object that contains the `fieldAtoms` and actions to
  * validate, submit, and reset the form.
  *
- * @param {FormAtom<FormAtomFields>} formAtom - The atom that holds the form state.
+ * @param {FormAtom<FormAtomFields>} formAtom - The atom that stores the form state.
  * @param {Scope} scope - When using atoms with a scope, the provider with
  *   the same scope will be used. The recommendation for the scope value is
  *   a unique symbol. The primary use case of scope is for library usage.
@@ -226,7 +227,9 @@ export function useFormAtom<Fields extends FormAtomFields>(
     () => ({
       fieldAtoms: fieldAtoms as Fields,
       validate() {
-        startTransition(() => validate("user"));
+        startTransition(() => {
+          validate("user");
+        });
       },
       reset,
       submit(onSubmit) {
@@ -247,7 +250,7 @@ export function useFormAtom<Fields extends FormAtomFields>(
  * change, so it can be useful to use more targeted state hooks like
  * `useFormAtomStatus`.
  *
- * @param {FormAtom<FormAtomFields>} formAtom - The atom that holds the form state.
+ * @param {FormAtom<FormAtomFields>} formAtom - The atom that stores the form state.
  * @param {Scope} scope - When using atoms with a scope, the provider with
  *   the same scope will be used. The recommendation for the scope value is
  *   a unique symbol. The primary use case of scope is for library usage.
@@ -282,7 +285,7 @@ export function useFormAtomState<Fields extends FormAtomFields>(
  * of the form atom. This includes updating fields, submitting, resetting,
  * and validating the form.
  *
- * @param {FormAtom<FormAtomFields>} formAtom - The atom that holds the form state.
+ * @param {FormAtom<FormAtomFields>} formAtom - The atom that stores the form state.
  * @param {Scope} scope - When using atoms with a scope, the provider with
  *   the same scope will be used. The recommendation for the scope value is
  *   a unique symbol. The primary use case of scope is for library usage.
@@ -324,7 +327,7 @@ export function useFormAtomActions<Fields extends FormAtomFields>(
 /**
  * A hook that returns the errors of the form atom.
  *
- * @param {FormAtom<FormAtomFields>} formAtom - The atom that holds the form data.
+ * @param {FormAtom<FormAtomFields>} formAtom - The atom that stores the form data.
  * @param {Scope} scope - When using atoms with a scope, the provider with
  *   the same scope will be used. The recommendation for the scope value is
  *   a unique symbol. The primary use case of scope is for library usage.
@@ -341,7 +344,7 @@ export function useFormAtomErrors<Fields extends FormAtomFields>(
 /**
  * A hook that returns the values of the form atom
  *
- * @param {FormAtom<FormAtomFields>} formAtom - The atom that holds the form state.
+ * @param {FormAtom<FormAtomFields>} formAtom - The atom that stores the form state.
  * @param {Scope} scope - When using atoms with a scope, the provider with
  *   the same scope will be used. The recommendation for the scope value is
  *   a unique symbol. The primary use case of scope is for library usage.
@@ -359,7 +362,7 @@ export function useFormAtomValues<Fields extends FormAtomFields>(
  * A hook that returns the `submitStatus` and `validateStatus` of
  * the form atom.
  *
- * @param {FormAtom<FormAtomFields>} formAtom - The atom that holds the form state.
+ * @param {FormAtom<FormAtomFields>} formAtom - The atom that stores the form state.
  * @param {Scope} scope - When using atoms with a scope, the provider with
  *   the same scope will be used. The recommendation for the scope value is
  *   a unique symbol. The primary use case of scope is for library usage.
@@ -383,7 +386,7 @@ export function useFormAtomStatus<Fields extends FormAtomFields>(
 /**
  * A hook that returns a callback for handling form submission.
  *
- * @param {FormAtom<FormAtomFields>} formAtom - The atom that holds the form state.
+ * @param {FormAtom<FormAtomFields>} formAtom - The atom that stores the form state.
  * @param {Scope} scope - When using atoms with a scope, the provider with
  *   the same scope will be used. The recommendation for the scope value is
  *   a unique symbol. The primary use case of scope is for library usage.
@@ -415,7 +418,7 @@ export function useFormAtomSubmit<Fields extends FormAtomFields>(
  * An atom that represents a field in a form. It manages state for the field,
  * including the name, value, errors, dirty, validation, and touched state.
  *
- * @param config - FieldAtomConfig<Value>
+ * @param {FieldAtomConfig<Value>} config - The initial state and configuration of the field.
  * @returns A FieldAtom.
  */
 export function fieldAtom<Value>(
@@ -508,7 +511,7 @@ export function fieldAtom<Value>(
  * A hook that returns a set of actions that can be used to interact with the
  * field atom state.
  *
- * @param {FieldAtom<any>} fieldAtom - The atom that holds the field's state.
+ * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
  * @param {Scope} scope - When using atoms with a scope, the provider with
  *   the same scope will be used. The recommendation for the scope value is
  *   a unique symbol. The primary use case of scope is for library usage.
@@ -563,7 +566,7 @@ export function useFieldAtomActions<Value>(
  * A hook that returns a set of props that can be destructured
  * directly into an `<input>`, `<select>`, or `<textarea>` element.
  *
- * @param {FieldAtom<any>} fieldAtom - The atom that holds the field's state.
+ * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
  * @param {Scope} scope - When using atoms with a scope, the provider with
  *   the same scope will be used. The recommendation for the scope value is
  *   a unique symbol. The primary use case of scope is for library usage.
@@ -614,7 +617,7 @@ export function useFieldAtomProps<
  * value, whether it has been touched, whether it is dirty, the validation status,
  * and any errors.
  *
- * @param {FieldAtom<any>} fieldAtom - The atom that holds the field's state.
+ * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
  * @param {Scope} scope - When using atoms with a scope, the provider with
  *   the same scope will be used. The recommendation for the scope value is
  *   a unique symbol. The primary use case of scope is for library usage.
@@ -646,7 +649,7 @@ export function useFieldAtomState<Value>(
 /**
  * A hook that returns the value of a field atom.
  *
- * @param {FieldAtom<any>} fieldAtom - The atom that holds the field's state.
+ * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
  * @param {Scope} scope - When using atoms with a scope, the provider with
  *   the same scope will be used. The recommendation for the scope value is
  *   a unique symbol. The primary use case of scope is for library usage.
@@ -663,7 +666,7 @@ export function useFieldAtomValue<Value>(
 /**
  * A hook that returns the errors of a field atom.
  *
- * @param {FieldAtom<any>} fieldAtom - The atom that holds the field's state.
+ * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
  * @param {Scope} scope - When using atoms with a scope, the provider with
  *   the same scope will be used. The recommendation for the scope value is
  *   a unique symbol. The primary use case of scope is for library usage.
@@ -681,7 +684,7 @@ export function useFieldAtomErrors<Value>(
  * A hook that returns `props`, `state`, and `actions` of a field atom from
  * `useFieldAtomProps`, `useFieldAtomState`, and `useFieldAtomActions`.
  *
- * @param {FieldAtom<any>} fieldAtom - The atom that holds the field's state.
+ * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
  * @param {Scope} scope - When using atoms with a scope, the provider with
  *   the same scope will be used. The recommendation for the scope value is
  *   a unique symbol. The primary use case of scope is for library usage.
@@ -925,7 +928,7 @@ export type FormAtomErrors<Fields extends FormAtomFields> = {
     : never;
 };
 
-interface UseFormAtom<Fields extends FormAtomFields> {
+export interface UseFormAtom<Fields extends FormAtomFields> {
   /**
    * An object containing the values of a form's nested field atoms
    */
@@ -955,7 +958,7 @@ interface UseFormAtom<Fields extends FormAtomFields> {
   reset(): void;
 }
 
-interface FormAtomStatus {
+export interface FormAtomStatus {
   /**
    * The validation status of the form
    */
@@ -966,7 +969,7 @@ interface FormAtomStatus {
   submitStatus: FormAtomSubmitStatus;
 }
 
-interface FormAtomState<Fields extends FormAtomFields> {
+export interface FormAtomState<Fields extends FormAtomFields> {
   /**
    * An object containing the form's nested field atoms
    */
@@ -993,7 +996,7 @@ interface FormAtomState<Fields extends FormAtomFields> {
   submitStatus: FormAtomSubmitStatus;
 }
 
-interface FormAtomActions<Fields extends FormAtomFields> {
+export interface FormAtomActions<Fields extends FormAtomFields> {
   /**
    * A function for adding/removing fields from the form.
    *
