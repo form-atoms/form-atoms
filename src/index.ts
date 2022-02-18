@@ -749,8 +749,17 @@ export function walkFields<Fields extends FormAtomFields>(
 
 export { Provider } from "jotai";
 
+/**
+ * A form submission status
+ */
 export type FormAtomSubmitStatus = "idle" | "submitting" | "submitted";
+/**
+ * A form and field validation status
+ */
 export type FormAtomValidateStatus = "validating" | "valid" | "invalid";
+/**
+ * Event types that a field atom may validate against
+ */
 export type FieldAtomValidateOn =
   | "user"
   | "blur"
@@ -759,17 +768,46 @@ export type FieldAtomValidateOn =
   | "submit";
 
 export type FieldAtom<Value> = Atom<{
+  /**
+   * An atom containing the field's name
+   */
   name: WritableAtom<string | undefined, string | undefined | typeof RESET>;
+  /**
+   * An atom containing the field's value
+   */
   value: WritableAtom<Value, Value | typeof RESET | ((prev: Value) => Value)>;
+  /**
+   * An atom containing the field's touched status
+   */
   touched: WritableAtom<
     boolean,
     boolean | typeof RESET | ((prev: boolean) => boolean)
   >;
+  /**
+   * An atom containing the field's dirty status
+   */
   dirty: Atom<boolean>;
+  /**
+   * A write-only atom for validating the field's value
+   */
   validate: WritableAtom<null, void | FieldAtomValidateOn>;
+  /**
+   * An atom containing the field's validation status
+   */
   validateStatus: WritableAtom<FormAtomValidateStatus, FormAtomValidateStatus>;
+  /**
+   * An atom containing the field's validation errors
+   */
   errors: WritableAtom<string[], string[] | ((value: string[]) => string[])>;
+  /**
+   * A write-only atom for resetting the field atoms to their
+   * initial states.
+   */
   reset: WritableAtom<null, void>;
+  /**
+   * An atom containing a reference to the `HTMLElement` the field
+   * is bound to.
+   */
   ref: WritableAtom<
     HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null,
     | HTMLInputElement
@@ -785,24 +823,57 @@ export type FieldAtom<Value> = Atom<{
 }>;
 
 export type FormAtom<Fields extends FormAtomFields> = Atom<{
+  /**
+   * An atom containing an object of nested field atoms
+   */
   fields: WritableAtom<
     Fields,
     Fields | typeof RESET | ((prev: Fields) => Fields),
     void
   >;
+  /**
+   * An read-only atom that derives the form's values from
+   * its nested field atoms.
+   */
   values: Atom<FormAtomValues<Fields>>;
+  /**
+   * An read-only atom that derives the form's errors from
+   * its nested field atoms.
+   */
   errors: Atom<FormAtomErrors<Fields>>;
+  /**
+   * A write-only atom that resets the form's nested field atoms
+   */
   reset: WritableAtom<null, void>;
+  /**
+   * A write-only atom that validates the form's nested field atoms
+   */
   validate: WritableAtom<null, void | FieldAtomValidateOn>;
+  /**
+   * A read-only atom that derives the form's validation status
+   */
   validateStatus: Atom<FormAtomValidateStatus>;
+  /**
+   * A write-only atom for submitting the form
+   */
   submit: WritableAtom<
     null,
     (values: FormAtomValues<Fields>) => void | Promise<void>
   >;
+  /**
+   * A read-only atom that reads the number of times the form has
+   * been submitted
+   */
   submitCount: Atom<number>;
+  /**
+   * An atom that contains the form's submission status
+   */
   submitStatus: WritableAtom<FormAtomSubmitStatus, FormAtomSubmitStatus>;
 }>;
 
+/**
+ * An object containing nested field atoms
+ */
 export type FormAtomFields = {
   [key: string | number]:
     | FieldAtom<any>
@@ -811,6 +882,9 @@ export type FormAtomFields = {
     | FieldAtom<any>[];
 };
 
+/**
+ * An object containing the values of a form's nested field atoms
+ */
 export type FormAtomValues<Fields extends FormAtomFields> = {
   [Key in keyof Fields]: Fields[Key] extends FieldAtom<infer Value>
     ? Value
@@ -823,6 +897,9 @@ export type FormAtomValues<Fields extends FormAtomFields> = {
     : never;
 };
 
+/**
+ * An object containing the errors of a form's nested field atoms
+ */
 export type FormAtomErrors<Fields extends FormAtomFields> = {
   [Key in keyof Fields]: Fields[Key] extends FieldAtom<any>
     ? string[]
@@ -836,7 +913,16 @@ export type FormAtomErrors<Fields extends FormAtomFields> = {
 };
 
 interface UseFormAtom<Fields extends FormAtomFields> {
+  /**
+   * An object containing the values of a form's nested field atoms
+   */
   fieldAtoms: Fields;
+  /**
+   * A function for handling form submissions.
+   *
+   * @param handleSubmit - A function that is called with the form's values
+   *   when the form is submitted
+   */
   submit(
     handleSubmit: (
       values: Parameters<
@@ -844,28 +930,73 @@ interface UseFormAtom<Fields extends FormAtomFields> {
       >[0]
     ) => void | Promise<void>
   ): (e?: React.FormEvent<HTMLFormElement>) => void;
+  /**
+   * A function that validates the form's nested field atoms with a
+   * `"user"` validation event.
+   */
   validate(): void;
+  /**
+   * A function that resets the form's nested field atoms to their
+   * initial states.
+   */
   reset(): void;
 }
 
 interface FormAtomStatus {
+  /**
+   * The validation status of the form
+   */
   validateStatus: FormAtomValidateStatus;
+  /**
+   * The submission status of the form
+   */
   submitStatus: FormAtomSubmitStatus;
 }
 
 interface FormAtomState<Fields extends FormAtomFields> {
+  /**
+   * An object containing the form's nested field atoms
+   */
   fieldAtoms: Fields;
+  /**
+   * An object containing the values of a form's nested field atoms
+   */
   values: ExtractAtomValue<ExtractAtomValue<FormAtom<Fields>>["values"]>;
+  /**
+   * An object containing the errors of a form's nested field atoms
+   */
   errors: ExtractAtomValue<ExtractAtomValue<FormAtom<Fields>>["errors"]>;
+  /**
+   * The number of times a form has been submitted
+   */
   submitCount: number;
+  /**
+   * The validation status of the form
+   */
   validateStatus: FormAtomValidateStatus;
+  /**
+   * The submission status of the form
+   */
   submitStatus: FormAtomSubmitStatus;
 }
 
 interface FormAtomActions<Fields extends FormAtomFields> {
+  /**
+   * A function for adding/removing fields from the form.
+   *
+   * @param fields - An object containing the form's nested field atoms or
+   *   a callback that receives the current fields and returns the next
+   *   fields.
+   */
   updateFields(
     fields: ExtractAtomUpdate<ExtractAtomValue<FormAtom<Fields>>["fields"]>
   ): void;
+  /**
+   * A function for handling form submissions.
+   *
+   * @param handleSubmit - A function that is called with the form's values
+   *   when the form is submitted
+   */
   submit(
     handleSubmit: (
       values: Parameters<
@@ -873,20 +1004,52 @@ interface FormAtomActions<Fields extends FormAtomFields> {
       >[0]
     ) => void | Promise<void>
   ): (e?: React.FormEvent<HTMLFormElement>) => void;
+  /**
+   * A function that validates the form's nested field atoms with a
+   * `"user"` validation event.
+   */
   validate(): void;
+  /**
+   * A function that resets the form's nested field atoms to their
+   * initial states.
+   */
   reset(): void;
 }
 
 export interface UseFieldAtom<Value> {
+  /**
+   * `<input>`, `<select>`, or `<textarea>` props for the field
+   */
   props: FieldAtomProps<Value>;
+  /**
+   * Actions for managing the state of the field
+   */
   actions: FieldAtomActions<Value>;
+  /**
+   * The current state of the field
+   */
   state: FieldAtomState<Value>;
 }
 
 export interface FieldAtomProps<Value> {
+  /**
+   * The name of the field if there is one
+   */
   name: string | undefined;
+  /**
+   * The value of the field
+   */
   value: Value;
+  /**
+   * A WAI-ARIA property that tells a screen reader whether the
+   * field is invalid
+   */
   "aria-invalid": boolean;
+  /**
+   * A React callback ref that is used to bind the field atom to
+   * an `<input>`, `<select>`, or `<textarea>` element so that it
+   * can be read and focused.
+   */
   ref: React.RefCallback<
     HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
   >;
@@ -899,41 +1062,128 @@ export interface FieldAtomProps<Value> {
 }
 
 export interface FieldAtomActions<Value> {
+  /**
+   * A function that validates the field's value with a `"user"` validation
+   * event.
+   */
   validate(): void;
+  /**
+   * A function for changing the value of a field. This will trigger a `"change"`
+   * validation event.
+   *
+   * @param {Value} value - The new value of the field
+   */
   setValue(
     value: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["value"]>
   ): void;
+  /**
+   * A function for changing the touched state of a field. This will trigger a
+   * `"touch"` validation event.
+   *
+   * @param {boolean} touched - The new touched state of the field
+   */
   setTouched(
-    value: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["touched"]>
+    touched: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["touched"]>
   ): void;
+  /**
+   * A function for changing the error state of a field
+   *
+   * @param {string[]} errors - The new error state of the field
+   */
   setErrors(
-    value: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["errors"]>
+    errors: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["errors"]>
   ): void;
+  /**
+   * Focuses the field atom's `<input>`, `<select>`, or `<textarea>` element
+   * if there is one bound to it.
+   */
   focus(): void;
+  /**
+   * Resets the field atom to its initial state.
+   */
   reset(): void;
 }
 
 export interface FieldAtomState<Value> {
+  /**
+   * The value of the field
+   */
   value: ExtractAtomValue<ExtractAtomValue<FieldAtom<Value>>["value"]>;
+  /**
+   * The touched state of the field
+   */
   touched: ExtractAtomValue<ExtractAtomValue<FieldAtom<Value>>["touched"]>;
+  /**
+   * The dirty state of the field. A field is "dirty" if it's value has
+   * been changed.
+   */
   dirty: ExtractAtomValue<ExtractAtomValue<FieldAtom<Value>>["dirty"]>;
+  /**
+   * The validation status of the field
+   */
   validateStatus: ExtractAtomValue<
     ExtractAtomValue<FieldAtom<Value>>["validateStatus"]
   >;
+  /**
+   * The error state of the field
+   */
   errors: ExtractAtomValue<ExtractAtomValue<FieldAtom<Value>>["errors"]>;
 }
 
 export interface FieldAtomConfig<Value> {
+  /**
+   * Optionally provide a name for the field that will be added
+   * to any attached `<input>`, `<select>`, or `<textarea>` elements
+   */
   name?: string;
+  /**
+   * The initial value of the field
+   */
   value: Value;
+  /**
+   * The initial touched state of the field
+   */
   touched?: boolean;
+  /**
+   * A function that validates the value of the field any time
+   * one of its atoms changes. It must either return an array of
+   * string error messages or undefined. If it returns undefined,
+   * the field is considered valid.
+   */
   validate?: (state: {
+    /**
+     * A Jotai getter that can read other atoms
+     */
     get: Getter;
+    /**
+     * The current value of the field
+     */
     value: Value;
+    /**
+     * The dirty state of the field
+     */
     dirty: boolean;
+    /**
+     * The touched state of the field
+     */
     touched: boolean;
+    /**
+     * The event that caused the validation. Either:
+     *
+     * - `"change"` - The value of the field has changed
+     * - `"touch"` - The field has been touched
+     * - `"blur"` - The field has been blurred
+     * - `"submit"` - The form has been submitted
+     * - `"user"` - A user/developer has triggered the validation
+     */
     event: FieldAtomValidateOn;
   }) => void | string[] | Promise<void | string[]>;
 }
 
+/**
+ * A `Provider` or `useAtom` hook accepts an optional prop scope which you
+ * can use for scoped Provider. When using atoms with a scope, the provider
+ * with the same scope will be used. The recommendation for the scope value
+ * is a unique symbol. The primary use case of scope is for library usage.
+ */
 export type Scope = symbol | string | number;
