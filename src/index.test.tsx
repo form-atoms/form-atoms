@@ -1,7 +1,6 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { act as domAct, renderHook } from "@testing-library/react-hooks/dom";
 import userEvent from "@testing-library/user-event";
-import flushPromises from "flush-promises";
 import { Provider } from "jotai";
 import React from "react";
 import type { FieldAtom } from ".";
