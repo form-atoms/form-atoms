@@ -92,7 +92,7 @@
       "import": "./dist/esm/index.mjs",
       "require": "./dist/main/index.js",
       "umd": "./dist/umd/form-atoms.js",
-      "source": "./src/index.tsx",
+      "source": "./src/index.ts",
       "types": "./types/index.d.ts",
       "default": "./dist/main/index.js"
     },
@@ -174,6 +174,6 @@
       "@semantic-release/github"
     ]
   },
-  "source": "src/index.tsx",
+  "source": "src/index.ts",
   "unpkg": "dist/umd/form-atoms.js"
 }
