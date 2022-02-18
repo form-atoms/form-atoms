@@ -510,10 +510,10 @@ describe("useFormAtom()", () => {
 
     expect(result.current).toEqual({
       name: {
-        first: "jared",
-        last: "lunde",
+        first: [],
+        last: [],
       },
-      hobbies: ["testing"],
+      hobbies: [[]],
     });
   });
 });
