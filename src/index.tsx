@@ -8,8 +8,8 @@ import type {
 } from "jotai";
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { atomWithReset, RESET } from "jotai/utils";
-import set from "lodash.set";
 import * as React from "react";
+import { deletePath, setPath } from "./utils";
 
 //
 // Forms
@@ -25,7 +25,7 @@ export function formAtom<Fields extends FormAtomFields>(
 
     walkFields(fields, (field, path) => {
       const fieldAtom = get(field);
-      set(values, path, get(fieldAtom.value));
+      setPath(values, path, get(fieldAtom.value));
     });
 
     return values;
@@ -119,7 +119,7 @@ export function formAtom<Fields extends FormAtomFields>(
 
     walkFields(fields, (field, path) => {
       const fieldAtom = get(field);
-      set(errors, path, get(fieldAtom.errors));
+      setPath(errors, path, get(fieldAtom.errors));
     });
 
     return errors;
@@ -258,14 +258,18 @@ export function useFormAtomActions<Fields extends FormAtomFields>(
 
   return React.useMemo(
     () => ({
-      addField(fieldName, atom) {
-        updateFields((current) => ({ ...current, [fieldName]: atom }));
-      },
-      removeField<FieldName extends keyof Fields>(fieldName: FieldName) {
+      addField(fieldPath, atom) {
         updateFields((current) => {
-          const next = { ...current };
-          delete next[fieldName];
-          return next;
+          return setPath(current, String(fieldPath).split("."), atom, {
+            immutable: true,
+          });
+        });
+      },
+      removeField(fieldPath) {
+        updateFields((current) => {
+          return deletePath(current, String(fieldPath).split("."), {
+            immutable: true,
+          });
         });
       },
       reset,
