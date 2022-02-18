@@ -68,6 +68,11 @@ export declare function useFieldAtomErrors<Value>(
 export declare function useFieldAtom<
   Value extends string | number | readonly string[]
 >(fieldAtom: FieldAtom<Value>, scope?: Scope): UseFieldAtom<Value>;
+export declare function walkFields<Fields extends FormAtomFields>(
+  fields: Fields,
+  visitor: (field: FieldAtom<any>, path: string[]) => void | false,
+  path?: string[]
+): void;
 export { Provider } from "jotai";
 export declare type FormAtomSubmitStatus = "idle" | "submitting" | "submitted";
 export declare type FormAtomValidateStatus = "validating" | "valid" | "invalid";
@@ -78,7 +83,7 @@ export declare type FieldAtomValidateOn =
   | "touch"
   | "submit";
 export declare type FieldAtom<Value> = Atom<{
-  name: Atom<string>;
+  name: WritableAtom<string | undefined, string | undefined | typeof RESET>;
   value: WritableAtom<Value, Value | typeof RESET | ((prev: Value) => Value)>;
   touched: WritableAtom<
     boolean,
@@ -129,12 +134,24 @@ export declare type FormAtomFields = {
 export declare type FormAtomValues<Fields extends FormAtomFields> = {
   [Key in keyof Fields]: Fields[Key] extends FieldAtom<infer Value>
     ? Value
-    : FormAtomValues<Fields[Key]>;
+    : Fields[Key] extends FormAtomFields
+    ? FormAtomValues<Fields[Key]>
+    : Fields[Key] extends any[]
+    ? FormAtomValues<{
+        [Index in keyof Fields[Key]]: Fields[Key][Index];
+      }>
+    : never;
 };
 export declare type FormAtomErrors<Fields extends FormAtomFields> = {
   [Key in keyof Fields]: Fields[Key] extends FieldAtom<any>
     ? string[]
-    : FormAtomValues<Fields[Key]>;
+    : Fields[Key] extends FormAtomFields
+    ? FormAtomErrors<Fields[Key]>
+    : Fields[Key] extends any[]
+    ? FormAtomErrors<{
+        [Index in keyof Fields[Key]]: Fields[Key][Index];
+      }>
+    : never;
 };
 interface UseFormAtom<Fields extends FormAtomFields> {
   fieldAtoms: Fields;
@@ -161,11 +178,9 @@ interface FormAtomState<Fields extends FormAtomFields> {
   submitStatus: FormAtomSubmitStatus;
 }
 interface FormAtomActions<Fields extends FormAtomFields> {
-  addField<FieldName extends keyof Fields>(
-    name: FieldName,
-    atom: Fields[FieldName]
+  updateFields(
+    fields: ExtractAtomUpdate<ExtractAtomValue<FormAtom<Fields>>["fields"]>
   ): void;
-  removeField<FieldName extends keyof Fields>(name: FieldName): void;
   submit(
     handleSubmit: (
       values: Parameters<
@@ -182,7 +197,7 @@ export interface UseFieldAtom<Value> {
   state: FieldAtomState<Value>;
 }
 export interface FieldAtomProps<Value> {
-  name: string;
+  name: string | undefined;
   value: Value;
   "aria-invalid": boolean;
   ref: React.RefCallback<
@@ -219,7 +234,7 @@ export interface FieldAtomState<Value> {
   errors: ExtractAtomValue<ExtractAtomValue<FieldAtom<Value>>["errors"]>;
 }
 export interface FieldAtomConfig<Value> {
-  name: string;
+  name?: string;
   value: Value;
   touched?: boolean;
   validate?: (state: {
