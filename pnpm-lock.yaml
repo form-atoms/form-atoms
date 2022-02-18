@@ -12,6 +12,7 @@ specifiers:
   '@testing-library/react-hooks': latest
   '@testing-library/user-event': latest
   '@types/jest': latest
+  '@types/lodash.set': ^4.3.6
   '@types/react': latest
   '@types/react-dom': latest
   cz-conventional-changelog: latest
@@ -21,12 +22,17 @@ specifiers:
   jest: latest
   jotai: ^1.6.0
   lint-staged: latest
+  lodash.set: ^4.3.2
   lundle: latest
   prettier: latest
   react: latest
   react-dom: latest
   react-test-renderer: latest
   typescript: latest
+
+dependencies:
+  '@types/lodash.set': 4.3.6
+  lodash.set: 4.3.2
 
 devDependencies:
   '@commitlint/cli': 16.2.1
@@ -2543,6 +2549,16 @@ packages:
   /@types/json5/0.0.29:
     resolution: {integrity: sha1-7ihweulOEdK4J7y+UnC86n8+ce4=}
     dev: true
+
+  /@types/lodash.set/4.3.6:
+    resolution: {integrity: sha512-ZeGDDlnRYTvS31Laij0RsSaguIUSBTYIlJFKL3vm3T2OAZAQj2YpSvVWJc0WiG4jqg9fGX6PAPGvDqBcHfSgFg==}
+    dependencies:
+      '@types/lodash': 4.14.178
+    dev: false
+
+  /@types/lodash/4.14.178:
+    resolution: {integrity: sha512-0d5Wd09ItQWH1qFbEyQ7oTQ3GZrMfth5JkbN3EvTKLXcHLRDSXeLnlvlOn0wvxVIwK5o2M8JzP/OWz7T3NRsbw==}
+    dev: false
 
   /@types/minimist/1.2.2:
     resolution: {integrity: sha512-jhuKLIRrhvCPLqwPcx6INqmKeiA5EWrsCOPhrlFSrbrmU4ZMPjj5Ul/oLCMDO98XRUIwVm78xICz4EPCektzeQ==}
@@ -6020,6 +6036,10 @@ packages:
   /lodash.merge/4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
     dev: true
+
+  /lodash.set/4.3.2:
+    resolution: {integrity: sha1-2HV7HagH3eJIFrDWqEvqGnYjCyM=}
+    dev: false
 
   /lodash.truncate/4.4.2:
     resolution: {integrity: sha1-WjUNoLERO4N+z//VgSy+WNbq4ZM=}

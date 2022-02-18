@@ -8,27 +8,25 @@ import type {
 } from "jotai";
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { atomWithReset, RESET } from "jotai/utils";
+import set from "lodash.set";
 import * as React from "react";
 
 //
 // Forms
 //
 
-export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
+export function formAtom<Fields extends FormAtomFields>(
   fields: Fields
 ): FormAtom<Fields> {
   const fieldsAtom = atomWithReset(fields);
 
   const valuesAtom = atom((get) => {
-    const values = {} as Record<
-      keyof Fields,
-      ExtractAtomValue<ExtractAtomValue<Fields[keyof Fields]>["value"]>
-    >;
+    const values = {} as FormAtomValues<Fields>;
 
-    for (const key in fields) {
-      const fieldAtom = get(fields[key]);
-      values[key] = get(fieldAtom.value);
-    }
+    walkFields(fields, (field, path) => {
+      const fieldAtom = get(field);
+      set(values, path, get(fieldAtom.value));
+    });
 
     return values;
   });
@@ -38,8 +36,10 @@ export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
     set: Setter,
     event: FieldAtomValidateOn
   ) {
-    await Promise.all(
-      Object.values(fields).map(async (field) => {
+    const promises: Promise<boolean>[] = [];
+
+    walkFields(fields, (nextField) => {
+      async function validate(field: typeof nextField) {
         const fieldAtom = get(field);
         const value = get(fieldAtom.value);
         const dirty = get(fieldAtom.dirty);
@@ -80,23 +80,31 @@ export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
         }
 
         return true;
-      })
-    );
+      }
+
+      promises.push(validate(nextField));
+    });
+
+    await Promise.all(promises);
   }
 
   const validateResultAtom = atom<FormAtomValidateStatus>((get) => {
-    for (const key in fields) {
-      const fieldAtom = get(fields[key]);
+    let status: FormAtomValidateStatus = "valid";
+
+    walkFields(fields, (field) => {
+      const fieldAtom = get(field);
       const fieldStatus = get(fieldAtom.validateStatus);
 
       if (fieldStatus === "validating") {
-        return "validating";
+        status = "validating";
+        return false;
       } else if (fieldStatus === "invalid") {
-        return "invalid";
+        status = "invalid";
+        return false;
       }
-    }
+    });
 
-    return "valid";
+    return status;
   });
 
   const validateAtom = atom<null, void | FieldAtomValidateOn>(
@@ -107,12 +115,12 @@ export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
   );
 
   const errorsAtom = atom((get) => {
-    const errors = {} as Record<keyof Fields, string[]>;
+    const errors = {} as FormAtomErrors<Fields>;
 
-    for (const key in fields) {
-      const fieldAtom = get(fields[key]);
-      errors[key] = get(fieldAtom.errors);
-    }
+    walkFields(fields, (field, path) => {
+      const fieldAtom = get(field);
+      set(errors, path, get(fieldAtom.errors));
+    });
 
     return errors;
   });
@@ -122,12 +130,7 @@ export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
   const submitResultAtom = atom<FormAtomSubmitStatus>("idle");
   const submitAtom = atom<
     null,
-    (
-      values: Record<
-        keyof Fields,
-        ExtractAtomValue<ExtractAtomValue<Fields[keyof Fields]>["value"]>
-      >
-    ) => void | Promise<void>
+    (values: FormAtomValues<Fields>) => void | Promise<void>
   >(null, (get, set, onSubmit) => {
     async function resolveSubmit() {
       set(submitResultAtom, "submitting");
@@ -152,8 +155,8 @@ export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
   });
 
   const resetAtom = atom(null, (get, set) => {
-    for (const key in fields) {
-      const fieldAtom = get(fields[key]);
+    walkFields(fields, (field) => {
+      const fieldAtom = get(field);
       set(fieldAtom.value, RESET);
       set(fieldAtom.touched, RESET);
       set(fieldAtom.errors, []);
@@ -161,7 +164,7 @@ export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
       // from being set after this invocation.
       set(fieldAtom._validateCount, (current) => ++current);
       set(fieldAtom.validateStatus, "valid");
-    }
+    });
 
     set(submitStatusCountAtom, (current) => ++current);
     set(submitResultAtom, "idle");
@@ -180,7 +183,7 @@ export function formAtom<Fields extends Record<string, FieldAtom<any>>>(
   });
 }
 
-export function useFormAtom<Fields extends Record<string, FieldAtom<any>>>(
+export function useFormAtom<Fields extends FormAtomFields>(
   formAtom: FormAtom<Fields>,
   scope?: Scope
 ): UseFormAtom<Fields> {
@@ -209,7 +212,7 @@ export function useFormAtom<Fields extends Record<string, FieldAtom<any>>>(
   );
 }
 
-export function useFormAtomState<Fields extends Record<string, FieldAtom<any>>>(
+export function useFormAtomState<Fields extends FormAtomFields>(
   formAtom: FormAtom<Fields>,
   scope?: Scope
 ): FormAtomState<Fields> {
@@ -234,9 +237,10 @@ export function useFormAtomState<Fields extends Record<string, FieldAtom<any>>>(
   );
 }
 
-export function useFormAtomActions<
-  Fields extends Record<string, FieldAtom<any>>
->(formAtom: FormAtom<Fields>, scope?: Scope): FormAtomActions<Fields> {
+export function useFormAtomActions<Fields extends FormAtomFields>(
+  formAtom: FormAtom<Fields>,
+  scope?: Scope
+): FormAtomActions<Fields> {
   const form = useAtomValue(formAtom, scope);
   const updateFields = useSetAtom(form.fields, scope);
   const reset = useSetAtom(form.reset, scope);
@@ -276,23 +280,26 @@ export function useFormAtomActions<
   );
 }
 
-export function useFormAtomErrors<
-  Fields extends Record<string, FieldAtom<any>>
->(formAtom: FormAtom<Fields>, scope?: Scope) {
+export function useFormAtomErrors<Fields extends FormAtomFields>(
+  formAtom: FormAtom<Fields>,
+  scope?: Scope
+) {
   const form = useAtomValue(formAtom, scope);
   return useAtomValue(form.errors, scope);
 }
 
-export function useFormAtomValues<
-  Fields extends Record<string, FieldAtom<any>>
->(formAtom: FormAtom<Fields>, scope?: Scope) {
+export function useFormAtomValues<Fields extends FormAtomFields>(
+  formAtom: FormAtom<Fields>,
+  scope?: Scope
+) {
   const form = useAtomValue(formAtom, scope);
   return useAtomValue(form.values, scope);
 }
 
-export function useFormAtomStatus<
-  Fields extends Record<string, FieldAtom<any>>
->(formAtom: FormAtom<Fields>, scope?: Scope): FormAtomStatus {
+export function useFormAtomStatus<Fields extends FormAtomFields>(
+  formAtom: FormAtom<Fields>,
+  scope?: Scope
+): FormAtomStatus {
   const form = useAtomValue(formAtom);
   const submitStatus = useAtomValue(form.submitStatus, scope);
   const validateStatus = useAtomValue(form.validateStatus, scope);
@@ -303,9 +310,10 @@ export function useFormAtomStatus<
   );
 }
 
-export function useFormAtomSubmit<
-  Fields extends Record<string, FieldAtom<any>>
->(formAtom: FormAtom<Fields>, scope?: Scope) {
+export function useFormAtomSubmit<Fields extends FormAtomFields>(
+  formAtom: FormAtom<Fields>,
+  scope?: Scope
+) {
   const form = useAtomValue(formAtom, scope);
   const handleSubmit = useSetAtom(form.submit, scope);
   return React.useCallback(
@@ -548,6 +556,47 @@ function isPromise(value: any): value is Promise<any> {
   return typeof value === "object" && typeof value.then === "function";
 }
 
+function isAtom(maybeAtom: any): maybeAtom is FieldAtom<any> {
+  return (
+    maybeAtom !== null &&
+    typeof maybeAtom === "object" &&
+    (typeof maybeAtom.read === "function" ||
+      typeof maybeAtom.write === "function")
+  );
+}
+
+function walkFields<Fields extends FormAtomFields>(
+  fields: Fields,
+  visitor: (field: FieldAtom<any>, path: string[]) => void | false,
+  path: string[] = []
+) {
+  for (const key in fields) {
+    path.push(key);
+    const field = fields[key];
+
+    if (isAtom(field)) {
+      if (visitor(field, path) === false) return;
+    } else if (Array.isArray(field)) {
+      for (const key in field) {
+        path.push(key);
+        const subField = field[key];
+
+        if (isAtom(subField)) {
+          if (visitor(subField, path) === false) return;
+        } else {
+          walkFields(subField, visitor, path);
+        }
+
+        path.pop();
+      }
+    } else if (typeof field === "object") {
+      walkFields(field, visitor, path);
+    }
+
+    path.pop();
+  }
+}
+
 export { Provider } from "jotai";
 
 export type FormAtomSubmitStatus = "idle" | "submitting" | "submitted";
@@ -584,36 +633,48 @@ export type FieldAtom<Value> = Atom<{
   _validateCallback?: FieldAtomConfig<Value>["validate"];
 }>;
 
-export type FormAtom<Fields extends Record<string, FieldAtom<any>>> = Atom<{
+export type FormAtom<Fields extends FormAtomFields> = Atom<{
   fields: WritableAtom<
     Fields,
     Fields | typeof RESET | ((prev: Fields) => Fields),
     void
   >;
-  values: Atom<
-    Record<
-      keyof Fields,
-      ExtractAtomValue<ExtractAtomValue<Fields[keyof Fields]>["value"]>
-    >
-  >;
-  errors: Atom<Record<keyof Fields, string[]>>;
+  values: Atom<FormAtomValues<Fields>>;
+  errors: Atom<FormAtomErrors<Fields>>;
   reset: WritableAtom<null, void>;
   validate: WritableAtom<null, void | FieldAtomValidateOn>;
   validateStatus: Atom<FormAtomValidateStatus>;
   submit: WritableAtom<
     null,
-    (
-      values: Record<
-        keyof Fields,
-        ExtractAtomValue<ExtractAtomValue<Fields[keyof Fields]>["value"]>
-      >
-    ) => void | Promise<void>
+    (values: FormAtomValues<Fields>) => void | Promise<void>
   >;
   submitCount: Atom<number>;
   submitStatus: WritableAtom<FormAtomSubmitStatus, FormAtomSubmitStatus>;
 }>;
 
-interface UseFormAtom<Fields extends Record<string, FieldAtom<any>>> {
+export type FormAtomFields = {
+  [key: string | number]:
+    | FieldAtom<any>
+    | FormAtomFields
+    | FormAtomFields[]
+    | FieldAtom<any>[];
+};
+
+export type FormAtomValues<Fields extends FormAtomFields> = {
+  [Key in keyof Fields]: Fields[Key] extends FieldAtom<infer Value>
+    ? Value
+    : // @ts-expect-error: not sure yet
+      FormAtomValues<Fields[Key]>;
+};
+
+export type FormAtomErrors<Fields extends FormAtomFields> = {
+  [Key in keyof Fields]: Fields[Key] extends FieldAtom<any>
+    ? string[]
+    : // @ts-expect-error: not sure yet
+      FormAtomValues<Fields[Key]>;
+};
+
+interface UseFormAtom<Fields extends FormAtomFields> {
   fieldAtoms: Fields;
   submit(
     handleSubmit: (
@@ -631,7 +692,7 @@ interface FormAtomStatus {
   submitStatus: FormAtomSubmitStatus;
 }
 
-interface FormAtomState<Fields extends Record<string, FieldAtom<any>>> {
+interface FormAtomState<Fields extends FormAtomFields> {
   fieldAtoms: Fields;
   values: ExtractAtomValue<ExtractAtomValue<FormAtom<Fields>>["values"]>;
   errors: ExtractAtomValue<ExtractAtomValue<FormAtom<Fields>>["errors"]>;
@@ -640,7 +701,7 @@ interface FormAtomState<Fields extends Record<string, FieldAtom<any>>> {
   submitStatus: FormAtomSubmitStatus;
 }
 
-interface FormAtomActions<Fields extends Record<string, FieldAtom<any>>> {
+interface FormAtomActions<Fields extends FormAtomFields> {
   addField<FieldName extends keyof Fields>(
     name: FieldName,
     atom: Fields[FieldName]

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { act as domAct, renderHook } from "@testing-library/react-hooks/dom";
 import userEvent from "@testing-library/user-event";
 import { Provider } from "jotai";
@@ -6,9 +6,12 @@ import React from "react";
 import type { FieldAtom } from ".";
 import {
   fieldAtom,
+  formAtom,
   useFieldAtom,
   useFieldAtomErrors,
   useFieldAtomValue,
+  useFormAtom,
+  useFormAtomValues,
 } from ".";
 
 describe("useFieldAtom()", () => {
@@ -412,6 +415,68 @@ describe("useFieldAtomErrors", () => {
       atom.result.current.actions.validate();
     });
     expect(result.current).toEqual(["error"]);
+  });
+});
+
+describe("useFormAtom()", () => {
+  it("should return the form atom", () => {
+    const atom = formAtom({
+      name: {
+        first: fieldAtom({
+          name: "firstName",
+          value: "jared",
+        }),
+        last: fieldAtom({
+          name: "lastName",
+          value: "lunde",
+        }),
+      },
+      hobbies: [
+        fieldAtom({
+          name: "hobbies.0",
+          value: "test",
+        }),
+      ],
+    });
+    const { result } = renderHook(() => useFormAtom(atom));
+
+    expect(result.current.fieldAtoms.name.first).not.toBeUndefined();
+  });
+
+  it("should return values", () => {
+    const atom = formAtom<{
+      name: {
+        first: FieldAtom<string>;
+        last: FieldAtom<string>;
+      };
+      hobbies: FieldAtom<string>[];
+    }>({
+      name: {
+        first: fieldAtom({
+          name: "firstName",
+          value: "jared",
+        }),
+        last: fieldAtom({
+          name: "lastName",
+          value: "lunde",
+        }),
+      },
+      hobbies: [
+        fieldAtom({
+          name: "hobbies.0",
+          value: "testing",
+        }),
+      ],
+    });
+    const { result } = renderHook(() => useFormAtomValues(atom));
+
+    expect(result.current).toEqual({
+      name: {
+        first: "jared",
+        last: "lunde",
+      },
+      hobbies: ["testing"],
+    });
   });
 });
 
