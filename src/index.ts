@@ -583,6 +583,7 @@ export function useFieldAtomProps<
   const validateStatus = useAtomValue(field.validateStatus, scope);
   const validate = useSetAtom(field.validate, scope);
   const ref = useSetAtom(field.ref, scope);
+  const [, startTransition] = useTransition();
 
   return React.useMemo(
     () => ({
@@ -592,11 +593,16 @@ export function useFieldAtomProps<
       ref,
       onBlur() {
         setTouched(true);
-        validate("blur");
+        startTransition(() => {
+          validate("blur");
+        });
       },
       onChange(event) {
         setValue(event.target.value);
-        validate("change");
+
+        startTransition(() => {
+          validate("change");
+        });
       },
     }),
     [name, value, validateStatus, ref, setTouched, validate, setValue]
