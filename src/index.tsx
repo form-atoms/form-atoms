@@ -396,31 +396,6 @@ export function fieldAtom<Value>(
   } as const);
 }
 
-export type FieldAtom<Value> = Atom<{
-  name: Atom<string>;
-  value: WritableAtom<Value, Value | typeof RESET | ((prev: Value) => Value)>;
-  touched: WritableAtom<
-    boolean,
-    boolean | typeof RESET | ((prev: boolean) => boolean)
-  >;
-  dirty: Atom<boolean>;
-  validate: WritableAtom<null, void | FieldAtomValidateOn>;
-  validateStatus: WritableAtom<FormAtomValidateStatus, FormAtomValidateStatus>;
-  errors: WritableAtom<string[], string[] | ((value: string[]) => string[])>;
-  ref: WritableAtom<
-    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null,
-    | HTMLInputElement
-    | HTMLTextAreaElement
-    | HTMLSelectElement
-    | null
-    | ((
-        value: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null
-      ) => HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null)
-  >;
-  _validateCount: WritableAtom<number, number | ((current: number) => number)>;
-  _validateCallback?: FieldAtomConfig<Value>["validate"];
-}>;
-
 export function useFieldAtomActions<Value>(
   fieldAtom: FieldAtom<Value>,
   scope?: Scope
@@ -569,6 +544,12 @@ const useTransition: () => [boolean, typeof React.startTransition] =
     ? React.useTransition
     : () => [false, (fn) => fn()];
 
+function isPromise(value: any): value is Promise<any> {
+  return typeof value === "object" && typeof value.then === "function";
+}
+
+export { Provider } from "jotai";
+
 export type FormAtomSubmitStatus = "idle" | "submitting" | "submitted";
 export type FormAtomValidateStatus = "validating" | "valid" | "invalid";
 export type FieldAtomValidateOn =
@@ -577,6 +558,31 @@ export type FieldAtomValidateOn =
   | "change"
   | "touch"
   | "submit";
+
+export type FieldAtom<Value> = Atom<{
+  name: Atom<string>;
+  value: WritableAtom<Value, Value | typeof RESET | ((prev: Value) => Value)>;
+  touched: WritableAtom<
+    boolean,
+    boolean | typeof RESET | ((prev: boolean) => boolean)
+  >;
+  dirty: Atom<boolean>;
+  validate: WritableAtom<null, void | FieldAtomValidateOn>;
+  validateStatus: WritableAtom<FormAtomValidateStatus, FormAtomValidateStatus>;
+  errors: WritableAtom<string[], string[] | ((value: string[]) => string[])>;
+  ref: WritableAtom<
+    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null,
+    | HTMLInputElement
+    | HTMLTextAreaElement
+    | HTMLSelectElement
+    | null
+    | ((
+        value: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null
+      ) => HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null)
+  >;
+  _validateCount: WritableAtom<number, number | ((current: number) => number)>;
+  _validateCallback?: FieldAtomConfig<Value>["validate"];
+}>;
 
 export type FormAtom<Fields extends Record<string, FieldAtom<any>>> = Atom<{
   fields: WritableAtom<
@@ -619,12 +625,6 @@ interface UseFormAtom<Fields extends Record<string, FieldAtom<any>>> {
   validate(): void;
   reset(): void;
 }
-
-function isPromise(value: any): value is Promise<any> {
-  return typeof value === "object" && typeof value.then === "function";
-}
-
-export { Provider } from "jotai";
 
 interface FormAtomStatus {
   validateStatus: FormAtomValidateStatus;

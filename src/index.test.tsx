@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { act as domAct, renderHook } from "@testing-library/react-hooks/dom";
 import userEvent from "@testing-library/user-event";
 import { Provider } from "jotai";
@@ -328,8 +328,28 @@ describe("useFieldAtom()", () => {
       result.current.actions.validate();
     });
 
-    await Promise.resolve();
+    await domAct(() => Promise.resolve());
     expect(result.current.state.errors).toEqual(["error"]);
+  });
+
+  it("should set validate status to 'validating' when asynchronous", async () => {
+    const firstNameAtom = fieldAtom({
+      name: "firstName",
+      value: "test",
+      validate() {
+        return Promise.resolve(["error"]);
+      },
+    });
+    const { result } = renderHook(() => useFieldAtom(firstNameAtom));
+
+    domAct(() => {
+      result.current.actions.validate();
+    });
+
+    expect(result.current.state.validateStatus).toEqual("validating");
+    await domAct(() => Promise.resolve());
+    expect(result.current.state.errors).toEqual(["error"]);
+    expect(result.current.state.validateStatus).toEqual("invalid");
   });
 
   it("should always resolve async validation with the latest invocation data", async () => {
@@ -355,7 +375,7 @@ describe("useFieldAtom()", () => {
     });
 
     jest.advanceTimersByTime(100);
-    await Promise.resolve();
+    await domAct(() => Promise.resolve());
     expect(result.current.state.errors).toEqual(["50-error"]);
   });
 });
