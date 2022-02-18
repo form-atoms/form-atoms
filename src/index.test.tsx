@@ -4,7 +4,12 @@ import userEvent from "@testing-library/user-event";
 import { Provider } from "jotai";
 import React from "react";
 import type { FieldAtom } from ".";
-import { fieldAtom, useFieldAtom } from ".";
+import {
+  fieldAtom,
+  useFieldAtom,
+  useFieldAtomErrors,
+  useFieldAtomValue,
+} from ".";
 
 describe("useFieldAtom()", () => {
   it("should add default props", () => {
@@ -377,6 +382,36 @@ describe("useFieldAtom()", () => {
     jest.advanceTimersByTime(100);
     await domAct(() => Promise.resolve());
     expect(result.current.state.errors).toEqual(["50-error"]);
+  });
+});
+
+describe("useFieldAtomValue", () => {
+  it("should return the value of the atom", () => {
+    const firstNameAtom = fieldAtom({
+      name: "firstName",
+      value: "test",
+    });
+    const { result } = renderHook(() => useFieldAtomValue(firstNameAtom));
+
+    expect(result.current).toBe("test");
+  });
+});
+
+describe("useFieldAtomErrors", () => {
+  it("should return the errors of the atom", () => {
+    const firstNameAtom = fieldAtom({
+      name: "firstName",
+      value: "test",
+      validate() {
+        return ["error"];
+      },
+    });
+    const atom = renderHook(() => useFieldAtom(firstNameAtom));
+    const { result } = renderHook(() => useFieldAtomErrors(firstNameAtom));
+    domAct(() => {
+      atom.result.current.actions.validate();
+    });
+    expect(result.current).toEqual(["error"]);
   });
 });
 
