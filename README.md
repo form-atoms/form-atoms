@@ -2,10 +2,10 @@
 
 # form-atoms
 
-> Form primitives for Jotai
+> Form primitives for [Jotai](https://jotai.org/docs/api/core)
 
 ```sh
-npm i form-atoms
+npm i form-atoms jotai
 ```
 
 <p>

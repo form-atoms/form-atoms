@@ -536,11 +536,18 @@ export function useFieldAtomActions<Value>(
       },
       setValue(value) {
         setValue(value);
-        validate("change");
+        startTransition(() => {
+          validate("change");
+        });
       },
       setTouched(touched) {
         setTouched(touched);
-        validate("touch");
+
+        if (touched) {
+          startTransition(() => {
+            validate("touch");
+          });
+        }
       },
       setErrors,
       focus() {
