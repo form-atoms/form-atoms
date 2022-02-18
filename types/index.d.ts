@@ -106,11 +106,7 @@ export declare function useFieldAtom<Value>(
   scope?: Scope
 ): UseFieldAtom<Value>;
 export declare type FormAtomSubmitStatus = "idle" | "submitting" | "submitted";
-export declare type FormAtomValidateStatus =
-  | "idle"
-  | "validating"
-  | "valid"
-  | "invalid";
+export declare type FormAtomValidateStatus = "validating" | "valid" | "invalid";
 export declare type FieldAtomValidateOn =
   | "user"
   | "blur"
@@ -133,10 +129,7 @@ export declare type FormAtom<Fields extends Record<string, FieldAtom<any>>> =
     errors: Atom<Record<keyof Fields, string[]>>;
     reset: WritableAtom<null, void>;
     validate: WritableAtom<null, void | FieldAtomValidateOn>;
-    validateStatus: WritableAtom<
-      FormAtomValidateStatus,
-      FormAtomValidateStatus
-    >;
+    validateStatus: Atom<FormAtomValidateStatus>;
     submit: WritableAtom<
       null,
       (
@@ -168,6 +161,7 @@ interface FormAtomState<Fields extends Record<string, FieldAtom<any>>> {
   fieldAtoms: Fields;
   values: ExtractAtomValue<ExtractAtomValue<FormAtom<Fields>>["values"]>;
   errors: ExtractAtomValue<ExtractAtomValue<FormAtom<Fields>>["errors"]>;
+  submitCount: number;
   validateStatus: FormAtomValidateStatus;
   submitStatus: FormAtomSubmitStatus;
 }
