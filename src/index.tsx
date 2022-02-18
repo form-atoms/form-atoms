@@ -292,7 +292,7 @@ export function useFormAtomValues<
 
 export function useFormAtomStatus<
   Fields extends Record<string, FieldAtom<any>>
->(formAtom: FormAtom<Fields>, scope?: Scope) {
+>(formAtom: FormAtom<Fields>, scope?: Scope): FormAtomStatus {
   const form = useAtomValue(formAtom);
   const submitStatus = useAtomValue(form.submitStatus, scope);
   const validateStatus = useAtomValue(form.validateStatus, scope);
@@ -477,15 +477,17 @@ export function useFieldAtomActions<Value>(
   );
 }
 
-export function useFieldAtomProps<Value>(
-  fieldAtom: FieldAtom<Value>,
+export function useFieldAtomProps<
+  Value extends string | number | readonly string[]
+>(
+  fieldAtom: FieldAtom<string | number | readonly string[]>,
   scope?: Scope
 ): FieldAtomProps<Value> {
   const field = useAtomValue(fieldAtom, scope);
   const name = useAtomValue(field.name, scope);
   const [value, setValue] = useAtom(field.value, scope);
   const setTouched = useSetAtom(field.touched, scope);
-  const errors = useSetAtom(field.errors, scope);
+  const validateStatus = useAtomValue(field.validateStatus, scope);
   const validate = useSetAtom(field.validate, scope);
   const ref = useSetAtom(field.ref, scope);
 
@@ -493,20 +495,18 @@ export function useFieldAtomProps<Value>(
     () => ({
       name,
       value: value as Value,
-      "aria-invalid": !!(errors && errors.length > 0),
+      "aria-invalid": validateStatus === "invalid",
       ref,
       onBlur() {
         setTouched(true);
         validate("blur");
       },
       onChange(event) {
-        // @ts-expect-error: `onChange` always updates with a string but
-        //  the value type is arbitrary
         setValue(event.target.value);
         validate("change");
       },
     }),
-    [name, value, errors, ref, setTouched, validate, setValue]
+    [name, value, validateStatus, ref, setTouched, validate, setValue]
   );
 }
 
@@ -550,14 +550,15 @@ export function useFieldAtomErrors<Value>(
   return useAtomValue(field.errors, scope);
 }
 
-export function useFieldAtom<Value>(
+export function useFieldAtom<Value extends string | number | readonly string[]>(
   fieldAtom: FieldAtom<Value>,
   scope?: Scope
 ): UseFieldAtom<Value> {
-  const props = useFieldAtomProps(fieldAtom, scope);
-  const actions = useFieldAtomActions(fieldAtom, scope);
-  const state = useFieldAtomState(fieldAtom, scope);
-  return React.useMemo(
+  // @ts-expect-error: there's a RESET atom causing issues here
+  const props = useFieldAtomProps<Value>(fieldAtom, scope);
+  const actions = useFieldAtomActions<Value>(fieldAtom, scope);
+  const state = useFieldAtomState<Value>(fieldAtom, scope);
+  return React.useMemo<UseFieldAtom<Value>>(
     () => ({ props, actions, state }),
     [props, actions, state]
   );
