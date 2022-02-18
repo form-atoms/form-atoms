@@ -69,9 +69,11 @@ export function formAtom<Fields extends FormAtomFields>(
         }
 
         if (ptr === get(fieldAtom._validateCount)) {
-          const err = errors ?? [];
-          set(fieldAtom.errors, err);
-          set(fieldAtom.validateStatus, err.length > 0 ? "invalid" : "valid");
+          set(fieldAtom.errors, errors);
+          set(
+            fieldAtom.validateStatus,
+            errors.length > 0 ? "invalid" : "valid"
+          );
         }
 
         if (errors && errors.length) {
@@ -270,9 +272,7 @@ export function useFormAtomActions<Fields extends FormAtomFields>(
 
   return React.useMemo(
     () => ({
-      updateFields: updateFields as ExtractAtomUpdate<
-        ExtractAtomValue<FormAtom<Fields>>["fields"]
-      >,
+      updateFields,
       reset,
       validate() {
         startTransition(() => {
@@ -569,7 +569,7 @@ function isAtom(maybeAtom: any): maybeAtom is FieldAtom<any> {
   );
 }
 
-function walkFields<Fields extends FormAtomFields>(
+export function walkFields<Fields extends FormAtomFields>(
   fields: Fields,
   visitor: (field: FieldAtom<any>, path: string[]) => void | false,
   path: string[] = []
@@ -716,7 +716,9 @@ interface FormAtomState<Fields extends FormAtomFields> {
 }
 
 interface FormAtomActions<Fields extends FormAtomFields> {
-  updateFields: ExtractAtomUpdate<ExtractAtomValue<FormAtom<Fields>>["fields"]>;
+  updateFields(
+    fields: ExtractAtomUpdate<ExtractAtomValue<FormAtom<Fields>>["fields"]>
+  ): void;
   submit(
     handleSubmit: (
       values: Parameters<

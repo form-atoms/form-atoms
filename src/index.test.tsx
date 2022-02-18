@@ -11,8 +11,11 @@ import {
   useFieldAtomErrors,
   useFieldAtomValue,
   useFormAtom,
+  useFormAtomActions,
   useFormAtomErrors,
   useFormAtomState,
+  useFormAtomStatus,
+  useFormAtomSubmit,
   useFormAtomValues,
 } from ".";
 
@@ -609,6 +612,11 @@ describe("useFormAtom()", () => {
   });
 
   it("should prevent submit when form state is invalid", async () => {
+    const hobbyConfig = {
+      name: "hobbies.0",
+      value: "test",
+      validate: jest.fn(),
+    };
     const config = {
       name: fieldAtom({
         value: "lunde",
@@ -616,12 +624,7 @@ describe("useFormAtom()", () => {
           return ["error"];
         },
       }),
-      hobbies: [
-        fieldAtom({
-          name: "hobbies.0",
-          value: "test",
-        }),
-      ],
+      hobbies: [fieldAtom(hobbyConfig)],
     };
     const atom = formAtom(config);
     const { result } = renderHook(() => useFormAtom(atom));
@@ -633,6 +636,11 @@ describe("useFormAtom()", () => {
 
     await domAct(() => Promise.resolve());
     expect(form.result.current.submitStatus).toBe("idle");
+    expect(hobbyConfig.validate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "submit",
+      })
+    );
     expect(handleSubmit).not.toHaveBeenCalled();
   });
 
@@ -640,14 +648,14 @@ describe("useFormAtom()", () => {
     const config = {
       name: fieldAtom({
         value: "lunde",
-        validate() {
-          return ["abc"];
-        },
       }),
       hobbies: [
         fieldAtom({
           name: "hobbies.0",
           value: "test",
+          validate() {
+            return ["abc"];
+          },
         }),
       ],
     };
@@ -774,10 +782,11 @@ describe("useFormAtomValues()", () => {
         }),
       },
       hobbies: [
-        fieldAtom({
-          name: "hobbies.0",
-          value: "testing",
-        }),
+        {
+          name: fieldAtom({
+            value: "testing",
+          }),
+        },
       ],
     };
 
@@ -786,7 +795,9 @@ describe("useFormAtomValues()", () => {
         first: FieldAtom<string>;
         last: FieldAtom<string>;
       };
-      hobbies: FieldAtom<string>[];
+      hobbies: {
+        name: FieldAtom<string>;
+      }[];
     }>(config);
     const { result } = renderHook(() => useFormAtomValues(atom));
     const field = renderHook(() => useFieldAtom(config.name.first));
@@ -796,7 +807,11 @@ describe("useFormAtomValues()", () => {
         first: "jared",
         last: "lunde",
       },
-      hobbies: ["testing"],
+      hobbies: [
+        {
+          name: "testing",
+        },
+      ],
     });
 
     domAct(() => {
@@ -808,7 +823,7 @@ describe("useFormAtomValues()", () => {
         first: "josh",
         last: "lunde",
       },
-      hobbies: ["testing"],
+      hobbies: [{ name: "testing" }],
     });
   });
 });
@@ -864,6 +879,189 @@ describe("useFormAtomErrors()", () => {
         last: [],
       },
       hobbies: [[]],
+    });
+  });
+
+  it("should derive errors from its fields w/ undefined result", async () => {
+    const config = {
+      name: {
+        first: fieldAtom({
+          value: "jared",
+          async validate() {},
+        }),
+        last: fieldAtom({
+          value: "lunde",
+          validate() {},
+        }),
+      },
+    };
+    const atom = formAtom<{
+      name: {
+        first: FieldAtom<string>;
+      };
+    }>(config);
+    const form = renderHook(() => useFormAtom(atom));
+    const errors = renderHook(() => useFormAtomErrors(atom));
+
+    expect(errors.result.current).toEqual({
+      name: {
+        first: [],
+        last: [],
+      },
+    });
+
+    domAct(() => {
+      form.result.current.validate();
+    });
+
+    await domAct(() => Promise.resolve());
+    expect(errors.result.current).toEqual({
+      name: {
+        first: [],
+        last: [],
+      },
+    });
+  });
+});
+
+describe("useFormAtomActions()", () => {
+  it("should return expected object", () => {
+    const config = {
+      name: fieldAtom({
+        value: "jared",
+      }),
+      hobbies: [
+        fieldAtom({
+          value: "testing",
+        }),
+      ],
+    };
+    const atom = formAtom<{
+      name: FieldAtom<string>;
+      hobbies: FieldAtom<string>[];
+    }>(config);
+    const actions = renderHook(() => useFormAtomActions(atom));
+    expect(actions.result.current).toEqual({
+      updateFields: expect.any(Function),
+      validate: expect.any(Function),
+      reset: expect.any(Function),
+      submit: expect.any(Function),
+    });
+  });
+
+  it('should validate with "user" event', () => {
+    const handleValidate = jest.fn();
+    const config = {
+      name: fieldAtom({
+        value: "jared",
+        validate: handleValidate,
+      }),
+    };
+    const atom = formAtom<{ name: FieldAtom<string> }>(config);
+    const actions = renderHook(() => useFormAtomActions(atom));
+
+    domAct(() => {
+      actions.result.current.validate();
+    });
+
+    expect(handleValidate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "user",
+      })
+    );
+  });
+
+  it("should add new fields", () => {
+    const config = {
+      name: fieldAtom({
+        value: "jared",
+      }),
+      hobbies: [
+        fieldAtom({
+          value: "testing",
+        }),
+      ],
+    };
+    const atom = formAtom<{
+      name: FieldAtom<string>;
+      hobbies: FieldAtom<string>[];
+    }>(config);
+    const actions = renderHook(() => useFormAtomActions(atom));
+    const state = renderHook(() => useFormAtom(atom));
+
+    domAct(() => {
+      actions.result.current.updateFields((current) => {
+        return {
+          ...current,
+          hobbies: [...current.hobbies, fieldAtom({ value: "testing2" })],
+        };
+      });
+    });
+
+    expect(state.result.current.fieldAtoms.hobbies.length).toBe(2);
+  });
+
+  it("should async submit form with values", async () => {
+    const config = {
+      name: fieldAtom({
+        value: "lunde",
+      }),
+      hobbies: [
+        fieldAtom({
+          name: "hobbies.0",
+          value: "test",
+        }),
+      ],
+    };
+    const atom = formAtom(config);
+    const { result } = renderHook(() => useFormAtomActions(atom));
+    const handleSubmit = jest.fn(async () => {});
+
+    domAct(() => {
+      result.current.submit(handleSubmit)();
+    });
+
+    await domAct(() => Promise.resolve());
+    expect(handleSubmit).toHaveBeenCalledWith({
+      name: "lunde",
+      hobbies: ["test"],
+    });
+  });
+});
+
+describe("useFormAtomStatus()", () => {
+  it("should return object containing submit and validate status", () => {
+    const atom = formAtom({
+      name: fieldAtom({
+        value: "jared",
+      }),
+    });
+    const status = renderHook(() => useFormAtomStatus(atom));
+
+    expect(status.result.current).toEqual({
+      submitStatus: "idle",
+      validateStatus: "valid",
+    });
+  });
+});
+
+describe("useFormAtomSubmit()", () => {
+  it("should submit the form", async () => {
+    const handleSubmit = jest.fn(async () => {});
+    const atom = formAtom({
+      name: fieldAtom({
+        value: "jared",
+      }),
+    });
+    const { result } = renderHook(() => useFormAtomSubmit(atom));
+
+    domAct(() => {
+      result.current(handleSubmit)();
+    });
+
+    await domAct(() => Promise.resolve());
+    expect(handleSubmit).toHaveBeenCalledWith({
+      name: "jared",
     });
   });
 });
