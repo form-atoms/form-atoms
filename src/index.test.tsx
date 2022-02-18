@@ -188,7 +188,7 @@ describe("useFieldAtom()", () => {
     expect(result.current.state.touched).toBeTruthy();
   });
 
-  it("should validate when setTouched is called", () => {
+  it("should validate when setTouched is called w/ 'true'", () => {
     const atomConfig = {
       name: "firstName",
       value: "test",
@@ -215,6 +215,27 @@ describe("useFieldAtom()", () => {
         get: expect.any(Function),
       })
     );
+  });
+
+  it("should not validate when setTouched is called w/ 'false'", () => {
+    const atomConfig = {
+      name: "firstName",
+      value: "test",
+      validate: jest.fn(() => {
+        return ["error"];
+      }),
+    };
+    const firstNameAtom = fieldAtom(atomConfig);
+    const { result } = renderHook(() => useFieldAtom(firstNameAtom));
+
+    expect(result.current.state.errors).toEqual([]);
+
+    domAct(() => {
+      result.current.actions.setTouched(false);
+    });
+
+    expect(result.current.state.errors).toEqual([]);
+    expect(atomConfig.validate).not.toHaveBeenCalledWith();
   });
 
   it("should validate when validate is called", () => {
@@ -474,7 +495,7 @@ describe("useFormAtom()", () => {
       hobbiesField.result.current.actions.setValue("test2");
       hobbiesField.result.current.actions.setTouched(true);
       hobbiesField.result.current.actions.setErrors(["def"]);
-      result.current.submit((values) => {});
+      result.current.submit(() => {});
     });
 
     domAct(() => {

@@ -15,6 +15,16 @@ import { setPath } from "./utils";
 // Forms
 //
 
+/**
+ * An atom that derives its state fields atoms and allows you to submit,
+ * validate, and reset your form.
+ *
+ * @param {FormAtomFields} fields - An object containing field atoms to
+ *   be included in the form. Field atoms can be deeply nested in
+ *   objects and arrays.
+ * @returns The `formAtom` function returns a Jotai `Atom`
+ *   comprised of other atoms for managing the state of the form.
+ */
 export function formAtom<Fields extends FormAtomFields>(
   fields: Fields
 ): FormAtom<Fields> {
@@ -171,13 +181,7 @@ export function formAtom<Fields extends FormAtomFields>(
   const resetAtom = atom(null, (get, set) => {
     walkFields(fields, (field) => {
       const fieldAtom = get(field);
-      set(fieldAtom.value, RESET);
-      set(fieldAtom.touched, RESET);
-      set(fieldAtom.errors, []);
-      // Need to set a new validateCount to prevent stale validation results
-      // from being set after this invocation.
-      set(fieldAtom._validateCount, (current) => ++current);
-      set(fieldAtom.validateStatus, "valid");
+      set(fieldAtom.reset);
     });
 
     set(submitStatusCountAtom, (current) => ++current);
@@ -197,6 +201,17 @@ export function formAtom<Fields extends FormAtomFields>(
   });
 }
 
+/**
+ * A hook that returns an object that contains the `fieldAtoms` and actions to
+ * validate, submit, and reset the form.
+ *
+ * @param {FormAtom<FormAtomFields>} formAtom - The atom that stores the form state.
+ * @param {Scope} scope - When using atoms with a scope, the provider with
+ *   the same scope will be used. The recommendation for the scope value is
+ *   a unique symbol. The primary use case of scope is for library usage.
+ * @returns A set of functions that can be used to interact
+ *   with the form.
+ */
 export function useFormAtom<Fields extends FormAtomFields>(
   formAtom: FormAtom<Fields>,
   scope?: Scope
@@ -212,7 +227,9 @@ export function useFormAtom<Fields extends FormAtomFields>(
     () => ({
       fieldAtoms: fieldAtoms as Fields,
       validate() {
-        startTransition(() => validate("user"));
+        startTransition(() => {
+          validate("user");
+        });
       },
       reset,
       submit(onSubmit) {
@@ -226,6 +243,18 @@ export function useFormAtom<Fields extends FormAtomFields>(
   );
 }
 
+/**
+ * A hook that returns the primary state of the form atom including values, errors,
+ * submit and validation status, as well as the `fieldAtoms`. Note that this
+ * hook will cuase its parent component to re-render any time those states
+ * change, so it can be useful to use more targeted state hooks like
+ * `useFormAtomStatus`.
+ *
+ * @param {FormAtom<FormAtomFields>} formAtom - The atom that stores the form state.
+ * @param {Scope} scope - When using atoms with a scope, the provider with
+ *   the same scope will be used. The recommendation for the scope value is
+ *   a unique symbol. The primary use case of scope is for library usage.
+ */
 export function useFormAtomState<Fields extends FormAtomFields>(
   formAtom: FormAtom<Fields>,
   scope?: Scope
@@ -251,6 +280,16 @@ export function useFormAtomState<Fields extends FormAtomFields>(
   );
 }
 
+/**
+ * A hook that returns a set of actions that can be used to update the state
+ * of the form atom. This includes updating fields, submitting, resetting,
+ * and validating the form.
+ *
+ * @param {FormAtom<FormAtomFields>} formAtom - The atom that stores the form state.
+ * @param {Scope} scope - When using atoms with a scope, the provider with
+ *   the same scope will be used. The recommendation for the scope value is
+ *   a unique symbol. The primary use case of scope is for library usage.
+ */
 export function useFormAtomActions<Fields extends FormAtomFields>(
   formAtom: FormAtom<Fields>,
   scope?: Scope
@@ -285,6 +324,15 @@ export function useFormAtomActions<Fields extends FormAtomFields>(
   );
 }
 
+/**
+ * A hook that returns the errors of the form atom.
+ *
+ * @param {FormAtom<FormAtomFields>} formAtom - The atom that stores the form data.
+ * @param {Scope} scope - When using atoms with a scope, the provider with
+ *   the same scope will be used. The recommendation for the scope value is
+ *   a unique symbol. The primary use case of scope is for library usage.
+ * @returns The errors of the form.
+ */
 export function useFormAtomErrors<Fields extends FormAtomFields>(
   formAtom: FormAtom<Fields>,
   scope?: Scope
@@ -293,6 +341,15 @@ export function useFormAtomErrors<Fields extends FormAtomFields>(
   return useAtomValue(form.errors, scope);
 }
 
+/**
+ * A hook that returns the values of the form atom
+ *
+ * @param {FormAtom<FormAtomFields>} formAtom - The atom that stores the form state.
+ * @param {Scope} scope - When using atoms with a scope, the provider with
+ *   the same scope will be used. The recommendation for the scope value is
+ *   a unique symbol. The primary use case of scope is for library usage.
+ * @returns The values of the form.
+ */
 export function useFormAtomValues<Fields extends FormAtomFields>(
   formAtom: FormAtom<Fields>,
   scope?: Scope
@@ -301,6 +358,17 @@ export function useFormAtomValues<Fields extends FormAtomFields>(
   return useAtomValue(form.values, scope);
 }
 
+/**
+ * A hook that returns the `submitStatus` and `validateStatus` of
+ * the form atom.
+ *
+ * @param {FormAtom<FormAtomFields>} formAtom - The atom that stores the form state.
+ * @param {Scope} scope - When using atoms with a scope, the provider with
+ *   the same scope will be used. The recommendation for the scope value is
+ *   a unique symbol. The primary use case of scope is for library usage.
+ * @returns An object containing the `submitStatus` and
+ *   `validateStatus` of the form
+ */
 export function useFormAtomStatus<Fields extends FormAtomFields>(
   formAtom: FormAtom<Fields>,
   scope?: Scope
@@ -315,6 +383,17 @@ export function useFormAtomStatus<Fields extends FormAtomFields>(
   );
 }
 
+/**
+ * A hook that returns a callback for handling form submission.
+ *
+ * @param {FormAtom<FormAtomFields>} formAtom - The atom that stores the form state.
+ * @param {Scope} scope - When using atoms with a scope, the provider with
+ *   the same scope will be used. The recommendation for the scope value is
+ *   a unique symbol. The primary use case of scope is for library usage.
+ * @returns A callback for handling form submission. The callback
+ *   takes the form values as an argument and returs an additional callback
+ *   that invokes `event.preventDefault()` if it receives an event as its argument.
+ */
 export function useFormAtomSubmit<Fields extends FormAtomFields>(
   formAtom: FormAtom<Fields>,
   scope?: Scope
@@ -335,6 +414,13 @@ export function useFormAtomSubmit<Fields extends FormAtomFields>(
 // Fields
 //
 
+/**
+ * An atom that represents a field in a form. It manages state for the field,
+ * including the name, value, errors, dirty, validation, and touched state.
+ *
+ * @param {FieldAtomConfig<Value>} config - The initial state and configuration of the field.
+ * @returns A FieldAtom.
+ */
 export function fieldAtom<Value>(
   config: FieldAtomConfig<Value>
 ): FieldAtom<Value> {
@@ -396,6 +482,16 @@ export function fieldAtom<Value>(
     HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null
   >(null);
 
+  const resetAtom = atom<null, void>(null, (get, set) => {
+    set(errorsAtom, []);
+    set(touchedAtom, RESET);
+    set(valueAtom, RESET);
+    // Need to set a new pointer to prevent stale validation results
+    // from being set to state after this invocation.
+    set(validateCountAtom, (count) => ++count);
+    set(validateResultAtom, "valid");
+  });
+
   return atom({
     name: nameAtom,
     value: valueAtom,
@@ -404,12 +500,23 @@ export function fieldAtom<Value>(
     validate: validateAtom,
     validateStatus: validateResultAtom,
     errors: errorsAtom,
+    reset: resetAtom,
     ref: refAtom,
     _validateCallback: config.validate,
     _validateCount: validateCountAtom,
   });
 }
 
+/**
+ * A hook that returns a set of actions that can be used to interact with the
+ * field atom state.
+ *
+ * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
+ * @param {Scope} scope - When using atoms with a scope, the provider with
+ *   the same scope will be used. The recommendation for the scope value is
+ *   a unique symbol. The primary use case of scope is for library usage.
+ * @returns A set of actions that can be used to interact with the field atom.
+ */
 export function useFieldAtomActions<Value>(
   fieldAtom: FieldAtom<Value>,
   scope?: Scope
@@ -419,8 +526,7 @@ export function useFieldAtomActions<Value>(
   const setTouched = useSetAtom(field.touched, scope);
   const setErrors = useSetAtom(field.errors, scope);
   const validate = useSetAtom(field.validate, scope);
-  const setValidateStatus = useSetAtom(field.validateStatus, scope);
-  const setValidateCount = useSetAtom(field._validateCount, scope);
+  const reset = useSetAtom(field.reset);
   const ref = useAtomValue(field.ref, scope);
   const [, startTransition] = useTransition();
 
@@ -433,38 +539,40 @@ export function useFieldAtomActions<Value>(
       },
       setValue(value) {
         setValue(value);
-        validate("change");
+        startTransition(() => {
+          validate("change");
+        });
       },
       setTouched(touched) {
         setTouched(touched);
-        validate("touch");
+
+        if (touched) {
+          startTransition(() => {
+            validate("touch");
+          });
+        }
       },
       setErrors,
       focus() {
         ref?.focus();
       },
-      reset() {
-        setErrors([]);
-        setTouched(RESET);
-        setValue(RESET);
-        // Need to set a new pointer to prevent stale validation results
-        // from being set to state after this invocation.
-        setValidateCount((count) => ++count);
-        setValidateStatus("valid");
-      },
+      reset,
     }),
-    [
-      validate,
-      setErrors,
-      setValue,
-      setTouched,
-      ref,
-      setValidateCount,
-      setValidateStatus,
-    ]
+    [setErrors, reset, validate, setValue, setTouched, ref]
   );
 }
 
+/**
+ * A hook that returns a set of props that can be destructured
+ * directly into an `<input>`, `<select>`, or `<textarea>` element.
+ *
+ * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
+ * @param {Scope} scope - When using atoms with a scope, the provider with
+ *   the same scope will be used. The recommendation for the scope value is
+ *   a unique symbol. The primary use case of scope is for library usage.
+ * @returns A set of props that can be destructured directly into an `<input>`,
+ *   `<select>`, or `<textarea>` element.
+ */
 export function useFieldAtomProps<
   Value extends string | number | readonly string[]
 >(
@@ -478,6 +586,7 @@ export function useFieldAtomProps<
   const validateStatus = useAtomValue(field.validateStatus, scope);
   const validate = useSetAtom(field.validate, scope);
   const ref = useSetAtom(field.ref, scope);
+  const [, startTransition] = useTransition();
 
   return React.useMemo(
     () => ({
@@ -487,17 +596,33 @@ export function useFieldAtomProps<
       ref,
       onBlur() {
         setTouched(true);
-        validate("blur");
+        startTransition(() => {
+          validate("blur");
+        });
       },
       onChange(event) {
         setValue(event.target.value);
-        validate("change");
+
+        startTransition(() => {
+          validate("change");
+        });
       },
     }),
     [name, value, validateStatus, ref, setTouched, validate, setValue]
   );
 }
 
+/**
+ * A hook that returns the state of a field atom. This includes the field's
+ * value, whether it has been touched, whether it is dirty, the validation status,
+ * and any errors.
+ *
+ * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
+ * @param {Scope} scope - When using atoms with a scope, the provider with
+ *   the same scope will be used. The recommendation for the scope value is
+ *   a unique symbol. The primary use case of scope is for library usage.
+ * @returns The state of the field atom.
+ */
 export function useFieldAtomState<Value>(
   fieldAtom: FieldAtom<Value>,
   scope?: Scope
@@ -521,6 +646,15 @@ export function useFieldAtomState<Value>(
   );
 }
 
+/**
+ * A hook that returns the value of a field atom.
+ *
+ * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
+ * @param {Scope} scope - When using atoms with a scope, the provider with
+ *   the same scope will be used. The recommendation for the scope value is
+ *   a unique symbol. The primary use case of scope is for library usage.
+ * @returns The value of the field atom.
+ */
 export function useFieldAtomValue<Value>(
   fieldAtom: FieldAtom<Value>,
   scope?: Scope
@@ -529,6 +663,15 @@ export function useFieldAtomValue<Value>(
   return useAtomValue(field.value, scope);
 }
 
+/**
+ * A hook that returns the errors of a field atom.
+ *
+ * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
+ * @param {Scope} scope - When using atoms with a scope, the provider with
+ *   the same scope will be used. The recommendation for the scope value is
+ *   a unique symbol. The primary use case of scope is for library usage.
+ * @returns The errors of the field atom.
+ */
 export function useFieldAtomErrors<Value>(
   fieldAtom: FieldAtom<Value>,
   scope?: Scope
@@ -537,6 +680,16 @@ export function useFieldAtomErrors<Value>(
   return useAtomValue(field.errors, scope);
 }
 
+/**
+ * A hook that returns `props`, `state`, and `actions` of a field atom from
+ * `useFieldAtomProps`, `useFieldAtomState`, and `useFieldAtomActions`.
+ *
+ * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
+ * @param {Scope} scope - When using atoms with a scope, the provider with
+ *   the same scope will be used. The recommendation for the scope value is
+ *   a unique symbol. The primary use case of scope is for library usage.
+ * @returns The errors of the field atom.
+ */
 export function useFieldAtom<Value extends string | number | readonly string[]>(
   fieldAtom: FieldAtom<Value>,
   scope?: Scope
@@ -569,6 +722,15 @@ function isAtom(maybeAtom: any): maybeAtom is FieldAtom<any> {
   );
 }
 
+/**
+ * A function that walks through an object containing nested field atoms
+ * and calls a visitor function for each atom it finds.
+ *
+ * @param {FormAtomFields} fields - An object containing nested field atoms
+ * @param visitor - A function that will be called for each field atom. You can
+ *  exit early by returning `false` from the function.
+ * @param path - The base path of the field atom.
+ */
 export function walkFields<Fields extends FormAtomFields>(
   fields: Fields,
   visitor: (field: FieldAtom<any>, path: string[]) => void | false,
@@ -603,8 +765,17 @@ export function walkFields<Fields extends FormAtomFields>(
 
 export { Provider } from "jotai";
 
+/**
+ * A form submission status
+ */
 export type FormAtomSubmitStatus = "idle" | "submitting" | "submitted";
+/**
+ * A form and field validation status
+ */
 export type FormAtomValidateStatus = "validating" | "valid" | "invalid";
+/**
+ * Event types that a field atom may validate against
+ */
 export type FieldAtomValidateOn =
   | "user"
   | "blur"
@@ -613,16 +784,46 @@ export type FieldAtomValidateOn =
   | "submit";
 
 export type FieldAtom<Value> = Atom<{
+  /**
+   * An atom containing the field's name
+   */
   name: WritableAtom<string | undefined, string | undefined | typeof RESET>;
+  /**
+   * An atom containing the field's value
+   */
   value: WritableAtom<Value, Value | typeof RESET | ((prev: Value) => Value)>;
+  /**
+   * An atom containing the field's touched status
+   */
   touched: WritableAtom<
     boolean,
     boolean | typeof RESET | ((prev: boolean) => boolean)
   >;
+  /**
+   * An atom containing the field's dirty status
+   */
   dirty: Atom<boolean>;
+  /**
+   * A write-only atom for validating the field's value
+   */
   validate: WritableAtom<null, void | FieldAtomValidateOn>;
+  /**
+   * An atom containing the field's validation status
+   */
   validateStatus: WritableAtom<FormAtomValidateStatus, FormAtomValidateStatus>;
+  /**
+   * An atom containing the field's validation errors
+   */
   errors: WritableAtom<string[], string[] | ((value: string[]) => string[])>;
+  /**
+   * A write-only atom for resetting the field atoms to their
+   * initial states.
+   */
+  reset: WritableAtom<null, void>;
+  /**
+   * An atom containing a reference to the `HTMLElement` the field
+   * is bound to.
+   */
   ref: WritableAtom<
     HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null,
     | HTMLInputElement
@@ -638,24 +839,57 @@ export type FieldAtom<Value> = Atom<{
 }>;
 
 export type FormAtom<Fields extends FormAtomFields> = Atom<{
+  /**
+   * An atom containing an object of nested field atoms
+   */
   fields: WritableAtom<
     Fields,
     Fields | typeof RESET | ((prev: Fields) => Fields),
     void
   >;
+  /**
+   * An read-only atom that derives the form's values from
+   * its nested field atoms.
+   */
   values: Atom<FormAtomValues<Fields>>;
+  /**
+   * An read-only atom that derives the form's errors from
+   * its nested field atoms.
+   */
   errors: Atom<FormAtomErrors<Fields>>;
+  /**
+   * A write-only atom that resets the form's nested field atoms
+   */
   reset: WritableAtom<null, void>;
+  /**
+   * A write-only atom that validates the form's nested field atoms
+   */
   validate: WritableAtom<null, void | FieldAtomValidateOn>;
+  /**
+   * A read-only atom that derives the form's validation status
+   */
   validateStatus: Atom<FormAtomValidateStatus>;
+  /**
+   * A write-only atom for submitting the form
+   */
   submit: WritableAtom<
     null,
     (values: FormAtomValues<Fields>) => void | Promise<void>
   >;
+  /**
+   * A read-only atom that reads the number of times the form has
+   * been submitted
+   */
   submitCount: Atom<number>;
+  /**
+   * An atom that contains the form's submission status
+   */
   submitStatus: WritableAtom<FormAtomSubmitStatus, FormAtomSubmitStatus>;
 }>;
 
+/**
+ * An object containing nested field atoms
+ */
 export type FormAtomFields = {
   [key: string | number]:
     | FieldAtom<any>
@@ -664,6 +898,9 @@ export type FormAtomFields = {
     | FieldAtom<any>[];
 };
 
+/**
+ * An object containing the values of a form's nested field atoms
+ */
 export type FormAtomValues<Fields extends FormAtomFields> = {
   [Key in keyof Fields]: Fields[Key] extends FieldAtom<infer Value>
     ? Value
@@ -676,6 +913,9 @@ export type FormAtomValues<Fields extends FormAtomFields> = {
     : never;
 };
 
+/**
+ * An object containing the errors of a form's nested field atoms
+ */
 export type FormAtomErrors<Fields extends FormAtomFields> = {
   [Key in keyof Fields]: Fields[Key] extends FieldAtom<any>
     ? string[]
@@ -688,8 +928,17 @@ export type FormAtomErrors<Fields extends FormAtomFields> = {
     : never;
 };
 
-interface UseFormAtom<Fields extends FormAtomFields> {
+export interface UseFormAtom<Fields extends FormAtomFields> {
+  /**
+   * An object containing the values of a form's nested field atoms
+   */
   fieldAtoms: Fields;
+  /**
+   * A function for handling form submissions.
+   *
+   * @param handleSubmit - A function that is called with the form's values
+   *   when the form is submitted
+   */
   submit(
     handleSubmit: (
       values: Parameters<
@@ -697,28 +946,73 @@ interface UseFormAtom<Fields extends FormAtomFields> {
       >[0]
     ) => void | Promise<void>
   ): (e?: React.FormEvent<HTMLFormElement>) => void;
+  /**
+   * A function that validates the form's nested field atoms with a
+   * `"user"` validation event.
+   */
   validate(): void;
+  /**
+   * A function that resets the form's nested field atoms to their
+   * initial states.
+   */
   reset(): void;
 }
 
-interface FormAtomStatus {
+export interface FormAtomStatus {
+  /**
+   * The validation status of the form
+   */
   validateStatus: FormAtomValidateStatus;
+  /**
+   * The submission status of the form
+   */
   submitStatus: FormAtomSubmitStatus;
 }
 
-interface FormAtomState<Fields extends FormAtomFields> {
+export interface FormAtomState<Fields extends FormAtomFields> {
+  /**
+   * An object containing the form's nested field atoms
+   */
   fieldAtoms: Fields;
+  /**
+   * An object containing the values of a form's nested field atoms
+   */
   values: ExtractAtomValue<ExtractAtomValue<FormAtom<Fields>>["values"]>;
+  /**
+   * An object containing the errors of a form's nested field atoms
+   */
   errors: ExtractAtomValue<ExtractAtomValue<FormAtom<Fields>>["errors"]>;
+  /**
+   * The number of times a form has been submitted
+   */
   submitCount: number;
+  /**
+   * The validation status of the form
+   */
   validateStatus: FormAtomValidateStatus;
+  /**
+   * The submission status of the form
+   */
   submitStatus: FormAtomSubmitStatus;
 }
 
-interface FormAtomActions<Fields extends FormAtomFields> {
+export interface FormAtomActions<Fields extends FormAtomFields> {
+  /**
+   * A function for adding/removing fields from the form.
+   *
+   * @param fields - An object containing the form's nested field atoms or
+   *   a callback that receives the current fields and returns the next
+   *   fields.
+   */
   updateFields(
     fields: ExtractAtomUpdate<ExtractAtomValue<FormAtom<Fields>>["fields"]>
   ): void;
+  /**
+   * A function for handling form submissions.
+   *
+   * @param handleSubmit - A function that is called with the form's values
+   *   when the form is submitted
+   */
   submit(
     handleSubmit: (
       values: Parameters<
@@ -726,20 +1020,52 @@ interface FormAtomActions<Fields extends FormAtomFields> {
       >[0]
     ) => void | Promise<void>
   ): (e?: React.FormEvent<HTMLFormElement>) => void;
+  /**
+   * A function that validates the form's nested field atoms with a
+   * `"user"` validation event.
+   */
   validate(): void;
+  /**
+   * A function that resets the form's nested field atoms to their
+   * initial states.
+   */
   reset(): void;
 }
 
 export interface UseFieldAtom<Value> {
+  /**
+   * `<input>`, `<select>`, or `<textarea>` props for the field
+   */
   props: FieldAtomProps<Value>;
+  /**
+   * Actions for managing the state of the field
+   */
   actions: FieldAtomActions<Value>;
+  /**
+   * The current state of the field
+   */
   state: FieldAtomState<Value>;
 }
 
 export interface FieldAtomProps<Value> {
+  /**
+   * The name of the field if there is one
+   */
   name: string | undefined;
+  /**
+   * The value of the field
+   */
   value: Value;
+  /**
+   * A WAI-ARIA property that tells a screen reader whether the
+   * field is invalid
+   */
   "aria-invalid": boolean;
+  /**
+   * A React callback ref that is used to bind the field atom to
+   * an `<input>`, `<select>`, or `<textarea>` element so that it
+   * can be read and focused.
+   */
   ref: React.RefCallback<
     HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
   >;
@@ -752,41 +1078,128 @@ export interface FieldAtomProps<Value> {
 }
 
 export interface FieldAtomActions<Value> {
+  /**
+   * A function that validates the field's value with a `"user"` validation
+   * event.
+   */
   validate(): void;
+  /**
+   * A function for changing the value of a field. This will trigger a `"change"`
+   * validation event.
+   *
+   * @param {Value} value - The new value of the field
+   */
   setValue(
     value: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["value"]>
   ): void;
+  /**
+   * A function for changing the touched state of a field. This will trigger a
+   * `"touch"` validation event.
+   *
+   * @param {boolean} touched - The new touched state of the field
+   */
   setTouched(
-    value: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["touched"]>
+    touched: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["touched"]>
   ): void;
+  /**
+   * A function for changing the error state of a field
+   *
+   * @param {string[]} errors - The new error state of the field
+   */
   setErrors(
-    value: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["errors"]>
+    errors: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["errors"]>
   ): void;
+  /**
+   * Focuses the field atom's `<input>`, `<select>`, or `<textarea>` element
+   * if there is one bound to it.
+   */
   focus(): void;
+  /**
+   * Resets the field atom to its initial state.
+   */
   reset(): void;
 }
 
 export interface FieldAtomState<Value> {
+  /**
+   * The value of the field
+   */
   value: ExtractAtomValue<ExtractAtomValue<FieldAtom<Value>>["value"]>;
+  /**
+   * The touched state of the field
+   */
   touched: ExtractAtomValue<ExtractAtomValue<FieldAtom<Value>>["touched"]>;
+  /**
+   * The dirty state of the field. A field is "dirty" if it's value has
+   * been changed.
+   */
   dirty: ExtractAtomValue<ExtractAtomValue<FieldAtom<Value>>["dirty"]>;
+  /**
+   * The validation status of the field
+   */
   validateStatus: ExtractAtomValue<
     ExtractAtomValue<FieldAtom<Value>>["validateStatus"]
   >;
+  /**
+   * The error state of the field
+   */
   errors: ExtractAtomValue<ExtractAtomValue<FieldAtom<Value>>["errors"]>;
 }
 
 export interface FieldAtomConfig<Value> {
+  /**
+   * Optionally provide a name for the field that will be added
+   * to any attached `<input>`, `<select>`, or `<textarea>` elements
+   */
   name?: string;
+  /**
+   * The initial value of the field
+   */
   value: Value;
+  /**
+   * The initial touched state of the field
+   */
   touched?: boolean;
+  /**
+   * A function that validates the value of the field any time
+   * one of its atoms changes. It must either return an array of
+   * string error messages or undefined. If it returns undefined,
+   * the field is considered valid.
+   */
   validate?: (state: {
+    /**
+     * A Jotai getter that can read other atoms
+     */
     get: Getter;
+    /**
+     * The current value of the field
+     */
     value: Value;
+    /**
+     * The dirty state of the field
+     */
     dirty: boolean;
+    /**
+     * The touched state of the field
+     */
     touched: boolean;
+    /**
+     * The event that caused the validation. Either:
+     *
+     * - `"change"` - The value of the field has changed
+     * - `"touch"` - The field has been touched
+     * - `"blur"` - The field has been blurred
+     * - `"submit"` - The form has been submitted
+     * - `"user"` - A user/developer has triggered the validation
+     */
     event: FieldAtomValidateOn;
   }) => void | string[] | Promise<void | string[]>;
 }
 
+/**
+ * A `Provider` or `useAtom` hook accepts an optional prop scope which you
+ * can use for scoped Provider. When using atoms with a scope, the provider
+ * with the same scope will be used. The recommendation for the scope value
+ * is a unique symbol. The primary use case of scope is for library usage.
+ */
 export type Scope = symbol | string | number;
