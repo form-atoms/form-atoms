@@ -11,6 +11,7 @@ import {
   useFieldAtomErrors,
   useFieldAtomValue,
   useFormAtom,
+  useFormAtomErrors,
   useFormAtomValues,
 } from ".";
 
@@ -439,8 +440,9 @@ describe("useFormAtom()", () => {
       ],
     });
     const { result } = renderHook(() => useFormAtom(atom));
-
     expect(result.current.fieldAtoms.name.first).not.toBeUndefined();
+    expect(result.current.fieldAtoms.name.last).not.toBeUndefined();
+    expect(result.current.fieldAtoms.hobbies[0]).not.toBeUndefined();
   });
 
   it("should return values", () => {
@@ -469,6 +471,42 @@ describe("useFormAtom()", () => {
       ],
     });
     const { result } = renderHook(() => useFormAtomValues(atom));
+
+    expect(result.current).toEqual({
+      name: {
+        first: "jared",
+        last: "lunde",
+      },
+      hobbies: ["testing"],
+    });
+  });
+
+  it("should return errors", () => {
+    const atom = formAtom<{
+      name: {
+        first: FieldAtom<string>;
+        last: FieldAtom<string>;
+      };
+      hobbies: FieldAtom<string>[];
+    }>({
+      name: {
+        first: fieldAtom({
+          name: "firstName",
+          value: "jared",
+        }),
+        last: fieldAtom({
+          name: "lastName",
+          value: "lunde",
+        }),
+      },
+      hobbies: [
+        fieldAtom({
+          name: "hobbies.0",
+          value: "testing",
+        }),
+      ],
+    });
+    const { result } = renderHook(() => useFormAtomErrors(atom));
 
     expect(result.current).toEqual({
       name: {
