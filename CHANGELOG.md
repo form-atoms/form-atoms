@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/jaredLunde/form-atoms/compare/v1.1.0...v1.1.1) (2022-02-18)
+
+
+### Bug Fixes
+
+* write docs ([#3](https://github.com/jaredLunde/form-atoms/issues/3)) ([ba61ea2](https://github.com/jaredLunde/form-atoms/commit/ba61ea2fbc7f0ec39ba1ffd5c8136e8d38d52984))
+
 # [1.1.0](https://github.com/jaredLunde/form-atoms/compare/v1.0.0...v1.1.0) (2022-02-18)
 
 ### Bug Fixes
