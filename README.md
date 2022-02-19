@@ -40,7 +40,6 @@ npm i form-atoms jotai
 - [x] **Dynamic fields** - you aren't stuck with your initial config
 - [x] **Controlled inputs** because no, uncontrolled inputs are not preferrable
 - [x] **Ready for concurrent React** - validation updates have a lower priority
-- [x] **Hooks only**, no components
 - [x] **Async field-level validation**
 - [x] **Async submission**
 
@@ -103,15 +102,16 @@ by using it, but you gain a ton of performance and without footguns.
 
 ## Table of contents
 
-| Field atoms                                     | Description                                                                                                                                                              |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`fieldAtom()`](#fieldatom)                     | An atom that represents a field in a form. It manages state for the field, including the name, value, errors, dirty, validation, and touched state.                      |
-| [`useFieldAtom()`](#usefieldatom)               | A hook that returns `props`, `state`, and `actions` of a field atom from `useFieldAtomProps`, `useFieldAtomState`, and `useFieldAtomActions`.                            |
-| [`useFieldAtomProps()`](#usefieldatomprops)     | A hook that returns a set of props that can be destructured directly into an `<input>`, `<select>`, or `<textarea>` element.                                             |
-| [`useFieldAtomState()`](#usefieldatomstate)     | A hook that returns the state of a field atom. This includes the field's value, whether it has been touched, whether it is dirty, the validation status, and any errors. |
-| [`useFieldAtomActions()`](#usefieldatomactions) | A hook that returns a set of actions that can be used to interact with the field atom state.                                                                             |
-| [`useFieldAtomValue()`](#usefieldatomvalue)     | A hook that returns the value of a field atom.                                                                                                                           |
-| [`useFieldAtomErrors()`](#usefieldatomerrors)   | A hook that returns the errors of a field atom.                                                                                                                          |
+| Field atoms                                               | Description                                                                                                                                                                                          |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`fieldAtom()`](#fieldatom)                               | An atom that represents a field in a form. It manages state for the field, including the name, value, errors, dirty, validation, and touched state.                                                  |
+| [`useFieldAtom()`](#usefieldatom)                         | A hook that returns `props`, `state`, and `actions` of a field atom from `useFieldAtomProps`, `useFieldAtomState`, and `useFieldAtomActions`.                                                        |
+| [`useFieldAtomProps()`](#usefieldatomprops)               | A hook that returns a set of props that can be destructured directly into an `<input>`, `<select>`, or `<textarea>` element.                                                                         |
+| [`useFieldAtomState()`](#usefieldatomstate)               | A hook that returns the state of a field atom. This includes the field's value, whether it has been touched, whether it is dirty, the validation status, and any errors.                             |
+| [`useFieldAtomActions()`](#usefieldatomactions)           | A hook that returns a set of actions that can be used to interact with the field atom state.                                                                                                         |
+| [`useFieldAtomInitialValue()`](#usefieldatominitialvalue) | A hook that sets the initial value of a field atom. Initial values can only be set once per scope. Therefore, if the initial value used is changed during rerenders, it won't update the atom value. |
+| [`useFieldAtomValue()`](#usefieldatomvalue)               | A hook that returns the value of a field atom.                                                                                                                                                       |
+| [`useFieldAtomErrors()`](#usefieldatomerrors)             | A hook that returns the errors of a field atom.                                                                                                                                                      |
 
 | Form atoms                                    | Description                                                                                                                                                                                                                                                                                                               |
 | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -454,6 +454,24 @@ interface FieldAtomActions<Value> {
   reset(): void;
 }
 ```
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
+### useFieldAtomInitialValue()
+
+A hook that sets the initial value of a field atom. Initial values can only be set
+once per scope. Therefore, if the initial value used is changed during rerenders,
+it won't update the atom value.
+
+#### Arguments
+
+| Name         | Type               | Required? | Description                                                                                 |
+| ------------ | ------------------ | --------- | ------------------------------------------------------------------------------------------- |
+| fieldAtom    | `FieldAtom<Value>` | Yes       | The atom that stores the field's state                                                      |
+| initialValue | `Value`            | No        | The initial value to set the atom to. If this is `undefined`, no initial value will be set. |
+| scope        | `Scope`            | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310)                     |
 
 #### [⇗ Back to top](#table-of-contents)
 

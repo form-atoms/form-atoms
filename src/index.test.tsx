@@ -9,6 +9,7 @@ import {
   formAtom,
   useFieldAtom,
   useFieldAtomErrors,
+  useFieldAtomInitialValue,
   useFieldAtomValue,
   useFormAtom,
   useFormAtomActions,
@@ -414,7 +415,27 @@ describe("useFieldAtom()", () => {
   });
 });
 
-describe("useFieldAtomValue", () => {
+describe("useFieldAtomInitialValue()", () => {
+  it("should set an initial value", () => {
+    const firstNameAtom = fieldAtom({
+      value: "test",
+    });
+    const field = renderHook(() => useFieldAtom(firstNameAtom));
+    renderHook(() => useFieldAtomInitialValue(firstNameAtom, "jared"));
+    expect(field.result.current.props.value).toBe("jared");
+  });
+
+  it("should not set an initial value if initial value is undefined", () => {
+    const firstNameAtom = fieldAtom({
+      value: "test",
+    });
+    const field = renderHook(() => useFieldAtom(firstNameAtom));
+    renderHook(() => useFieldAtomInitialValue(firstNameAtom, undefined));
+    expect(field.result.current.props.value).toBe("test");
+  });
+});
+
+describe("useFieldAtomValue()", () => {
   it("should return the value of the atom", () => {
     const firstNameAtom = fieldAtom({
       name: "firstName",

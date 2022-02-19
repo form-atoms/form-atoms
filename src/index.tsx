@@ -6,8 +6,8 @@ import type {
   Setter,
   WritableAtom,
 } from "jotai";
-import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
-import { atomWithReset, RESET } from "jotai/utils";
+import { atom, Provider, useAtom, useAtomValue, useSetAtom } from "jotai";
+import { atomWithReset, RESET, useHydrateAtoms } from "jotai/utils";
 import * as React from "react";
 import { setPath } from "./utils";
 
@@ -716,6 +716,29 @@ export function useFieldAtomErrors<Value>(
 ) {
   const field = useAtomValue(fieldAtom, scope);
   return useAtomValue(field.errors, scope);
+}
+
+/**
+ * Sets the initial value of a field atom. Initial values can only be set once
+ * per scope. Therefore, if the initial value used is changed during rerenders,
+ * it won't update the atom value.
+ *
+ * @param {FieldAtom<any>} fieldAtom - The atom that you want to use to store the value.
+ * @param {Value} initialValue - The initial value of the field.
+ * @param {Scope} scope - When using atoms with a scope, the provider with
+ *   the same scope will be used. The recommendation for the scope value is
+ *   a unique symbol. The primary use case of scope is for library usage.
+ */
+export function useFieldAtomInitialValue<Value>(
+  fieldAtom: FieldAtom<Value>,
+  initialValue?: Value,
+  scope?: Scope
+) {
+  const field = useAtomValue(fieldAtom, scope);
+  useHydrateAtoms(
+    initialValue === undefined ? [] : [[field.value, initialValue] as const],
+    scope
+  );
 }
 
 /**
