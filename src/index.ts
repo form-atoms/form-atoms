@@ -526,7 +526,7 @@ export function useFieldAtomActions<Value>(
   const setTouched = useSetAtom(field.touched, scope);
   const setErrors = useSetAtom(field.errors, scope);
   const validate = useSetAtom(field.validate, scope);
-  const reset = useSetAtom(field.reset);
+  const reset = useSetAtom(field.reset, scope);
   const ref = useAtomValue(field.ref, scope);
   const [, startTransition] = useTransition();
 
