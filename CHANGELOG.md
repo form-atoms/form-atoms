@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/jaredLunde/form-atoms/compare/v1.1.1...v1.1.2) (2022-02-19)
+
+
+### Bug Fixes
+
+* fix missing scope in field reset ([949d710](https://github.com/jaredLunde/form-atoms/commit/949d710ef851403fe10f65958e8091ea2f1be336))
+
 ## [1.1.1](https://github.com/jaredLunde/form-atoms/compare/v1.1.0...v1.1.1) (2022-02-18)
 
 
