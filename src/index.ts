@@ -178,6 +178,29 @@ export function formAtom<Fields extends FormAtomFields>(
     resolveSubmit();
   });
 
+  const dirtyAtom = atom((get) => {
+    let dirty = false;
+
+    walkFields(fields, (field) => {
+      const fieldAtom = get(field);
+      dirty = get(fieldAtom.dirty);
+      if (dirty) return false;
+    });
+
+    return dirty;
+  });
+
+  const touchedFieldsAtom = atom((get) => {
+    const touchedFields = {} as FormAtomTouchedFields<Fields>;
+
+    walkFields(fields, (field, path) => {
+      const fieldAtom = get(field);
+      setPath(touchedFields, path, get(fieldAtom.touched));
+    });
+
+    return touchedFields;
+  });
+
   const resetAtom = atom(null, (get, set) => {
     walkFields(fields, (field) => {
       const fieldAtom = get(field);
@@ -192,6 +215,8 @@ export function formAtom<Fields extends FormAtomFields>(
     fields: fieldsAtom,
     values: valuesAtom,
     errors: errorsAtom,
+    dirty: dirtyAtom,
+    touchedFields: touchedFieldsAtom,
     validate: validateAtom,
     validateStatus: validateResultAtom,
     submit: submitAtom,
@@ -266,17 +291,30 @@ export function useFormAtomState<Fields extends FormAtomFields>(
   const validateStatus = useAtomValue(form.validateStatus, scope);
   const values = useAtomValue(form.values, scope);
   const errors = useAtomValue(form.errors, scope);
+  const dirty = useAtomValue(form.dirty, scope);
+  const touchedFields = useAtomValue(form.touchedFields, scope);
 
   return React.useMemo(
     () => ({
       fieldAtoms: fieldAtoms as Fields,
       values: values as any,
       errors: errors as any,
+      dirty,
+      touchedFields: touchedFields as any,
       submitCount,
       submitStatus,
       validateStatus,
     }),
-    [fieldAtoms, values, errors, submitCount, submitStatus, validateStatus]
+    [
+      fieldAtoms,
+      values,
+      errors,
+      dirty,
+      touchedFields,
+      submitCount,
+      submitStatus,
+      validateStatus,
+    ]
   );
 }
 
@@ -858,6 +896,15 @@ export type FormAtom<Fields extends FormAtomFields> = Atom<{
    */
   errors: Atom<FormAtomErrors<Fields>>;
   /**
+   * A read-only atom that returns `true` if any of the fields in
+   * the form are dirty.
+   */
+  dirty: Atom<boolean>;
+  /**
+   * A read-only atom derives the touched state of its nested field atoms.
+   */
+  touchedFields: Atom<FormAtomTouchedFields<Fields>>;
+  /**
    * A write-only atom that resets the form's nested field atoms
    */
   reset: WritableAtom<null, void>;
@@ -928,6 +975,18 @@ export type FormAtomErrors<Fields extends FormAtomFields> = {
     : never;
 };
 
+export type FormAtomTouchedFields<Fields extends FormAtomFields> = {
+  [Key in keyof Fields]: Fields[Key] extends FieldAtom<any>
+    ? boolean
+    : Fields[Key] extends FormAtomFields
+    ? FormAtomValues<Fields[Key]>
+    : Fields[Key] extends any[]
+    ? FormAtomValues<{
+        [Index in keyof Fields[Key]]: Fields[Key][Index];
+      }>
+    : never;
+};
+
 export interface UseFormAtom<Fields extends FormAtomFields> {
   /**
    * An object containing the values of a form's nested field atoms
@@ -977,11 +1036,19 @@ export interface FormAtomState<Fields extends FormAtomFields> {
   /**
    * An object containing the values of a form's nested field atoms
    */
-  values: ExtractAtomValue<ExtractAtomValue<FormAtom<Fields>>["values"]>;
+  values: FormAtomValues<Fields>;
   /**
    * An object containing the errors of a form's nested field atoms
    */
-  errors: ExtractAtomValue<ExtractAtomValue<FormAtom<Fields>>["errors"]>;
+  errors: FormAtomErrors<Fields>;
+  /**
+   * `true` if any of the fields in the form are dirty.
+   */
+  dirty: boolean;
+  /**
+   * An object containing the touched state of the form's nested field atoms.
+   */
+  touchedFields: FormAtomTouchedFields<Fields>;
   /**
    * The number of times a form has been submitted
    */

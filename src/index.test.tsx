@@ -787,6 +787,51 @@ describe("useFormAtom()", () => {
 
     expect(form.result.current.validateStatus).toBe("valid");
   });
+
+  it("should return the dirty state", async () => {
+    const config = {
+      name: fieldAtom({
+        value: "lunde",
+      }),
+      hobbies: [
+        fieldAtom({
+          name: "hobbies.0",
+          value: "test",
+        }),
+      ],
+    };
+    const atom = formAtom(config);
+    const field = renderHook(() => useFieldAtom(config.name));
+    const form = renderHook(() => useFormAtomState(atom));
+    expect(form.result.current.dirty).toBe(false);
+
+    domAct(() => {
+      field.result.current.actions.setValue("jared");
+    });
+
+    expect(form.result.current.dirty).toBe(true);
+  });
+
+  it("should return the touched state", async () => {
+    const config = {
+      name: fieldAtom({
+        value: "lunde",
+      }),
+      hobbies: [
+        fieldAtom({
+          value: "test",
+          touched: true,
+        }),
+      ],
+    };
+    const atom = formAtom(config);
+    const form = renderHook(() => useFormAtomState(atom));
+
+    expect(form.result.current.touchedFields).toEqual({
+      name: false,
+      hobbies: [true],
+    });
+  });
 });
 
 describe("useFormAtomValues()", () => {

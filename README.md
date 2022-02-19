@@ -2,7 +2,7 @@
 
 # form-atoms
 
-> Form atom primitives for [Jotai](https://jotai.org/docs/api/core)
+> Atomic form primitives for [Jotai](https://jotai.org/docs/api/core)
 
 ```sh
 npm i form-atoms jotai
@@ -123,6 +123,19 @@ by using it, but you gain a ton of performance and without footguns.
 | [`useFieldAtomErrors()`](#useformatomerrors)  | A hook that returns the errors of the form atom.                                                                                                                                                                                                                                                                          |
 | [`useFieldAtomStatus()`](#useformatomstatus)  | A hook that returns the `submitStatus` and `validateStatus` of the form atom.                                                                                                                                                                                                                                             |
 | [`useFieldAtomSubmit()`](#useformatomsubmit)  | A hook that returns a callback for handling form submission.                                                                                                                                                                                                                                                              |
+
+## Recipes
+
+1. [**How to validate on `(blur, change, touch, submit)`**](#)
+1. [**How to validate a field conditional to the state of another field**](#)
+1. [**How to validate a field asynchronously**](#)
+1. [**How to create an array of fields**](#)
+1. [**How to create an nested fields**](#)
+1. [**How to handle errors**](#)
+1. [**How to set initial values inside of a React component**](#)
+1. [**How to use a custom input**](#)
+
+---
 
 ## Field atoms
 
@@ -536,6 +549,15 @@ type FormAtom<Fields extends FormAtomFields> = Atom<{
    */
   errors: Atom<FormAtomErrors<Fields>>;
   /**
+   * A read-only atom that returns `true` if any of the fields in
+   * the form are dirty.
+   */
+  dirty: Atom<boolean>;
+  /**
+   * A read-only atom derives the touched state of its nested field atoms.
+   */
+  touchedFields: Atom<FormAtomTouchedFields<Fields>>;
+  /**
    * A write-only atom that resets the form's nested field atoms
    */
   reset: WritableAtom<null, void>;
@@ -641,11 +663,19 @@ interface FormAtomState<Fields extends FormAtomFields> {
   /**
    * An object containing the values of a form's nested field atoms
    */
-  values: ExtractAtomValue<ExtractAtomValue<FormAtom<Fields>>["values"]>;
+  values: FormAtomValues<Fields>;
   /**
    * An object containing the errors of a form's nested field atoms
    */
-  errors: ExtractAtomValue<ExtractAtomValue<FormAtom<Fields>>["errors"]>;
+  errors: FormAtomErrors<Fields>;
+  /**
+   * `true` if any of the fields in the form are dirty.
+   */
+  dirty: boolean;
+  /**
+   * An object containing the touched state of the form's nested field atoms.
+   */
+  touchedFields: FormAtomTouchedFields<Fields>;
   /**
    * The number of times a form has been submitted
    */
