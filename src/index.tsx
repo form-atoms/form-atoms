@@ -12,6 +12,87 @@ import * as React from "react";
 import { setPath } from "./utils";
 
 //
+// Components
+//
+
+/**
+ * A React component that renders form atoms and their fields in an isolated
+ * scope using a Jotai Provider.
+ *
+ * @param {FormProps<Fields>} props - Component props
+ */
+export function Form<Fields extends FormAtomFields>(props: FormProps<Fields>) {
+  const { scope, ...atomProps } = props;
+  return (
+    <Provider scope={scope}>
+      <FormAtom {...atomProps} />
+    </Provider>
+  );
+}
+
+function FormAtom<Fields extends FormAtomFields>(
+  props:
+    | {
+        atom: FormAtom<Fields>;
+        render(props: UseFormAtom<Fields>): JSX.Element;
+      }
+    | {
+        atom: FormAtom<Fields>;
+        component: React.ComponentType<UseFormAtom<Fields>>;
+      }
+) {
+  const form = useFormAtom(props.atom);
+
+  if ("render" in props) {
+    return props.render(form);
+  }
+
+  return <props.component {...form} />;
+}
+
+/**
+ * A React component that renders field atoms with initial values. This is
+ * most useful for fields that are rendered as native HTML elements because
+ * the props can unpack directly into the underlying component.
+ *
+ * @param {FieldProps<Value>} props - Component props
+ */
+export function InputField<Value extends string | number | string[]>(
+  props: InputFieldProps<Value>
+) {
+  const fieldAtom = useFieldAtom(props.atom, props.scope);
+  useFieldAtomInitialValue(props.atom, props.initialValue, props.scope);
+
+  if ("render" in props) {
+    return props.render(fieldAtom.props, fieldAtom.state, fieldAtom.actions);
+  }
+
+  return React.createElement(props.component, fieldAtom.props);
+}
+
+/**
+ * A React component that renders field atoms with initial values. This is
+ * most useful for fields that aren't rendered as native HTML elements.
+ *
+ * @param {FieldProps<Value>} props - Component props
+ */
+export function Field<Value extends string | number | string[]>(
+  props: FieldProps<Value>
+) {
+  const fieldAtomState = useFieldAtomState(props.atom, props.scope);
+  const fieldAtomStateActions = useFieldAtomActions(props.atom, props.scope);
+  useFieldAtomInitialValue(props.atom, props.initialValue, props.scope);
+
+  if ("render" in props) {
+    return props.render(fieldAtomState, fieldAtomStateActions);
+  }
+
+  return (
+    <props.component state={fieldAtomState} actions={fieldAtomStateActions} />
+  );
+}
+
+//
 // Forms
 //
 
@@ -826,6 +907,147 @@ export function walkFields<Fields extends FormAtomFields>(
 
 export { Provider } from "jotai";
 
+export type InputFieldProps<Value extends string | number | string[]> =
+  | {
+      /**
+       * A field atom
+       */
+      atom: FieldAtom<Value>;
+      /**
+       * The initial value of the field
+       */
+      initialValue?: Value;
+      /**
+       * When using atoms with a scope, the provider with the same scope will be used.
+       * The recommendation for the scope value is a unique symbol. The primary use case
+       * of scope is for library usage.
+       */
+      scope?: Scope;
+      /**
+       * A render prop
+       *
+       * @param props - Props that can be directly unpacked into a native HTML input element
+       * @param state - The state of the field atom
+       * @param actions - The actions of the field atom
+       */
+      render(
+        props: FieldAtomProps<Value>,
+        state: FieldAtomState<Value>,
+        actions: FieldAtomActions<Value>
+      ): JSX.Element;
+    }
+  | {
+      /**
+       * A field atom
+       */
+      atom: FieldAtom<Value>;
+      /**
+       * The initial value of the field
+       */
+      initialValue?: Value;
+      /**
+       * When using atoms with a scope, the provider with the same scope will be used.
+       * The recommendation for the scope value is a unique symbol. The primary use case
+       * of scope is for library usage.
+       */
+      scope?: Scope;
+      /**
+       * A React component
+       */
+      component:
+        | "input"
+        | "textarea"
+        | "select"
+        | React.ComponentType<FieldAtomProps<Value>>;
+    };
+
+export type FieldProps<Value extends string | number | string[]> =
+  | {
+      /**
+       * A field atom
+       */
+      atom: FieldAtom<Value>;
+      /**
+       * The initial value of the field
+       */
+      initialValue?: Value;
+      /**
+       * When using atoms with a scope, the provider with the same scope will be used.
+       * The recommendation for the scope value is a unique symbol. The primary use case
+       * of scope is for library usage.
+       */
+      scope?: Scope;
+      /**
+       * A render prop
+       *
+       * @param state - The state of the field atom
+       * @param actions - The actions of the field atom
+       */
+      render(
+        state: FieldAtomState<Value>,
+        actions: FieldAtomActions<Value>
+      ): JSX.Element;
+    }
+  | {
+      /**
+       * A field atom
+       */
+      atom: FieldAtom<Value>;
+      /**
+       * The initial value of the field
+       */
+      initialValue?: Value;
+      /**
+       * When using atoms with a scope, the provider with the same scope will be used.
+       * The recommendation for the scope value is a unique symbol. The primary use case
+       * of scope is for library usage.
+       */
+      scope?: Scope;
+      /**
+       * A React component
+       */
+      component: React.ComponentType<{
+        state: FieldAtomState<Value>;
+        actions: FieldAtomActions<Value>;
+      }>;
+    };
+
+export type FormProps<Fields extends FormAtomFields> =
+  | {
+      /**
+       * A form atom
+       */
+      atom: FormAtom<Fields>;
+      /**
+       * When using atoms with a scope, the provider with the same scope will be used.
+       * The recommendation for the scope value is a unique symbol. The primary use case
+       * of scope is for library usage.
+       */
+      scope?: Scope;
+      /**
+       * A render prop
+       *
+       * @param props - Props returned from a `useFormAtom` hook
+       */
+      render(props: UseFormAtom<Fields>): JSX.Element;
+    }
+  | {
+      /**
+       * A form atom
+       */
+      atom: FormAtom<Fields>;
+      /**
+       * When using atoms with a scope, the provider with the same scope will be used.
+       * The recommendation for the scope value is a unique symbol. The primary use case
+       * of scope is for library usage.
+       */
+      scope?: Scope;
+      /**
+       * A React component.
+       */
+      component: React.ComponentType<UseFormAtom<Fields>>;
+    };
+
 /**
  * A form submission status
  */
@@ -978,7 +1200,7 @@ export type FormAtomValues<Fields extends FormAtomFields> = {
     ? FormAtomValues<Fields[Key]>
     : Fields[Key] extends any[]
     ? FormAtomValues<{
-        [Index in keyof Fields[Key]]: Fields[Key][Index];
+        [Index in Extract<keyof Fields[Key], number>]: Fields[Key][Index];
       }>
     : never;
 };
@@ -993,7 +1215,7 @@ export type FormAtomErrors<Fields extends FormAtomFields> = {
     ? FormAtomErrors<Fields[Key]>
     : Fields[Key] extends any[]
     ? FormAtomErrors<{
-        [Index in keyof Fields[Key]]: Fields[Key][Index];
+        [Index in Extract<keyof Fields[Key], number>]: Fields[Key][Index];
       }>
     : never;
 };
@@ -1005,7 +1227,7 @@ export type FormAtomTouchedFields<Fields extends FormAtomFields> = {
     ? FormAtomValues<Fields[Key]>
     : Fields[Key] extends any[]
     ? FormAtomValues<{
-        [Index in keyof Fields[Key]]: Fields[Key][Index];
+        [Index in Extract<keyof Fields[Key], number>]: Fields[Key][Index];
       }>
     : never;
 };

@@ -40,6 +40,7 @@ npm i form-atoms jotai
 - [x] **Dynamic fields** - you aren't stuck with your initial config
 - [x] **Controlled inputs** because no, uncontrolled inputs are not preferrable
 - [x] **Ready for concurrent React** - validation updates have a lower priority
+- [x] **Familiar API** that is very similar to other form libraries
 - [x] **Async field-level validation**
 - [x] **Async submission**
 
@@ -124,7 +125,15 @@ by using it, but you gain a ton of performance and without footguns.
 | [`useFieldAtomStatus()`](#useformatomstatus)  | A hook that returns the `submitStatus` and `validateStatus` of the form atom.                                                                                                                                                                                                                                             |
 | [`useFieldAtomSubmit()`](#useformatomsubmit)  | A hook that returns a callback for handling form submission.                                                                                                                                                                                                                                                              |
 
+| Components                    | Description                                                                                                                                                                                              |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`<Form>`](#form)             | A React component that renders form atoms and their fields in an isolated scope using a Jotai Provider.                                                                                                  |
+| [`<InputField>`](#inputfield) | A React component that renders field atoms with initial values. This is useful for fields that are rendered as native HTML elements because the props can unpack directly into the underlying component. |
+| [`<Field>`](#field)           | A React component that renders field atoms with initial values. This is useful for fields that aren't rendered as native HTML elements.                                                                  |
+
 ## Recipes
+
+> ☀︎ Coming soon
 
 1. [**How to validate on `(blur, change, touch, submit)`**](#)
 1. [**How to validate a field conditional to the state of another field**](#)
@@ -880,6 +889,67 @@ A hook that returns a callback for handling form submission.
 #### [⇗ Back to top](#table-of-contents)
 
 ---
+
+## Components
+
+### &lt;Form&gt;
+
+A React component that renders form atoms and their fields in an isolated
+scope using a Jotai Provider.
+
+#### Props
+
+| Name      | Type                                                                                     | Required? | Description                                                             |
+| --------- | ---------------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------- |
+| atom      | `FormAtom<FormAtomFields>`                                                               | Yes       | A form atom                                                             |
+| scope     | `Scope`                                                                                  | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
+| component | `React.ComponentType<{state: FieldAtomState<Value>; actions: FieldAtomActions<Value>;}>` | No        | A React component to render as the input field                          |
+| render    | `(state: FieldAtomState<Value>, actions: FieldAtomActions<Value>) => JSX.Element`        | No        | A render prop                                                           |
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
+### &lt;InputField&gt;
+
+A React component that renders field atoms with initial values. This is
+most useful for fields that are rendered as native HTML elements because
+the props can unpack directly into the underlying component.
+
+#### Props
+
+| Name         | Type                                                                                     | Required? | Description                                                             |
+| ------------ | ---------------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------- |
+| atom         | `FieldAtom<Value>`                                                                       | Yes       | A field atom                                                            |
+| initialValue | `Value`                                                                                  | No        | The initial value of the field                                          |
+| scope        | `Scope`                                                                                  | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
+| component    | `React.ComponentType<{state: FieldAtomState<Value>; actions: FieldAtomActions<Value>;}>` | No        | A React component to render as the input field                          |
+| render       | `(state: FieldAtomState<Value>, actions: FieldAtomActions<Value>) => JSX.Element`        | No        | A render prop                                                           |
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
+### &lt;Field&gt;
+
+A React component that renders field atoms with initial values. This is
+most useful for fields that aren't rendered as native HTML elements.
+
+#### Props
+
+| Name         | Type                                                                                     | Required? | Description                                                             |
+| ------------ | ---------------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------- |
+| atom         | `FieldAtom<Value>`                                                                       | Yes       | A field atom                                                            |
+| initialValue | `Value`                                                                                  | No        | The initial value of the field                                          |
+| scope        | `Scope`                                                                                  | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
+| component    | `React.ComponentType<{state: FieldAtomState<Value>; actions: FieldAtomActions<Value>;}>` | No        | A React component to render as the field                                |
+| render       | `(state: FieldAtomState<Value>, actions: FieldAtomActions<Value>) => JSX.Element`        | No        | A render prop                                                           |
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
+## Utilities
 
 ### walkFields()
 

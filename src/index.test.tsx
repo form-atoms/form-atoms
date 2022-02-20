@@ -1,12 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import { act as domAct, renderHook } from "@testing-library/react-hooks/dom";
 import userEvent from "@testing-library/user-event";
+import type { ExtractAtomValue } from "jotai";
 import { Provider } from "jotai";
 import React from "react";
-import type { FieldAtom } from ".";
+import type { FieldAtom, UseFormAtom } from ".";
 import {
+  Field,
   fieldAtom,
+  Form,
   formAtom,
+  InputField,
   useFieldAtom,
   useFieldAtomErrors,
   useFieldAtomInitialValue,
@@ -19,6 +23,194 @@ import {
   useFormAtomSubmit,
   useFormAtomValues,
 } from ".";
+
+describe("<Field>", () => {
+  it('should render "component" prop', () => {
+    const atom = fieldAtom({ value: "test" });
+    const field = renderHook(() => useFieldAtom(atom));
+    render(
+      <Field
+        atom={atom}
+        component={(props) => {
+          return <button onClick={() => props.actions.setValue("foo")} />;
+        }}
+      />
+    );
+
+    userEvent.click(screen.getByRole("button"));
+    expect(field.result.current.state.value).toBe("foo");
+  });
+
+  it('should render "render" prop', () => {
+    const atom = fieldAtom({ value: "test" });
+    const field = renderHook(() => useFieldAtom(atom));
+    render(
+      <Field
+        atom={atom}
+        render={(state, actions) => {
+          return <button onClick={() => actions.setValue("foo")} />;
+        }}
+      />
+    );
+
+    userEvent.click(screen.getByRole("button"));
+    expect(field.result.current.state.value).toBe("foo");
+  });
+
+  it("should set initial value", () => {
+    const atom = fieldAtom({ value: "test" });
+
+    render(
+      <Field
+        atom={atom}
+        initialValue="hello"
+        component={(props) => {
+          return (
+            <button onClick={() => props.actions.setValue("foo")}>
+              {props.state.value}
+            </button>
+          );
+        }}
+      />
+    );
+
+    expect(screen.getByText("hello")).toBeInTheDocument();
+  });
+});
+
+describe("<InputField>", () => {
+  it('should render "component" prop in scope', () => {
+    const atom = fieldAtom({ value: "test" });
+    render(<InputField atom={atom} component="input" />);
+    expect(screen.getByRole("textbox")).toBeInTheDocument();
+  });
+
+  it('should render "render" prop', () => {
+    const atom = fieldAtom({ value: "test" });
+    render(<InputField atom={atom} render={(props) => <input {...props} />} />);
+    expect(screen.getByRole("textbox")).toBeInTheDocument();
+  });
+
+  it("should set initial value", () => {
+    const atom = fieldAtom({ value: "test" });
+
+    render(
+      <InputField
+        atom={atom}
+        initialValue="hello"
+        render={(props, state, actions) => {
+          return (
+            <button onClick={() => actions.setValue("foo")}>
+              {state.value}
+            </button>
+          );
+        }}
+      />
+    );
+
+    expect(screen.getByText("hello")).toBeInTheDocument();
+  });
+});
+
+describe("<Form>", () => {
+  it('should render "component" prop in scope', () => {
+    const atom = formAtom({
+      name: fieldAtom({ value: "test" }),
+    });
+
+    const FormComponent = (
+      props: UseFormAtom<
+        ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>
+      >
+    ) => {
+      const field = useFieldAtom(props.fieldAtoms.name);
+
+      return (
+        <form onSubmit={props.submit((values) => console.log(values.name))}>
+          <input {...field.props} />
+        </form>
+      );
+    };
+
+    render(<Form atom={atom} component={FormComponent} />);
+    expect(screen.getByRole("textbox")).toBeInTheDocument();
+  });
+
+  it('should render "render" prop in scope', () => {
+    const atom = formAtom({
+      name: fieldAtom({ value: "test" }),
+    });
+
+    const FormComponent = (
+      props: UseFormAtom<
+        ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>
+      >
+    ) => {
+      const field = useFieldAtom(props.fieldAtoms.name);
+
+      return (
+        <form onSubmit={props.submit((values) => console.log(values.name))}>
+          <input {...field.props} />
+        </form>
+      );
+    };
+
+    render(<Form atom={atom} render={FormComponent} />);
+    expect(screen.getByRole("textbox")).toBeInTheDocument();
+  });
+
+  it("should render same form atom in isolated scope", () => {
+    const atom = formAtom({
+      name: fieldAtom({ value: "test" }),
+    });
+
+    const FormComponentA = (
+      props: UseFormAtom<
+        ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>
+      >
+    ) => {
+      const field = useFieldAtom(props.fieldAtoms.name);
+      useFieldAtomInitialValue(props.fieldAtoms.name, "a");
+
+      return (
+        <form onSubmit={props.submit((values) => console.log(values.name))}>
+          <input aria-label="input a" {...field.props} />
+        </form>
+      );
+    };
+
+    const FormComponentB = (
+      props: UseFormAtom<
+        ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>
+      >
+    ) => {
+      const field = useFieldAtom(props.fieldAtoms.name);
+      useFieldAtomInitialValue(props.fieldAtoms.name, "b");
+
+      return (
+        <form onSubmit={props.submit((values) => console.log(values.name))}>
+          <input aria-label="input b" {...field.props} />
+        </form>
+      );
+    };
+
+    render(
+      <div>
+        <Form atom={atom} render={FormComponentA} />
+        <Form atom={atom} render={FormComponentB} />
+      </div>
+    );
+
+    expect(screen.getByLabelText("input a")).toBeInTheDocument();
+    expect(screen.getByLabelText("input b")).toBeInTheDocument();
+
+    userEvent.type(screen.getByLabelText("input a"), "foo");
+    userEvent.type(screen.getByLabelText("input b"), "bar");
+
+    expect(screen.getByLabelText("input a")).toHaveValue("afoo");
+    expect(screen.getByLabelText("input b")).toHaveValue("bbar");
+  });
+});
 
 describe("useFieldAtom()", () => {
   it("should add default props", () => {
@@ -420,8 +612,10 @@ describe("useFieldAtomInitialValue()", () => {
     const firstNameAtom = fieldAtom({
       value: "test",
     });
-    const field = renderHook(() => useFieldAtom(firstNameAtom));
-    renderHook(() => useFieldAtomInitialValue(firstNameAtom, "jared"));
+    const field = renderHook(() => {
+      useFieldAtomInitialValue(firstNameAtom, "jared");
+      return useFieldAtom(firstNameAtom);
+    });
     expect(field.result.current.props.value).toBe("jared");
   });
 
