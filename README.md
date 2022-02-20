@@ -2,7 +2,7 @@
 
 # form-atoms
 
-> Form atom primitives for [Jotai](https://jotai.org/docs/api/core)
+> Atomic form primitives for [Jotai](https://jotai.org/docs/api/core)
 
 ```sh
 npm i form-atoms jotai
@@ -40,7 +40,7 @@ npm i form-atoms jotai
 - [x] **Dynamic fields** - you aren't stuck with your initial config
 - [x] **Controlled inputs** because no, uncontrolled inputs are not preferrable
 - [x] **Ready for concurrent React** - validation updates have a lower priority
-- [x] **Hooks only**, no components
+- [x] **Familiar API** that is very similar to other form libraries
 - [x] **Async field-level validation**
 - [x] **Async submission**
 
@@ -103,15 +103,16 @@ by using it, but you gain a ton of performance and without footguns.
 
 ## Table of contents
 
-| Field atoms                                     | Description                                                                                                                                                              |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`fieldAtom()`](#fieldatom)                     | An atom that represents a field in a form. It manages state for the field, including the name, value, errors, dirty, validation, and touched state.                      |
-| [`useFieldAtom()`](#usefieldatom)               | A hook that returns `props`, `state`, and `actions` of a field atom from `useFieldAtomProps`, `useFieldAtomState`, and `useFieldAtomActions`.                            |
-| [`useFieldAtomProps()`](#usefieldatomprops)     | A hook that returns a set of props that can be destructured directly into an `<input>`, `<select>`, or `<textarea>` element.                                             |
-| [`useFieldAtomState()`](#usefieldatomstate)     | A hook that returns the state of a field atom. This includes the field's value, whether it has been touched, whether it is dirty, the validation status, and any errors. |
-| [`useFieldAtomActions()`](#usefieldatomactions) | A hook that returns a set of actions that can be used to interact with the field atom state.                                                                             |
-| [`useFieldAtomValue()`](#usefieldatomvalue)     | A hook that returns the value of a field atom.                                                                                                                           |
-| [`useFieldAtomErrors()`](#usefieldatomerrors)   | A hook that returns the errors of a field atom.                                                                                                                          |
+| Field atoms                                               | Description                                                                                                                                                                                          |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`fieldAtom()`](#fieldatom)                               | An atom that represents a field in a form. It manages state for the field, including the name, value, errors, dirty, validation, and touched state.                                                  |
+| [`useFieldAtom()`](#usefieldatom)                         | A hook that returns `props`, `state`, and `actions` of a field atom from `useFieldAtomProps`, `useFieldAtomState`, and `useFieldAtomActions`.                                                        |
+| [`useFieldAtomProps()`](#usefieldatomprops)               | A hook that returns a set of props that can be destructured directly into an `<input>`, `<select>`, or `<textarea>` element.                                                                         |
+| [`useFieldAtomState()`](#usefieldatomstate)               | A hook that returns the state of a field atom. This includes the field's value, whether it has been touched, whether it is dirty, the validation status, and any errors.                             |
+| [`useFieldAtomActions()`](#usefieldatomactions)           | A hook that returns a set of actions that can be used to interact with the field atom state.                                                                                                         |
+| [`useFieldAtomInitialValue()`](#usefieldatominitialvalue) | A hook that sets the initial value of a field atom. Initial values can only be set once per scope. Therefore, if the initial value used is changed during rerenders, it won't update the atom value. |
+| [`useFieldAtomValue()`](#usefieldatomvalue)               | A hook that returns the value of a field atom.                                                                                                                                                       |
+| [`useFieldAtomErrors()`](#usefieldatomerrors)             | A hook that returns the errors of a field atom.                                                                                                                                                      |
 
 | Form atoms                                    | Description                                                                                                                                                                                                                                                                                                               |
 | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -123,6 +124,27 @@ by using it, but you gain a ton of performance and without footguns.
 | [`useFieldAtomErrors()`](#useformatomerrors)  | A hook that returns the errors of the form atom.                                                                                                                                                                                                                                                                          |
 | [`useFieldAtomStatus()`](#useformatomstatus)  | A hook that returns the `submitStatus` and `validateStatus` of the form atom.                                                                                                                                                                                                                                             |
 | [`useFieldAtomSubmit()`](#useformatomsubmit)  | A hook that returns a callback for handling form submission.                                                                                                                                                                                                                                                              |
+
+| Components                    | Description                                                                                                                                                                                              |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`<Form>`](#form)             | A React component that renders form atoms and their fields in an isolated scope using a Jotai Provider.                                                                                                  |
+| [`<InputField>`](#inputfield) | A React component that renders field atoms with initial values. This is useful for fields that are rendered as native HTML elements because the props can unpack directly into the underlying component. |
+| [`<Field>`](#field)           | A React component that renders field atoms with initial values. This is useful for fields that aren't rendered as native HTML elements.                                                                  |
+
+## Recipes
+
+> ☀︎ Coming soon
+
+1. [**How to validate on `(blur, change, touch, submit)`**](#)
+1. [**How to validate a field conditional to the state of another field**](#)
+1. [**How to validate a field asynchronously**](#)
+1. [**How to create an array of fields**](#)
+1. [**How to create an nested fields**](#)
+1. [**How to handle errors**](#)
+1. [**How to set initial values inside of a React component**](#)
+1. [**How to use a custom input**](#)
+
+---
 
 ## Field atoms
 
@@ -446,6 +468,24 @@ interface FieldAtomActions<Value> {
 
 ---
 
+### useFieldAtomInitialValue()
+
+A hook that sets the initial value of a field atom. Initial values can only be set
+once per scope. Therefore, if the initial value used is changed during rerenders,
+it won't update the atom value.
+
+#### Arguments
+
+| Name         | Type               | Required? | Description                                                                                 |
+| ------------ | ------------------ | --------- | ------------------------------------------------------------------------------------------- |
+| fieldAtom    | `FieldAtom<Value>` | Yes       | The atom that stores the field's state                                                      |
+| initialValue | `Value`            | No        | The initial value to set the atom to. If this is `undefined`, no initial value will be set. |
+| scope        | `Scope`            | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310)                     |
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
 ### useFieldAtomValue()
 
 A hook that returns the value of a field atom.
@@ -535,6 +575,15 @@ type FormAtom<Fields extends FormAtomFields> = Atom<{
    * its nested field atoms.
    */
   errors: Atom<FormAtomErrors<Fields>>;
+  /**
+   * A read-only atom that returns `true` if any of the fields in
+   * the form are dirty.
+   */
+  dirty: Atom<boolean>;
+  /**
+   * A read-only atom derives the touched state of its nested field atoms.
+   */
+  touchedFields: Atom<FormAtomTouchedFields<Fields>>;
   /**
    * A write-only atom that resets the form's nested field atoms
    */
@@ -641,11 +690,19 @@ interface FormAtomState<Fields extends FormAtomFields> {
   /**
    * An object containing the values of a form's nested field atoms
    */
-  values: ExtractAtomValue<ExtractAtomValue<FormAtom<Fields>>["values"]>;
+  values: FormAtomValues<Fields>;
   /**
    * An object containing the errors of a form's nested field atoms
    */
-  errors: ExtractAtomValue<ExtractAtomValue<FormAtom<Fields>>["errors"]>;
+  errors: FormAtomErrors<Fields>;
+  /**
+   * `true` if any of the fields in the form are dirty.
+   */
+  dirty: boolean;
+  /**
+   * An object containing the touched state of the form's nested field atoms.
+   */
+  touchedFields: FormAtomTouchedFields<Fields>;
   /**
    * The number of times a form has been submitted
    */
@@ -832,6 +889,67 @@ A hook that returns a callback for handling form submission.
 #### [⇗ Back to top](#table-of-contents)
 
 ---
+
+## Components
+
+### &lt;Form&gt;
+
+A React component that renders form atoms and their fields in an isolated
+scope using a Jotai Provider.
+
+#### Props
+
+| Name      | Type                                                                                     | Required? | Description                                                             |
+| --------- | ---------------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------- |
+| atom      | `FormAtom<FormAtomFields>`                                                               | Yes       | A form atom                                                             |
+| scope     | `Scope`                                                                                  | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
+| component | `React.ComponentType<{state: FieldAtomState<Value>; actions: FieldAtomActions<Value>;}>` | No        | A React component to render as the input field                          |
+| render    | `(state: FieldAtomState<Value>, actions: FieldAtomActions<Value>) => JSX.Element`        | No        | A render prop                                                           |
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
+### &lt;InputField&gt;
+
+A React component that renders field atoms with initial values. This is
+most useful for fields that are rendered as native HTML elements because
+the props can unpack directly into the underlying component.
+
+#### Props
+
+| Name         | Type                                                                                     | Required? | Description                                                             |
+| ------------ | ---------------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------- |
+| atom         | `FieldAtom<Value>`                                                                       | Yes       | A field atom                                                            |
+| initialValue | `Value`                                                                                  | No        | The initial value of the field                                          |
+| scope        | `Scope`                                                                                  | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
+| component    | `React.ComponentType<{state: FieldAtomState<Value>; actions: FieldAtomActions<Value>;}>` | No        | A React component to render as the input field                          |
+| render       | `(state: FieldAtomState<Value>, actions: FieldAtomActions<Value>) => JSX.Element`        | No        | A render prop                                                           |
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
+### &lt;Field&gt;
+
+A React component that renders field atoms with initial values. This is
+most useful for fields that aren't rendered as native HTML elements.
+
+#### Props
+
+| Name         | Type                                                                                     | Required? | Description                                                             |
+| ------------ | ---------------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------- |
+| atom         | `FieldAtom<Value>`                                                                       | Yes       | A field atom                                                            |
+| initialValue | `Value`                                                                                  | No        | The initial value of the field                                          |
+| scope        | `Scope`                                                                                  | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
+| component    | `React.ComponentType<{state: FieldAtomState<Value>; actions: FieldAtomActions<Value>;}>` | No        | A React component to render as the field                                |
+| render       | `(state: FieldAtomState<Value>, actions: FieldAtomActions<Value>) => JSX.Element`        | No        | A render prop                                                           |
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
+## Utilities
 
 ### walkFields()
 
