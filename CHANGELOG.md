@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/jaredLunde/form-atoms/compare/v1.1.2...v1.2.0) (2022-02-20)
+
+
+### Features
+
+* add field and form components ([#4](https://github.com/jaredLunde/form-atoms/issues/4)) ([ca6d60e](https://github.com/jaredLunde/form-atoms/commit/ca6d60eb79fd1c6a42214708b8f7c2d5fbdef667))
+
 ## [1.1.2](https://github.com/jaredLunde/form-atoms/compare/v1.1.1...v1.1.2) (2022-02-19)
 
 
