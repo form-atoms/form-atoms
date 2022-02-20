@@ -675,7 +675,8 @@ export interface FieldAtomConfig<Value> {
      * A function that validates the value of the field any time
      * one of its atoms changes. It must either return an array of
      * string error messages or undefined. If it returns undefined,
-     * the field is considered valid.
+     * the validation is "skipped" and the current errors in state
+     * are retained.
      */
     validate?: (state: {
         /**

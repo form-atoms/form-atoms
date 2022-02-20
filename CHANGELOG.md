@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/jaredLunde/form-atoms/compare/v1.2.0...v1.2.1) (2022-02-20)
+
+
+### Bug Fixes
+
+* validation should be skipped if undefined is returned ([#5](https://github.com/jaredLunde/form-atoms/issues/5)) ([4fd91a5](https://github.com/jaredLunde/form-atoms/commit/4fd91a52f3958d3e303c18ef493a71b0c274a636))
+
 # [1.2.0](https://github.com/jaredLunde/form-atoms/compare/v1.1.2...v1.2.0) (2022-02-20)
 
 
