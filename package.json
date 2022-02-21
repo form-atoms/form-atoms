@@ -1,6 +1,6 @@
 {
   "name": "form-atoms",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Form primitives for Jotai",
   "license": "MIT",
   "author": "Jared Lunde <jared.lunde@gmail.com> (https://jaredlunde.com/)",

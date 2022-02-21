@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/jaredLunde/form-atoms/compare/v1.2.1...v1.2.2) (2022-02-21)
+
+
+### Bug Fixes
+
+* fix dynamic field reading in walk ([#6](https://github.com/jaredLunde/form-atoms/issues/6)) ([a27d5e3](https://github.com/jaredLunde/form-atoms/commit/a27d5e3eefe43dde1ea0f9f8edb32db66211146e))
+
 ## [1.2.1](https://github.com/jaredLunde/form-atoms/compare/v1.2.0...v1.2.1) (2022-02-20)
 
 
