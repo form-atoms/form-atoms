@@ -348,7 +348,9 @@ export function useFormAtom<Fields extends FormAtomFields>(
       submit(onSubmit) {
         return (e) => {
           e?.preventDefault();
-          return handleSubmit(onSubmit);
+          startTransition(() => {
+            handleSubmit(onSubmit);
+          });
         };
       },
     }),
@@ -524,13 +526,16 @@ export function useFormAtomSubmit<Fields extends FormAtomFields>(
   formAtom: FormAtom<Fields>,
   scope?: Scope
 ) {
+  const [, startTransition] = useTransition();
   const form = useAtomValue(formAtom, scope);
   const handleSubmit = useSetAtom(form.submit, scope);
   return React.useCallback(
     (values: Parameters<typeof handleSubmit>[0]) =>
       (e?: React.FormEvent<HTMLFormElement>) => {
         e?.preventDefault();
-        handleSubmit(values);
+        startTransition(() => {
+          handleSubmit(values);
+        });
       },
     [handleSubmit]
   );
