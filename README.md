@@ -133,16 +133,17 @@ by using it, but you gain a ton of performance and without footguns.
 
 ## Recipes
 
+1. [**How to validate on `(blur, change, touch, submit)`**](https://codesandbox.io/s/form-atoms-validate-on-event-example-3gdywk?file=/src/App.tsx)
+1. [**How to validate a field conditional to the state of another field**](https://codesandbox.io/s/form-atoms-validate-on-dependent-state-1bidrd?file=/src/App.tsx)
+1. [**How to validate a field asynchronously**](https://codesandbox.io/s/form-atoms-validate-on-dependent-state-forked-yo1eh5?file=/src/App.tsx)
+1. [**How to create a nested fields**](https://codesandbox.io/s/form-atoms-nested-fields-example-7otpdy?file=/src/App.tsx)
+
 > ☀︎ Coming soon
 
-1. [**How to validate on `(blur, change, touch, submit)`**](#)
-1. [**How to validate a field conditional to the state of another field**](#)
-1. [**How to validate a field asynchronously**](#)
-1. [**How to create an array of fields**](#)
-1. [**How to create an nested fields**](#)
-1. [**How to handle errors**](#)
-1. [**How to set initial values inside of a React component**](#)
-1. [**How to use a custom input**](#)
+2. [**How to create an array of fields**](#)
+3. [**How to handle errors**](#)
+4. [**How to set initial values inside of a React component**](#)
+5. [**How to use a custom input**](#)
 
 ---
 

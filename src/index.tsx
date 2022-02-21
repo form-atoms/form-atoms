@@ -111,6 +111,7 @@ export function formAtom<Fields extends FormAtomFields>(
 ): FormAtom<Fields> {
   const fieldsAtom = atomWithReset(fields);
   const valuesAtom = atom((get) => {
+    const fields = get(fieldsAtom);
     const values = {} as FormAtomValues<Fields>;
 
     walkFields(fields, (field, path) => {
@@ -126,6 +127,7 @@ export function formAtom<Fields extends FormAtomFields>(
     set: Setter,
     event: FieldAtomValidateOn
   ) {
+    const fields = get(fieldsAtom);
     const promises: Promise<boolean>[] = [];
 
     walkFields(fields, (nextField) => {
@@ -181,6 +183,7 @@ export function formAtom<Fields extends FormAtomFields>(
   }
 
   const validateResultAtom = atom<FormAtomValidateStatus>((get) => {
+    const fields = get(fieldsAtom);
     let status: FormAtomValidateStatus = "valid";
 
     walkFields(fields, (field) => {
@@ -207,6 +210,7 @@ export function formAtom<Fields extends FormAtomFields>(
   );
 
   const errorsAtom = atom((get) => {
+    const fields = get(fieldsAtom);
     const errors = {} as FormAtomErrors<Fields>;
 
     walkFields(fields, (field, path) => {
@@ -260,6 +264,7 @@ export function formAtom<Fields extends FormAtomFields>(
   });
 
   const dirtyAtom = atom((get) => {
+    const fields = get(fieldsAtom);
     let dirty = false;
 
     walkFields(fields, (field) => {
@@ -272,6 +277,7 @@ export function formAtom<Fields extends FormAtomFields>(
   });
 
   const touchedFieldsAtom = atom((get) => {
+    const fields = get(fieldsAtom);
     const touchedFields = {} as FormAtomTouchedFields<Fields>;
 
     walkFields(fields, (field, path) => {
@@ -283,6 +289,7 @@ export function formAtom<Fields extends FormAtomFields>(
   });
 
   const resetAtom = atom(null, (get, set) => {
+    const fields = get(fieldsAtom);
     walkFields(fields, (field) => {
       const fieldAtom = get(field);
       set(fieldAtom.reset);
