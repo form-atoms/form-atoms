@@ -137,13 +137,13 @@ by using it, but you gain a ton of performance and without footguns.
 1. [**How to validate a field conditional to the state of another field**](https://codesandbox.io/s/form-atoms-validate-on-dependent-state-1bidrd?file=/src/App.tsx)
 1. [**How to validate a field asynchronously**](https://codesandbox.io/s/form-atoms-validate-on-dependent-state-forked-yo1eh5?file=/src/App.tsx)
 1. [**How to create a nested fields**](https://codesandbox.io/s/form-atoms-nested-fields-example-7otpdy?file=/src/App.tsx)
+1. [**How to create an array of fields**](https://codesandbox.io/s/form-atoms-array-fields-example-5evmlz?file=/src/App.tsx)
 
 > ☀︎ Coming soon
 
-2. [**How to create an array of fields**](#)
-3. [**How to handle errors**](#)
-4. [**How to set initial values inside of a React component**](#)
-5. [**How to use a custom input**](#)
+1. [**How to handle errors**](#)
+1. [**How to set initial values inside of a React component**](#)
+1. [**How to use a custom input**](#)
 
 ---
 
