@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/jaredLunde/form-atoms/compare/v1.2.2...v1.2.3) (2022-02-21)
+
+
+### Bug Fixes
+
+* submit needs a startTransition so there are no race conditions w/ validation ([#7](https://github.com/jaredLunde/form-atoms/issues/7)) ([bde6fb9](https://github.com/jaredLunde/form-atoms/commit/bde6fb9d840a4f6efef8c521456305aeef18f131))
+
 ## [1.2.2](https://github.com/jaredLunde/form-atoms/compare/v1.2.1...v1.2.2) (2022-02-21)
 
 
