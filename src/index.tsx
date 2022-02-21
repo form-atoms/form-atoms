@@ -1130,7 +1130,7 @@ export type FieldAtom<Value> = Atom<{
       ) => HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null)
   >;
   _validateCount: WritableAtom<number, number | ((current: number) => number)>;
-  _validateCallback?: FieldAtomConfig<Value>["validate"];
+  _validateCallback?: Validate<Value>;
 }>;
 
 export type FormAtom<Fields extends FormAtomFields> = Atom<{
@@ -1520,6 +1520,18 @@ export interface FieldAtomConfig<Value> {
     event: FieldAtomValidateOn;
   }) => void | string[] | Promise<void | string[]>;
 }
+
+/**
+ * A utility type for easily typing validate functions
+ */
+export type Validate<Value> = FieldAtomConfig<Value>["validate"];
+
+/**
+ * A utility type for easily typing validate function configurations
+ */
+export type ValidateConfig<Value> = Parameters<
+  Exclude<FieldAtomConfig<Value>["validate"], undefined>
+>[0];
 
 /**
  * A `Provider` or `useAtom` hook accepts an optional prop scope which you
