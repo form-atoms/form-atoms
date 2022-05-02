@@ -706,10 +706,7 @@ export function useFieldAtomActions<Value>(
  */
 export function useFieldAtomProps<
   Value extends string | number | readonly string[]
->(
-  fieldAtom: FieldAtom<string | number | readonly string[]>,
-  scope?: Scope
-): FieldAtomProps<Value> {
+>(fieldAtom: FieldAtom<Value>, scope?: Scope): FieldAtomProps<Value> {
   const field = useAtomValue(fieldAtom, scope);
   const name = useAtomValue(field.name, scope);
   const [value, setValue] = useAtom(field.value, scope);
@@ -732,6 +729,7 @@ export function useFieldAtomProps<
         });
       },
       onChange(event) {
+        // @ts-expect-error
         setValue(event.target.value);
 
         startTransition(() => {
@@ -848,7 +846,6 @@ export function useFieldAtom<Value extends string | number | readonly string[]>(
   fieldAtom: FieldAtom<Value>,
   scope?: Scope
 ): UseFieldAtom<Value> {
-  // @ts-expect-error: there's a RESET atom causing issues here
   const props = useFieldAtomProps<Value>(fieldAtom, scope);
   const actions = useFieldAtomActions<Value>(fieldAtom, scope);
   const state = useFieldAtomState<Value>(fieldAtom, scope);
