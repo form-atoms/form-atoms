@@ -79,7 +79,7 @@ describe("<Field>", () => {
 
   it("should set an object value", () => {
     const atom = fieldAtom({ value: { id: "0123", name: "Foo" } });
-    const field = renderHook(() => useFieldAtom(atom));
+    const field = renderHook(() => useFieldAtomValue(atom));
     render(
       <Field
         atom={atom}
@@ -94,7 +94,7 @@ describe("<Field>", () => {
     );
 
     userEvent.click(screen.getByRole("button"));
-    expect(field.result.current.state.value).toStrictEqual({
+    expect(field.result.current).toStrictEqual({
       id: "999",
       name: "Bar",
     });
@@ -102,7 +102,7 @@ describe("<Field>", () => {
 
   it("should set an array value", () => {
     const atom = fieldAtom({ value: [] as any[] });
-    const field = renderHook(() => useFieldAtom(atom));
+    const field = renderHook(() => useFieldAtomValue(atom));
     render(
       <Field
         atom={atom}
@@ -113,7 +113,7 @@ describe("<Field>", () => {
     );
 
     userEvent.click(screen.getByRole("button"));
-    expect(field.result.current.state.value).toStrictEqual(["foo", 1]);
+    expect(field.result.current).toStrictEqual(["foo", 1]);
   });
 });
 
