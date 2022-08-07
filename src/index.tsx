@@ -76,9 +76,7 @@ export function InputField<Value extends string | number | string[]>(
  *
  * @param {FieldProps<Value>} props - Component props
  */
-export function Field<Value extends string | number | string[]>(
-  props: FieldProps<Value>
-) {
+export function Field<Value>(props: FieldProps<Value>) {
   const fieldAtomState = useFieldAtomState(props.atom, props.scope);
   const fieldAtomStateActions = useFieldAtomActions(props.atom, props.scope);
   useFieldAtomInitialValue(props.atom, props.initialValue, props.scope);
@@ -704,9 +702,10 @@ export function useFieldAtomActions<Value>(
  * @returns A set of props that can be destructured directly into an `<input>`,
  *   `<select>`, or `<textarea>` element.
  */
-export function useFieldAtomProps<
-  Value extends string | number | readonly string[]
->(fieldAtom: FieldAtom<Value>, scope?: Scope): FieldAtomProps<Value> {
+export function useFieldAtomProps<Value>(
+  fieldAtom: FieldAtom<Value>,
+  scope?: Scope
+): FieldAtomProps<Value> {
   const field = useAtomValue(fieldAtom, scope);
   const name = useAtomValue(field.name, scope);
   const [value, setValue] = useAtom(field.value, scope);
@@ -842,7 +841,7 @@ export function useFieldAtomInitialValue<Value>(
  *   a unique symbol. The primary use case of scope is for library usage.
  * @returns The errors of the field atom.
  */
-export function useFieldAtom<Value extends string | number | readonly string[]>(
+export function useFieldAtom<Value>(
   fieldAtom: FieldAtom<Value>,
   scope?: Scope
 ): UseFieldAtom<Value> {
@@ -970,7 +969,7 @@ export type InputFieldProps<Value extends string | number | string[]> =
         | React.ComponentType<FieldAtomProps<Value>>;
     };
 
-export type FieldProps<Value extends string | number | string[]> =
+export type FieldProps<Value> =
   | {
       /**
        * A field atom
