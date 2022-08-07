@@ -76,6 +76,45 @@ describe("<Field>", () => {
 
     expect(screen.getByText("hello")).toBeInTheDocument();
   });
+
+  it("should set an object value", () => {
+    const atom = fieldAtom({ value: { id: "0123", name: "Foo" } });
+    const field = renderHook(() => useFieldAtomValue(atom));
+    render(
+      <Field
+        atom={atom}
+        render={(state, actions) => {
+          return (
+            <button
+              onClick={() => actions.setValue({ id: "999", name: "Bar" })}
+            />
+          );
+        }}
+      />
+    );
+
+    userEvent.click(screen.getByRole("button"));
+    expect(field.result.current).toStrictEqual({
+      id: "999",
+      name: "Bar",
+    });
+  });
+
+  it("should set an array value", () => {
+    const atom = fieldAtom({ value: [] as any[] });
+    const field = renderHook(() => useFieldAtomValue(atom));
+    render(
+      <Field
+        atom={atom}
+        render={(state, actions) => {
+          return <button onClick={() => actions.setValue(["foo", 1])} />;
+        }}
+      />
+    );
+
+    userEvent.click(screen.getByRole("button"));
+    expect(field.result.current).toStrictEqual(["foo", 1]);
+  });
 });
 
 describe("<InputField>", () => {

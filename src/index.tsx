@@ -76,9 +76,7 @@ export function InputField<Value extends string | number | string[]>(
  *
  * @param {FieldProps<Value>} props - Component props
  */
-export function Field<Value extends string | number | string[]>(
-  props: FieldProps<Value>
-) {
+export function Field<Value>(props: FieldProps<Value>) {
   const fieldAtomState = useFieldAtomState(props.atom, props.scope);
   const fieldAtomStateActions = useFieldAtomActions(props.atom, props.scope);
   useFieldAtomInitialValue(props.atom, props.initialValue, props.scope);
@@ -970,7 +968,7 @@ export type InputFieldProps<Value extends string | number | string[]> =
         | React.ComponentType<FieldAtomProps<Value>>;
     };
 
-export type FieldProps<Value extends string | number | string[]> =
+export type FieldProps<Value> =
   | {
       /**
        * A field atom
