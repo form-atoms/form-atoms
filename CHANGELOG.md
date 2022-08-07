@@ -1,3 +1,9 @@
+## [1.2.5](https://github.com/jaredLunde/form-atoms/compare/v1.2.4...v1.2.5) (2022-08-07)
+
+### Bug Fixes
+
+- **types:** fix types for Field component ([#13](https://github.com/jaredLunde/form-atoms/issues/13)) ([cdc1917](https://github.com/jaredLunde/form-atoms/commit/cdc1917d8857db78df4e3d3466133ce0abde7484)), closes [#11](https://github.com/jaredLunde/form-atoms/issues/11)
+
 ## [1.2.4](https://github.com/jaredLunde/form-atoms/compare/v1.2.3...v1.2.4) (2022-05-02)
 
 ### Bug Fixes

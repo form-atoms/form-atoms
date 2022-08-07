@@ -32,9 +32,7 @@ export declare function InputField<Value extends string | number | string[]>(
  *
  * @param {FieldProps<Value>} props - Component props
  */
-export declare function Field<Value extends string | number | string[]>(
-  props: FieldProps<Value>
-): JSX.Element;
+export declare function Field<Value>(props: FieldProps<Value>): JSX.Element;
 /**
  * An atom that derives its state fields atoms and allows you to submit,
  * validate, and reset your form.
@@ -327,7 +325,7 @@ export declare type InputFieldProps<Value extends string | number | string[]> =
         | "select"
         | React.ComponentType<FieldAtomProps<Value>>;
     };
-export declare type FieldProps<Value extends string | number | string[]> =
+export declare type FieldProps<Value> =
   | {
       /**
        * A field atom
