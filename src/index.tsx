@@ -703,7 +703,7 @@ export function useFieldAtomActions<Value>(
  *   `<select>`, or `<textarea>` element.
  */
 export function useFieldAtomProps<
-  Value extends string | number | readonly string[]
+  Value
 >(fieldAtom: FieldAtom<Value>, scope?: Scope): FieldAtomProps<Value> {
   const field = useAtomValue(fieldAtom, scope);
   const name = useAtomValue(field.name, scope);
@@ -840,7 +840,7 @@ export function useFieldAtomInitialValue<Value>(
  *   a unique symbol. The primary use case of scope is for library usage.
  * @returns The errors of the field atom.
  */
-export function useFieldAtom<Value extends string | number | readonly string[]>(
+export function useFieldAtom<Value>(
   fieldAtom: FieldAtom<Value>,
   scope?: Scope
 ): UseFieldAtom<Value> {
