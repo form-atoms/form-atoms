@@ -19,7 +19,7 @@ npm i form-atoms jotai
     <img alt="Code coverage" src="https://img.shields.io/codecov/c/gh/jaredLunde/form-atoms?style=for-the-badge&labelColor=24292e">
   </a>
   <a aria-label="Build status" href="https://github.com/jaredLunde/form-atoms/actions/workflows/release.yml">
-    <img alt="Build status" src="https://img.shields.io/github/workflow/status/jaredLunde/form-atoms/release/main?style=for-the-badge&labelColor=24292e">
+    <img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/jaredLunde/form-atoms/release.yml?branch=main&style=for-the-badge&labelColor=24292e">
   </a>
   <a aria-label="NPM version" href="https://www.npmjs.com/package/form-atoms">
     <img alt="NPM Version" src="https://img.shields.io/npm/v/form-atoms?style=for-the-badge&labelColor=24292e">

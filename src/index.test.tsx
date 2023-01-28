@@ -1,16 +1,20 @@
+import "@testing-library/jest-dom/extend-expect";
+import React from "react";
+
 import { render, screen } from "@testing-library/react";
 import { act as domAct, renderHook } from "@testing-library/react-hooks/dom";
 import userEvent from "@testing-library/user-event";
 import type { ExtractAtomValue } from "jotai";
 import { Provider } from "jotai";
-import React from "react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
 import type { FieldAtom, UseFormAtom } from ".";
 import {
   Field,
-  fieldAtom,
   Form,
-  formAtom,
   InputField,
+  fieldAtom,
+  formAtom,
   useFieldAtom,
   useFieldAtomErrors,
   useFieldAtomInitialValue,
@@ -23,6 +27,13 @@ import {
   useFormAtomSubmit,
   useFormAtomValues,
 } from ".";
+
+vi.useFakeTimers();
+
+afterEach(() => {
+  vi.clearAllMocks();
+  vi.clearAllTimers();
+});
 
 describe("<Field>", () => {
   it('should render "component" prop', () => {
@@ -270,10 +281,10 @@ describe("useFieldAtom()", () => {
       "aria-invalid",
       "false"
     );
-    expect(screen.getByRole("textbox")).toHaveAttribute("value", "test");
+    expect(screen.getByRole("textbox")).toHaveValue("test");
   });
 
-  it("should add add a change handler", () => {
+  it("should add add a change handler", async () => {
     const firstNameAtom = fieldAtom({
       name: "firstName",
       value: "test",
@@ -332,7 +343,7 @@ describe("useFieldAtom()", () => {
     const atomConfig = {
       name: "firstName",
       value: "test",
-      validate: jest.fn(() => {
+      validate: vi.fn(() => {
         return ["error"];
       }),
     };
@@ -351,7 +362,7 @@ describe("useFieldAtom()", () => {
     const atomConfig = {
       name: "firstName",
       value: "test",
-      validate: jest.fn(() => {
+      validate: vi.fn(() => {
         return ["error"];
       }),
     };
@@ -424,7 +435,7 @@ describe("useFieldAtom()", () => {
     const atomConfig = {
       name: "firstName",
       value: "test",
-      validate: jest.fn(() => {
+      validate: vi.fn(() => {
         return ["error"];
       }),
     };
@@ -453,7 +464,7 @@ describe("useFieldAtom()", () => {
     const atomConfig = {
       name: "firstName",
       value: "test",
-      validate: jest.fn(() => {
+      validate: vi.fn(() => {
         return ["error"];
       }),
     };
@@ -474,7 +485,7 @@ describe("useFieldAtom()", () => {
     const atomConfig = {
       name: "firstName",
       value: "test",
-      validate: jest.fn(() => {
+      validate: vi.fn(() => {
         return ["error"];
       }),
     };
@@ -504,7 +515,7 @@ describe("useFieldAtom()", () => {
     const atomConfig = {
       name: "firstName",
       value: "test",
-      validate: jest.fn(() => {
+      validate: vi.fn(() => {
         return ["error"];
       }),
     };
@@ -536,7 +547,7 @@ describe("useFieldAtom()", () => {
       value: "test",
     });
     const { result } = renderHook(() => useFieldAtom(firstNameAtom));
-    const handleFocus = jest.fn();
+    const handleFocus = vi.fn();
 
     domAct(() => {
       result.current.props.ref({ focus: handleFocus } as any);
@@ -640,7 +651,7 @@ describe("useFieldAtom()", () => {
       result.current.actions.setValue(50);
     });
 
-    jest.advanceTimersByTime(100);
+    vi.advanceTimersByTime(100);
     await domAct(() => Promise.resolve());
     expect(result.current.state.errors).toEqual(["50-error"]);
   });
@@ -845,7 +856,7 @@ describe("useFormAtom()", () => {
     const atom = formAtom(config);
     const { result } = renderHook(() => useFormAtom(atom));
     const form = renderHook(() => useFormAtomState(atom));
-    const handleSubmit = jest.fn(async () => {});
+    const handleSubmit = vi.fn(async () => {});
     domAct(() => {
       result.current.submit(handleSubmit)();
     });
@@ -873,7 +884,7 @@ describe("useFormAtom()", () => {
     const atom = formAtom(config);
     const { result } = renderHook(() => useFormAtom(atom));
     const form = renderHook(() => useFormAtomState(atom));
-    const handleSubmit = jest.fn(() => {});
+    const handleSubmit = vi.fn(() => {});
     domAct(() => {
       result.current.submit(handleSubmit)();
     });
@@ -890,7 +901,7 @@ describe("useFormAtom()", () => {
     const hobbyConfig = {
       name: "hobbies.0",
       value: "test",
-      validate: jest.fn(),
+      validate: vi.fn(),
     };
     const config = {
       name: fieldAtom({
@@ -904,7 +915,7 @@ describe("useFormAtom()", () => {
     const atom = formAtom(config);
     const { result } = renderHook(() => useFormAtom(atom));
     const form = renderHook(() => useFormAtomState(atom));
-    const handleSubmit = jest.fn(() => {});
+    const handleSubmit = vi.fn(() => {});
     domAct(() => {
       result.current.submit(handleSubmit)();
     });
@@ -974,7 +985,7 @@ describe("useFormAtom()", () => {
 
     expect(form.result.current.validateStatus).toBe("validating");
 
-    jest.advanceTimersByTime(100);
+    vi.advanceTimersByTime(100);
     await domAct(() => Promise.resolve());
     expect(form.result.current.validateStatus).toBe("invalid");
   });
@@ -1008,7 +1019,7 @@ describe("useFormAtom()", () => {
 
     expect(form.result.current.validateStatus).toBe("validating");
 
-    jest.advanceTimersByTime(100);
+    vi.advanceTimersByTime(100);
     await domAct(() => Promise.resolve());
     expect(form.result.current.validateStatus).toBe("valid");
   });
@@ -1270,7 +1281,7 @@ describe("useFormAtomActions()", () => {
   });
 
   it('should validate with "user" event', () => {
-    const handleValidate = jest.fn();
+    const handleValidate = vi.fn();
     const config = {
       name: fieldAtom({
         value: "jared",
@@ -1335,7 +1346,7 @@ describe("useFormAtomActions()", () => {
     };
     const atom = formAtom(config);
     const { result } = renderHook(() => useFormAtomActions(atom));
-    const handleSubmit = jest.fn(async () => {});
+    const handleSubmit = vi.fn(async () => {});
 
     domAct(() => {
       result.current.submit(handleSubmit)();
@@ -1367,7 +1378,7 @@ describe("useFormAtomStatus()", () => {
 
 describe("useFormAtomSubmit()", () => {
   it("should submit the form", async () => {
-    const handleSubmit = jest.fn(async () => {});
+    const handleSubmit = vi.fn(async () => {});
     const atom = formAtom({
       name: fieldAtom({
         value: "jared",

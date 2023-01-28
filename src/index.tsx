@@ -1,3 +1,5 @@
+import * as React from "react";
+
 import type {
   Atom,
   ExtractAtomUpdate,
@@ -6,9 +8,9 @@ import type {
   Setter,
   WritableAtom,
 } from "jotai";
-import { atom, Provider, useAtom, useAtomValue, useSetAtom } from "jotai";
-import { atomWithReset, RESET, useHydrateAtoms } from "jotai/utils";
-import * as React from "react";
+import { Provider, atom, useAtom, useAtomValue, useSetAtom } from "jotai";
+import { RESET, atomWithReset, useHydrateAtoms } from "jotai/utils";
+
 import { setPath } from "./utils";
 
 //
