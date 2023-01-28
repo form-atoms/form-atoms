@@ -5,10 +5,10 @@ import tsconfig from "./tsconfig.json";
 export default defineConfig({
   name: "form-atoms",
   entry: ["src/index.tsx", "src/zod.ts"],
-  format: "esm",
+  format: ["esm", "cjs"],
   dts: true,
   clean: true,
   minify: true,
-  outExtension: () => ({ js: ".js" }),
+  external: ["zod"],
   target: tsconfig.compilerOptions.target,
 });

@@ -9,17 +9,27 @@
   "bugs": "https://github.com/jaredLunde/form-atoms/issues",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "module": "./dist/index.mjs",
+      "default": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./zod": {
-      "import": "./dist/zod.js",
-      "types": "./dist/zod.d.ts"
+    "./*": {
+      "import": {
+        "types": "./dist/*.d.ts",
+        "default": "./dist/*.mjs"
+      },
+      "module": "./dist/*.mjs",
+      "default": "./dist/*.js",
+      "types": "./dist/*.d.ts"
     },
     "./package.json": "./package.json"
   },
   "main": "dist/index.js",
-  "module": "dist/index.js",
+  "module": "dist/index.mjs",
   "files": [
     "/dist"
   ],
