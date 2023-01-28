@@ -24,6 +24,7 @@
     "test": "jest",
     "validate": "lundle check-types && pnpm run lint && jest --coverage"
   },
+  
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"

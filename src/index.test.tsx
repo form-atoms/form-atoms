@@ -273,6 +273,16 @@ describe("useFieldAtom()", () => {
     expect(screen.getByRole("textbox")).toHaveAttribute("value", "test");
   });
 
+  it("should work with boolean atom value", () => {
+    const agreementAtom = fieldAtom({
+      value: false,
+    });
+
+    const { result } = renderHook(() => useFieldAtom(agreementAtom));
+
+    expect(result.current.state.value).toBe(false);
+  });
+
   it("should add add a change handler", () => {
     const firstNameAtom = fieldAtom({
       name: "firstName",
