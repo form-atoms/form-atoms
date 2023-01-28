@@ -1,3 +1,10 @@
+# [1.3.0-next.2](https://github.com/jaredLunde/form-atoms/compare/v1.3.0-next.1...v1.3.0-next.2) (2023-01-28)
+
+
+### Bug Fixes
+
+* fix package entries ([#24](https://github.com/jaredLunde/form-atoms/issues/24)) ([a18cfc5](https://github.com/jaredLunde/form-atoms/commit/a18cfc5e006f88477de4bea13ed9116b6c5ac14b))
+
 # [1.3.0-next.1](https://github.com/jaredLunde/form-atoms/compare/v1.2.5...v1.3.0-next.1) (2023-01-28)
 
 ### Bug Fixes
