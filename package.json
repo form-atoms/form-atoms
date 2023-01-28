@@ -7,22 +7,27 @@
   "homepage": "https://github.com/jaredLunde/form-atoms#readme",
   "repository": "github:jaredLunde/form-atoms",
   "bugs": "https://github.com/jaredLunde/form-atoms/issues",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
   "main": "dist/main/index.js",
   "module": "dist/module/index.js",
   "files": [
-    "/dist",
-    "/src",
-    "/types"
+    "/dist"
   ],
   "scripts": {
-    "build": "lundle build",
-    "check-types": "lundle check-types",
-    "dev": "lundle build -f module,cjs -w",
+    "build": "tsup",
+    "check-types": "tsc --noEmit --incremental --tsBuildInfoFile .typescript/tsconfig.tsbuildinfo",
+    "dev": "tsup --watch",
     "format": "prettier --write \"{,!(node_modules|dist|coverage)/**/}*.{ts,tsx,js,jsx,md,yml,json}\"",
     "lint": "eslint . --ext .ts,.tsx",
     "prepare": "husky install",
-    "test": "jest",
-    "validate": "lundle check-types && pnpm run lint && jest --coverage"
+    "test": "vitest",
+    "validate": "pnpm run check-types && pnpm run lint && pnpm test run -- --coverage"
   },
   "config": {
     "commitizen": {
@@ -31,37 +36,42 @@
   },
   "sideEffects": false,
   "types": "types/index.d.ts",
+  "dependencies": {
+    "@testing-library/user-event": "^13.0.0"
+  },
   "peerDependencies": {
     "jotai": "^1.5.3",
     "react": ">=16.8"
   },
   "devDependencies": {
-    "@commitlint/cli": "latest",
-    "@commitlint/config-conventional": "latest",
-    "@semantic-release/changelog": "^6.0.0",
-    "@semantic-release/git": "^10.0.0",
-    "@swc-node/core": "^1.6.0",
-    "@swc-node/jest": "^1.3.2",
-    "@testing-library/jest-dom": "latest",
-    "@testing-library/react": "latest",
-    "@testing-library/react-hooks": "latest",
-    "@testing-library/user-event": "latest",
-    "@types/jest": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "cz-conventional-changelog": "latest",
-    "eslint": "^7.32.0",
-    "eslint-config-lunde": "latest",
-    "husky": "latest",
-    "jest": "latest",
-    "jotai": "^1.6.0",
-    "lint-staged": "latest",
-    "lundle": "latest",
-    "prettier": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "react-test-renderer": "latest",
-    "typescript": "latest"
+    "@commitlint/cli": "^17.4.2",
+    "@commitlint/config-conventional": "^17.4.2",
+    "@semantic-release/changelog": "^6.0.2",
+    "@semantic-release/git": "^10.0.1",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/react-hooks": "^8.0.1",
+    "@types/react": "^18.0.27",
+    "@types/react-dom": "^18.0.10",
+    "@types/testing-library__jest-dom": "^5.14.5",
+    "@vitejs/plugin-react": "^3.0.1",
+    "@vitest/coverage-c8": "^0.28.3",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^8.32.0",
+    "eslint-config-lunde": "^0.8.2",
+    "eslint-plugin-prettier": "^4.2.1",
+    "happy-dom": "^8.2.0",
+    "husky": "^8.0.3",
+    "jotai": "^1.13.1",
+    "lint-staged": "^13.1.0",
+    "prettier": "^2.8.3",
+    "prettier-package-json": "^2.8.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-test-renderer": "^18.2.0",
+    "tsup": "^6.5.0",
+    "typescript": "^4.9.4",
+    "vitest": "^0.28.3"
   },
   "keywords": [
     "atomic form",
@@ -83,8 +93,12 @@
     ]
   },
   "eslintConfig": {
+    "plugins": [
+      "prettier"
+    ],
     "extends": [
-      "lunde"
+      "lunde",
+      "plugin:prettier/recommended"
     ]
   },
   "eslintIgnore": [
@@ -95,61 +109,15 @@
     "test",
     "*.config.js"
   ],
-  "exports": {
-    ".": {
-      "browser": "./dist/module/index.js",
-      "import": "./dist/esm/index.mjs",
-      "require": "./dist/main/index.js",
-      "umd": "./dist/umd/form-atoms.js",
-      "source": "./src/index.tsx",
-      "types": "./types/index.d.ts",
-      "default": "./dist/main/index.js"
-    },
-    "./package.json": "./package.json"
-  },
-  "jest": {
-    "collectCoverageFrom": [
-      "**/src/**/*.{ts,tsx}"
-    ],
-    "globals": {
-      "__DEV__": true
-    },
-    "moduleDirectories": [
-      "node_modules",
-      "src",
-      "test"
-    ],
-    "setupFilesAfterEnv": [
-      "./test/setup.ts"
-    ],
-    "snapshotResolver": "./test/resolve-snapshot.js",
-    "testEnvironment": "jsdom",
-    "testMatch": [
-      "<rootDir>/src/**/?(*.)test.{ts,tsx}"
-    ],
-    "transform": {
-      "^.+\\.(t|j)sx?$": [
-        "@swc-node/jest",
-        {
-          "react": {
-            "runtime": "automatic",
-            "development": false,
-            "useBuiltins": true
-          }
-        }
-      ]
-    }
-  },
   "lint-staged": {
     "package.json": [
-      "pnpx -y prettier-package-json --write"
+      "prettier-package-json --write"
     ],
-    "**/*.{ts,tsx,js,jsx}": [
-      "eslint --ext .ts,.tsx,.js,.jsx --fix",
+    "**/*.{md,yml,yaml,json}": [
       "prettier --write"
     ],
-    "**/*.{md,yml,json}": [
-      "prettier --write"
+    "**/*.{ts,tsx,js,cjs,mjs,jsx}": [
+      "eslint --ext .ts,.tsx,.js,.cjs,.mjs,.jsx --fix"
     ]
   },
   "release": {
