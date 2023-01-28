@@ -4,7 +4,7 @@ import tsconfig from "./tsconfig.json";
 
 export default defineConfig({
   name: "form-atoms",
-  entry: ["src/index.tsx"],
+  entry: ["src/index.tsx", "src/zod.ts"],
   format: "esm",
   dts: true,
   clean: true,
