@@ -1,3 +1,13 @@
+# [1.3.0-next.1](https://github.com/jaredLunde/form-atoms/compare/v1.2.5...v1.3.0-next.1) (2023-01-28)
+
+### Bug Fixes
+
+- fix release ([#22](https://github.com/jaredLunde/form-atoms/issues/22)) ([a4fff3b](https://github.com/jaredLunde/form-atoms/commit/a4fff3bba4b28adaf17886a95361aff3705f8c8e))
+
+### Features
+
+- update build scripts and tests ([#21](https://github.com/jaredLunde/form-atoms/issues/21)) ([b242e02](https://github.com/jaredLunde/form-atoms/commit/b242e0265a5c1e9930219a901a8103b063f3d53a))
+
 ## [1.2.5](https://github.com/jaredLunde/form-atoms/compare/v1.2.4...v1.2.5) (2022-08-07)
 
 ### Bug Fixes
