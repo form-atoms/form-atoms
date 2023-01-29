@@ -20,7 +20,7 @@ export function zodValidate<Value>(
     ifDirty,
     ifTouched,
     formatError = (err) => err.flatten().formErrors,
-    fatal = false,
+    failFast = true,
   } = config;
   const ors: ((
     state: Parameters<Exclude<Validate<Value>, undefined>>[0]
@@ -61,13 +61,16 @@ export function zodValidate<Value>(
           const errors = await or(state);
 
           if (errors?.length) {
-            result = errors;
-            break;
+            result = result ? result.concat(errors) : errors;
+
+            if (failFast) {
+              break;
+            }
           } else if (errors) {
-            result = errors;
+            result = result ? result.concat(errors) : errors;
           }
 
-          if (fatal && result) {
+          if (failFast && result) {
             return result;
           }
         }
@@ -76,8 +79,8 @@ export function zodValidate<Value>(
       return result;
     },
     {
-      or(config: Omit<ZodValidateConfig, "fatal" | "formatError">) {
-        const or = zodValidate(schema, { formatError, fatal, ...config });
+      or(config: Omit<ZodValidateConfig, "failFast" | "formatError">) {
+        const or = zodValidate(schema, { formatError, failFast, ...config });
         ors.push(or);
         return chain;
       },
@@ -107,9 +110,10 @@ export type ZodValidateConfig = {
    */
   formatError?: (error: ZodError) => string[];
   /**
-   * If true, the validation will stop after the first error.
+   * If `true`, the validation will only report the first error in the chain.
+   * If `false`, the validation will report all errors in the chain.
    *
-   * @default false
+   * @default true
    */
-  fatal?: boolean;
+  failFast?: boolean;
 };

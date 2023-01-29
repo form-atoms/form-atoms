@@ -28,10 +28,7 @@ describe("zodValidate()", () => {
     const nameAtom = fieldAtom({
       value: "",
       validate: zodValidate(
-        z.string().min(3, "3 plz").regex(/foo/, "must match foo"),
-        {
-          fatal: false,
-        }
+        z.string().min(3, "3 plz").regex(/foo/, "must match foo")
       ),
     });
 
@@ -49,6 +46,79 @@ describe("zodValidate()", () => {
     ]);
   });
 
+  it("should throw first error in chain", async () => {
+    const nameAtom = fieldAtom({
+      value: "",
+      validate: zodValidate(
+        z.string().min(3, "3 plz").regex(/foo/, "must match foo"),
+        {
+          on: "touch",
+          failFast: true,
+        }
+      ).or({
+        on: "change",
+        ifDirty: true,
+      }),
+    });
+
+    const field = renderHook(() => useFieldAtom(nameAtom));
+
+    domAct(() => {
+      field.result.current.actions.setTouched(true);
+      field.result.current.actions.setValue("ab");
+    });
+
+    await domAct(() => Promise.resolve());
+    expect(field.result.current.state.validateStatus).toBe("invalid");
+    expect(field.result.current.state.errors).toEqual([
+      "3 plz",
+      "must match foo",
+    ]);
+  });
+
+  it("should throw every error in chain", async () => {
+    const nameAtom = fieldAtom({
+      value: "",
+      validate: zodValidate(
+        z.string().min(3, "3 plz").regex(/foo/, "must match foo"),
+        {
+          on: "touch",
+          failFast: false,
+        }
+      )
+        .or({
+          on: "change",
+          ifDirty: true,
+        })
+        .or({
+          on: "change",
+        }),
+    });
+
+    const field = renderHook(() => useFieldAtom(nameAtom));
+
+    domAct(() => {
+      field.result.current.actions.setTouched(true);
+    });
+
+    domAct(() => {
+      field.result.current.actions.setValue("ab");
+    });
+
+    await domAct(() => Promise.resolve());
+
+    domAct(() => {
+      field.result.current.actions.setValue("abc");
+    });
+
+    await domAct(() => Promise.resolve());
+    expect(field.result.current.state.validateStatus).toBe("invalid");
+    expect(field.result.current.state.errors).toEqual([
+      "must match foo",
+      "must match foo",
+    ]);
+  });
+
   it("should use custom error formatting", async () => {
     const nameAtom = fieldAtom({
       value: "",
@@ -59,7 +129,7 @@ describe("zodValidate()", () => {
             err.errors.map((e) =>
               JSON.stringify({ code: e.code, message: e.message })
             ),
-          fatal: false,
+          failFast: false,
         }
       ),
     });
@@ -182,5 +252,33 @@ describe("zodValidate()", () => {
     await domAct(() => Promise.resolve());
     expect(field.result.current.state.validateStatus).toBe("invalid");
     expect(field.result.current.state.errors).toEqual(["3 plz"]);
+  });
+
+  it("should validate with jotai getter", async () => {
+    const nameAtom = fieldAtom({
+      value: "",
+      validate: zodValidate(() => z.string().min(3, "3 plz")),
+    });
+
+    const field = renderHook(() => useFieldAtom(nameAtom));
+
+    domAct(() => {
+      field.result.current.actions.validate();
+    });
+
+    await domAct(() => Promise.resolve());
+    expect(field.result.current.state.validateStatus).toBe("invalid");
+    expect(field.result.current.state.errors).toEqual(["3 plz"]);
+  });
+
+  it("should throw for unexpected errors", async () => {
+    await expect(async () => {
+      await zodValidate(
+        z.string().refine(() => {
+          throw new Error("foo");
+        })
+        // @ts-expect-error
+      )({ value: "foo" });
+    }).rejects.toThrow();
   });
 });
