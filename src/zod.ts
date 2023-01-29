@@ -6,10 +6,25 @@ import { ZodError, ZodType } from "zod";
 import type { FieldAtomValidateOn, Validate } from ".";
 
 /**
- * Validate your field atoms with Zod schemas.
+ * Validate your field atoms with Zod schemas. This function validates
+ * on every "user" and "submit" event, in addition to other events you specify.
  *
  * @param schema - Zod schema or a function that returns a Zod schema
  * @param config - Configuration options
+ * @example
+ * ```ts
+ * const schema = z.object({
+ *  name: z.string().min(3),
+ * });
+ *
+ * const nameForm = formAtom({
+ *   name: fieldAtom({
+ *     validate: zodValidate(schema.shape.name, {
+ *       on: "blur",
+ *     })
+ *   })
+ * })
+ * ```
  */
 export function zodValidate<Value>(
   schema: ((get: Getter) => z.Schema) | z.Schema,
@@ -31,7 +46,10 @@ export function zodValidate<Value>(
       state: Parameters<Exclude<Validate<Value>, undefined>>[0]
     ): Promise<string[] | undefined> => {
       let result: string[] | undefined;
-      const shouldHandleEvent = !on || on.includes(state.event);
+      const shouldHandleEvent =
+        state.event === "user" ||
+        state.event === "submit" ||
+        !!on?.includes(state.event);
 
       if (shouldHandleEvent) {
         const shouldHandleDirty =
@@ -94,7 +112,7 @@ export type ZodValidateConfig = {
   /**
    * The event or events that triggers validation.
    */
-  on?: FieldAtomValidateOn | FieldAtomValidateOn[];
+  on?: ZodValidateOn | ZodValidateOn[];
   /**
    * Validate if the field has been touched.
    */
@@ -117,3 +135,5 @@ export type ZodValidateConfig = {
    */
   failFast?: boolean;
 };
+
+export type ZodValidateOn = Exclude<FieldAtomValidateOn, "user" | "submit">;

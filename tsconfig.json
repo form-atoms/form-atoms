@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "display": "Default",
   "compilerOptions": {
-    "target": "es2016",
+    "target": "ES2018",
     "module": "ESNext",
     "declaration": false,
     "esModuleInterop": true,

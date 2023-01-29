@@ -156,11 +156,6 @@ describe("zodValidate()", () => {
 
     const field = renderHook(() => useFieldAtom(nameAtom));
 
-    domAct(() => {
-      field.result.current.actions.validate();
-    });
-
-    await domAct(() => Promise.resolve());
     expect(field.result.current.state.validateStatus).toBe("valid");
     expect(field.result.current.state.errors).toEqual([]);
 
@@ -177,6 +172,7 @@ describe("zodValidate()", () => {
     const nameAtom = fieldAtom({
       value: "",
       validate: zodValidate(z.string().min(3, "3 plz"), {
+        on: "change",
         ifDirty: true,
       }),
     });
@@ -204,6 +200,7 @@ describe("zodValidate()", () => {
     const nameAtom = fieldAtom({
       value: "",
       validate: zodValidate(z.string().min(3, "3 plz"), {
+        on: "change",
         ifTouched: true,
       }),
     });
@@ -215,6 +212,12 @@ describe("zodValidate()", () => {
     });
 
     await domAct(() => Promise.resolve());
+
+    domAct(() => {
+      field.result.current.actions.setValue("ab");
+    });
+
+    await domAct(() => Promise.resolve());
     expect(field.result.current.state.validateStatus).toBe("invalid");
     expect(field.result.current.state.errors).toEqual(["3 plz"]);
   });
@@ -222,9 +225,10 @@ describe("zodValidate()", () => {
   it("should validate multiple conditions", async () => {
     const nameAtom = fieldAtom({
       value: "",
-      validate: zodValidate(z.string().min(3, "3 plz"), {
-        on: "user",
-      }).or({ on: "change", ifDirty: true }),
+      validate: zodValidate(z.string().min(3, "3 plz")).or({
+        on: "change",
+        ifDirty: true,
+      }),
     });
 
     const field = renderHook(() => useFieldAtom(nameAtom));
@@ -278,7 +282,7 @@ describe("zodValidate()", () => {
           throw new Error("foo");
         })
         // @ts-expect-error
-      )({ value: "foo" });
+      )({ value: "foo", event: "user" });
     }).rejects.toThrow();
   });
 });
