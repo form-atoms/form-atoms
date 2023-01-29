@@ -1,9 +1,14 @@
-# [1.3.0-next.2](https://github.com/jaredLunde/form-atoms/compare/v1.3.0-next.1...v1.3.0-next.2) (2023-01-28)
+# [1.3.0-next.3](https://github.com/jaredLunde/form-atoms/compare/v1.3.0-next.2...v1.3.0-next.3) (2023-01-29)
 
+### Features
+
+- add zod validator ([#23](https://github.com/jaredLunde/form-atoms/issues/23)) ([06ca2c4](https://github.com/jaredLunde/form-atoms/commit/06ca2c450b13d8ca8f0c9b5cacf1fc75cc172d9f))
+
+# [1.3.0-next.2](https://github.com/jaredLunde/form-atoms/compare/v1.3.0-next.1...v1.3.0-next.2) (2023-01-28)
 
 ### Bug Fixes
 
-* fix package entries ([#24](https://github.com/jaredLunde/form-atoms/issues/24)) ([a18cfc5](https://github.com/jaredLunde/form-atoms/commit/a18cfc5e006f88477de4bea13ed9116b6c5ac14b))
+- fix package entries ([#24](https://github.com/jaredLunde/form-atoms/issues/24)) ([a18cfc5](https://github.com/jaredLunde/form-atoms/commit/a18cfc5e006f88477de4bea13ed9116b6c5ac14b))
 
 # [1.3.0-next.1](https://github.com/jaredLunde/form-atoms/compare/v1.2.5...v1.3.0-next.1) (2023-01-28)
 
