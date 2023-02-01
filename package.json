@@ -54,7 +54,7 @@
     "@testing-library/user-event": "^13.0.0"
   },
   "peerDependencies": {
-    "jotai": "^1.5.3",
+    "jotai": "^2.0.0",
     "react": ">=16.8"
   },
   "devDependencies": {
@@ -76,7 +76,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "happy-dom": "^8.2.0",
     "husky": "^8.0.3",
-    "jotai": "^1.13.1",
+    "jotai": "^2.0.0",
     "lint-staged": "^13.1.0",
     "prettier": "^2.8.3",
     "prettier-package-json": "^2.8.0",
