@@ -1270,6 +1270,9 @@ export type FormFieldErrors<Fields extends FormFields> = {
     : never;
 };
 
+/**
+ * An object containing the errors of a form's touched fields
+ */
 export type TouchedFields<Fields extends FormFields> = {
   [Key in keyof Fields]: Fields[Key] extends FieldAtom<any>
     ? boolean
