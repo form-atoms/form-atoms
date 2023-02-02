@@ -12,7 +12,7 @@ const nameSchema = z.object({
 });
 
 const nameAtom = fieldAtom({
-  value: "",
+  value: "Jared",
   validate: zodValidate(nameSchema.shape.name, {
     on: "blur",
     when: "dirty",
@@ -35,11 +35,7 @@ export default function ValidateOn() {
                 <span>Name</span>
 
                 <FieldErrors atom={fieldAtoms.name}>
-                  <InputField
-                    atom={fieldAtoms.name}
-                    initialValue="Jared"
-                    component="input"
-                  />
+                  <InputField atom={fieldAtoms.name} component="input" />
                 </FieldErrors>
               </label>
 

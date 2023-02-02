@@ -35,8 +35,8 @@ export function zodValidate<Value>(
   const ors: ((
     state: Parameters<Exclude<Validate<Value>, undefined>>[0]
   ) => Promise<string[] | undefined>)[] = [];
-  const ifDirty = when?.includes("dirty");
-  const ifTouched = when?.includes("touched");
+  const ifDirty = !!when?.includes("dirty");
+  const ifTouched = !!when?.includes("touched");
 
   const chain = Object.assign(
     async (

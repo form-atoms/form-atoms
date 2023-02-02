@@ -550,10 +550,11 @@ export function fieldAtom<Value>(
   config: FieldAtomConfig<Value>
 ): FieldAtom<Value> {
   const nameAtom = atomWithReset(config.name);
+  const initialValueAtom = atomWithReset<Value>(config.value);
   const valueAtom = atomWithReset<Value>(config.value);
   const touchedAtom = atomWithReset(config.touched ?? false);
   const dirtyAtom = atom((get) => {
-    return get(valueAtom) !== config.value;
+    return get(valueAtom) !== get(initialValueAtom);
   });
   const errorsAtom = atom<string[]>([]);
 
@@ -610,6 +611,7 @@ export function fieldAtom<Value>(
   const resetAtom = atom<null, [void], void>(null, (get, set) => {
     set(errorsAtom, []);
     set(touchedAtom, RESET);
+    set(initialValueAtom, RESET);
     set(valueAtom, RESET);
     // Need to set a new pointer to prevent stale validation results
     // from being set to state after this invocation.
@@ -627,6 +629,7 @@ export function fieldAtom<Value>(
     errors: errorsAtom,
     reset: resetAtom,
     ref: refAtom,
+    _initialValue: initialValueAtom,
     _validateCallback: config.validate,
     _validateCount: validateCountAtom,
   });
@@ -818,7 +821,12 @@ export function useFieldInitialValue<Value>(
 ): UseFieldInitialValue {
   const field = useAtomValue(fieldAtom, options);
   useHydrateAtoms(
-    initialValue === undefined ? [] : [[field.value, initialValue] as const],
+    initialValue === undefined
+      ? []
+      : [
+          [field._initialValue, initialValue],
+          [field.value, initialValue] as const,
+        ],
     options
   );
 }
@@ -1120,6 +1128,14 @@ export type FieldAtom<Value> = Atom<{
             | null
         ) => HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null)
     ],
+    void
+  >;
+  /**
+   * An atom containing the field's initial value
+   */
+  _initialValue: WritableAtom<
+    Value,
+    [Value | typeof RESET | ((prev: Value) => Value)],
     void
   >;
   _validateCount: WritableAtom<
