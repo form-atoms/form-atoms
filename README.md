@@ -41,15 +41,14 @@ npm i form-atoms jotai
 - [x] **Controlled inputs** because no, uncontrolled inputs are not preferrable
 - [x] **Ready for concurrent React** - validation updates have a lower priority
 - [x] **Familiar API** that is very similar to other form libraries
-- [x] **Async field-level validation**
-- [x] **Async submission**
+- [x] **Async field-level validation** with [Zod support](https://github.com/colinhacks/zod)
 
 ## Quick start
 
 [Check out the example on CodeSandbox ↗](https://codesandbox.io/s/getting-started-with-form-atoms-ddhgq2?file=/src/App.tsx)
 
 ```js
-import { fieldAtom, useFieldAtom, formAtom, useFormAtom } from "form-atoms";
+import { fieldAtom, useField, formAtom, useForm } from "form-atoms";
 
 const nameFormAtom = formAtom({
   name: {
@@ -59,7 +58,7 @@ const nameFormAtom = formAtom({
 });
 
 function Form() {
-  const { fieldAtoms, submit } = useFormAtom(nameFormAtom);
+  const { fieldAtoms, submit } = useForm(nameFormAtom);
   return (
     <form
       onSubmit={submit((values) => {
@@ -73,7 +72,7 @@ function Form() {
 }
 
 function Field({ label, atom }) {
-  const field = useFieldAtom(atom);
+  const field = useField(atom);
   return (
     <label>
       <span>{label}</span>
@@ -103,33 +102,43 @@ by using it, but you gain a ton of performance and without footguns.
 
 ## Table of contents
 
-| Field atoms                                               | Description                                                                                                                                                                                          |
-| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`fieldAtom()`](#fieldatom)                               | An atom that represents a field in a form. It manages state for the field, including the name, value, errors, dirty, validation, and touched state.                                                  |
-| [`useFieldAtom()`](#usefieldatom)                         | A hook that returns `props`, `state`, and `actions` of a field atom from `useFieldAtomProps`, `useFieldAtomState`, and `useFieldAtomActions`.                                                        |
-| [`useFieldAtomProps()`](#usefieldatomprops)               | A hook that returns a set of props that can be destructured directly into an `<input>`, `<select>`, or `<textarea>` element.                                                                         |
-| [`useFieldAtomState()`](#usefieldatomstate)               | A hook that returns the state of a field atom. This includes the field's value, whether it has been touched, whether it is dirty, the validation status, and any errors.                             |
-| [`useFieldAtomActions()`](#usefieldatomactions)           | A hook that returns a set of actions that can be used to interact with the field atom state.                                                                                                         |
-| [`useFieldAtomInitialValue()`](#usefieldatominitialvalue) | A hook that sets the initial value of a field atom. Initial values can only be set once per scope. Therefore, if the initial value used is changed during rerenders, it won't update the atom value. |
-| [`useFieldAtomValue()`](#usefieldatomvalue)               | A hook that returns the value of a field atom.                                                                                                                                                       |
-| [`useFieldAtomErrors()`](#usefieldatomerrors)             | A hook that returns the errors of a field atom.                                                                                                                                                      |
+| Field atoms                                       | Description                                                                                                                                                                                          |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`fieldAtom()`](#fieldatom)                       | An atom that represents a field in a form. It manages state for the field, including the name, value, errors, dirty, validation, and touched state.                                                  |
+| [`useField()`](#usefield)                         | A hook that returns `state` and `actions` of a field atom from `useFieldState`, and `useFieldActions`.                                                                                               |
+| [`useInputField()`](#useinputfield)               | A hook that returns `props`, `state`, and `actions` of a field atom from `useInputFieldProps`, `useFieldState`, and `useFieldActions`.                                                               |
+| [`useInputFieldProps()`](#useinputfieldprops)     | A hook that returns a set of props that can be destructured directly into an `<input>`, `<select>`, or `<textarea>` element.                                                                         |
+| [`useFieldState()`](#usefieldstate)               | A hook that returns the state of a field atom. This includes the field's value, whether it has been touched, whether it is dirty, the validation status, and any errors.                             |
+| [`useFieldActions()`](#usefieldactions)           | A hook that returns a set of actions that can be used to interact with the field atom state.                                                                                                         |
+| [`useFieldInitialValue()`](#usefieldinitialvalue) | A hook that sets the initial value of a field atom. Initial values can only be set once per scope. Therefore, if the initial value used is changed during rerenders, it won't update the atom value. |
+| [`useFieldValue()`](#usefieldvalue)               | A hook that returns the value of a field atom.                                                                                                                                                       |
+| [`useFieldErrors()`](#usefielderrors)             | A hook that returns the errors of a field atom.                                                                                                                                                      |
 
-| Form atoms                                    | Description                                                                                                                                                                                                                                                                                                               |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`formAtom()`](#formatom)                     | An atom that derives its state fields atoms and allows you to submit, validate, and reset your form.                                                                                                                                                                                                                      |
-| [`useFormAtom()`](#useformatom)               | A hook that returns an object that contains the `fieldAtoms` and actions to validate, submit, and reset the form.                                                                                                                                                                                                         |
-| [`useFormAtomState()`](#useformatomstate)     | A hook that returns the primary state of the form atom including values, errors, submit and validation status, as well as the `fieldAtoms`. Note that this hook will cuase its parent component to re-render any time those states change, so it can be useful to use more targeted state hooks like `useFormAtomStatus`. |
-| [`useFormAtomActions()`](#useformatomactions) | A hook that returns a set of actions that can be used to update the state of the form atom. This includes updating fields, submitting, resetting, and validating the form.                                                                                                                                                |
-| [`useFieldAtomValues()`](#useformatomvalues)  | A hook that returns the values of the form atom.                                                                                                                                                                                                                                                                          |
-| [`useFieldAtomErrors()`](#useformatomerrors)  | A hook that returns the errors of the form atom.                                                                                                                                                                                                                                                                          |
-| [`useFieldAtomStatus()`](#useformatomstatus)  | A hook that returns the `submitStatus` and `validateStatus` of the form atom.                                                                                                                                                                                                                                             |
-| [`useFieldAtomSubmit()`](#useformatomsubmit)  | A hook that returns a callback for handling form submission.                                                                                                                                                                                                                                                              |
+| Form atoms                               | Description                                                                                                                                                                                                                                                                                                           |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`formAtom()`](#formatom)                | An atom that derives its state fields atoms and allows you to submit, validate, and reset your form.                                                                                                                                                                                                                  |
+| [`useForm()`](#useform)                  | A hook that returns an object that contains the `fieldAtoms` and actions to validate, submit, and reset the form.                                                                                                                                                                                                     |
+| [`useFormState()`](#useformstate)        | A hook that returns the primary state of the form atom including values, errors, submit and validation status, as well as the `fieldAtoms`. Note that this hook will cuase its parent component to re-render any time those states change, so it can be useful to use more targeted state hooks like `useFormStatus`. |
+| [`useFormActions()`](#useformactions)    | A hook that returns a set of actions that can be used to update the state of the form atom. This includes updating fields, submitting, resetting, and validating the form.                                                                                                                                            |
+| [`useFormFieldValues()`](#useformvalues) | A hook that returns the values of the form atom.                                                                                                                                                                                                                                                                      |
+| [`useFormErrors()`](#useformerrors)      | A hook that returns the errors of the form atom.                                                                                                                                                                                                                                                                      |
+| [`useFormStatus()`](#useformstatus)      | A hook that returns the `submitStatus` and `validateStatus` of the form atom.                                                                                                                                                                                                                                         |
+| [`useFormSubmit()`](#useformsubmit)      | A hook that returns a callback for handling form submission.                                                                                                                                                                                                                                                          |
 
 | Components                    | Description                                                                                                                                                                                              |
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`<Form>`](#form)             | A React component that renders form atoms and their fields in an isolated scope using a Jotai Provider.                                                                                                  |
 | [`<InputField>`](#inputfield) | A React component that renders field atoms with initial values. This is useful for fields that are rendered as native HTML elements because the props can unpack directly into the underlying component. |
 | [`<Field>`](#field)           | A React component that renders field atoms with initial values. This is useful for fields that aren't rendered as native HTML elements.                                                                  |
+
+| Utility Types               | Description                                                                  |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| [`FormValues`](#formvalues) | A utility type for inferring the value types of a form's nested field atoms. |
+| [`FormErrors`](#formerrors) | A utility type for inferring the error types of a form's nested field atoms. |
+
+| Validator                          | Description                                                                                                |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| [`form-atoms/zod`](#form-atomszod) | A validator that can be used with the [Zod](https://github.com/colinhacks/zod) library to validate fields. |
 
 ## Recipes
 
@@ -138,12 +147,6 @@ by using it, but you gain a ton of performance and without footguns.
 1. [**How to validate a field asynchronously**](https://codesandbox.io/s/form-atoms-validate-on-dependent-state-forked-yo1eh5?file=/src/App.tsx)
 1. [**How to create a nested fields**](https://codesandbox.io/s/form-atoms-nested-fields-example-7otpdy?file=/src/App.tsx)
 1. [**How to create an array of fields**](https://codesandbox.io/s/form-atoms-array-fields-example-5evmlz?file=/src/App.tsx)
-
-> ☀︎ Coming soon
-
-1. [**How to handle errors**](#)
-1. [**How to set initial values inside of a React component**](#)
-1. [**How to use a custom input**](#)
 
 ---
 
@@ -163,7 +166,7 @@ including the name, value, errors, dirty, validation, and touched state.
 #### `FieldAtomConfig`
 
 ```ts
-interface FieldAtomConfig<Value> {
+type FieldAtomConfig<Value> = {
   /**
    * Optionally provide a name for the field that will be added
    * to any attached `<input>`, `<select>`, or `<textarea>` elements
@@ -210,9 +213,9 @@ interface FieldAtomConfig<Value> {
      * - `"submit"` - The form has been submitted
      * - `"user"` - A user/developer has triggered the validation
      */
-    event: FieldAtomValidateOn;
+    event: ValidateOn;
   }) => void | string[] | Promise<void | string[]>;
-}
+};
 ```
 
 #### Returns
@@ -222,17 +225,26 @@ type FieldAtom<Value> = Atom<{
   /**
    * An atom containing the field's name
    */
-  name: WritableAtom<string | undefined, string | undefined | typeof RESET>;
+  name: WritableAtom<
+    string | undefined,
+    [string | undefined | typeof RESET],
+    void
+  >;
   /**
    * An atom containing the field's value
    */
-  value: WritableAtom<Value, Value | typeof RESET | ((prev: Value) => Value)>;
+  value: WritableAtom<
+    Value,
+    [Value | typeof RESET | ((prev: Value) => Value)],
+    void
+  >;
   /**
    * An atom containing the field's touched status
    */
   touched: WritableAtom<
     boolean,
-    boolean | typeof RESET | ((prev: boolean) => boolean)
+    [boolean | typeof RESET | ((prev: boolean) => boolean)],
+    void
   >;
   /**
    * An atom containing the field's dirty status
@@ -241,36 +253,45 @@ type FieldAtom<Value> = Atom<{
   /**
    * A write-only atom for validating the field's value
    */
-  validate: WritableAtom<null, void | FieldAtomValidateOn>;
+  validate: WritableAtom<null, [] | [ValidateOn], void>;
   /**
    * An atom containing the field's validation status
    */
-  validateStatus: WritableAtom<FormAtomValidateStatus, FormAtomValidateStatus>;
+  validateStatus: WritableAtom<ValidateStatus, [ValidateStatus], void>;
   /**
    * An atom containing the field's validation errors
    */
-  errors: WritableAtom<string[], string[] | ((value: string[]) => string[])>;
+  errors: WritableAtom<
+    string[],
+    [string[] | ((value: string[]) => string[])],
+    void
+  >;
   /**
    * A write-only atom for resetting the field atoms to their
    * initial states.
    */
-  reset: WritableAtom<null, void>;
+  reset: WritableAtom<null, [], void>;
   /**
    * An atom containing a reference to the `HTMLElement` the field
    * is bound to.
    */
   ref: WritableAtom<
     HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null,
-    | HTMLInputElement
-    | HTMLTextAreaElement
-    | HTMLSelectElement
-    | null
-    | ((
-        value: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null
-      ) => HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null)
+    [
+      | HTMLInputElement
+      | HTMLTextAreaElement
+      | HTMLSelectElement
+      | null
+      | ((
+          value:
+            | HTMLInputElement
+            | HTMLTextAreaElement
+            | HTMLSelectElement
+            | null
+        ) => HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null)
+    ],
+    void
   >;
-  _validateCount: WritableAtom<number, number | ((current: number) => number)>;
-  _validateCallback?: FieldAtomConfig<Value>["validate"];
 }>;
 ```
 
@@ -278,57 +299,88 @@ type FieldAtom<Value> = Atom<{
 
 ---
 
-### useFieldAtom()
+### useField()
 
-A hook that returns `props`, `state`, and `actions` of a field atom from
-[`useFieldAtomProps`](#usefieldatomprops), [`useFieldAtomState`](#usefieldatomstate),
-and [`useFieldAtomActions`](#usefieldatomactions).
+A hook that returns `state` and `actions` of a field atom from
+[`useFieldState`](#usefieldstate) and [`useFieldActions`](#usefieldactions).
 
 #### Arguments
 
-| Name      | Type               | Required? | Description                                                             |
-| --------- | ------------------ | --------- | ----------------------------------------------------------------------- |
-| fieldAtom | `FieldAtom<Value>` | Yes       | The atom that stores the field's state                                  |
-| scope     | `Scope`            | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
+| Name      | Type                     | Required? | Description                                                                                                                       |
+| --------- | ------------------------ | --------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| fieldAtom | `FieldAtom<Value>`       | Yes       | The atom that stores the field's state                                                                                            |
+| options   | `UseFieldOptions<Value>` | No        | Provide an `initialValue` here in additon to options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks. |
 
 #### Returns
 
 ```ts
-interface UseFieldAtom<Value> {
-  /**
-   * `<input>`, `<select>`, or `<textarea>` props for the field
-   */
-  props: FieldAtomProps<Value>;
+type UseFieldAtom<Value> = {
   /**
    * Actions for managing the state of the field
    */
-  actions: FieldAtomActions<Value>;
+  actions: UseFieldActions<Value>;
   /**
    * The current state of the field
    */
-  state: FieldAtomState<Value>;
-}
+  state: UseFieldState<Value>;
+};
 ```
 
 #### [⇗ Back to top](#table-of-contents)
 
 ---
 
-### useFieldAtomProps()
+### useInputField()
+
+A hook that returns `props`, `state`, and `actions` of a field atom from
+[`useInputFieldProps`](#useinputfieldprops), [`useFieldState`](#usefieldstate),
+and [`useFieldActions`](#usefieldactions).
+
+#### Arguments
+
+| Name      | Type                          | Required? | Description                                                                                                                       |
+| --------- | ----------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| fieldAtom | `FieldAtom<Value>`            | Yes       | The atom that stores the field's state                                                                                            |
+| options   | `UseInputFieldOptions<Value>` | No        | Provide an `initialValue` here in additon to options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks. |
+
+#### Returns
+
+```ts
+type UseInputField<Value> = {
+  /**
+   * `<input>`, `<select>`, or `<textarea>` props for the field
+   */
+  props: UseInputFieldProps<Value>;
+  /**
+   * Actions for managing the state of the field
+   */
+  actions: UseFieldActions<Value>;
+  /**
+   * The current state of the field
+   */
+  state: UseFieldState<Value>;
+};
+```
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
+### useInputFieldProps()
 
 A hook that returns a set of props that can be destructured directly into an `<input>`, `<select>`, or `<textarea>` element.
 
 #### Arguments
 
-| Name      | Type               | Required? | Description                                                             |
-| --------- | ------------------ | --------- | ----------------------------------------------------------------------- |
-| fieldAtom | `FieldAtom<Value>` | Yes       | The atom that stores the field's state                                  |
-| scope     | `Scope`            | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
+| Name      | Type               | Required? | Description                                                                         |
+| --------- | ------------------ | --------- | ----------------------------------------------------------------------------------- |
+| fieldAtom | `FieldAtom<Value>` | Yes       | The atom that stores the field's state                                              |
+| options   | `UseAtomOptions`   | No        | Options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks |
 
 #### Returns
 
 ```ts
-interface FieldAtomProps<Value> {
+type UseInputFieldProps<Value> = {
   /**
    * The name of the field if there is one
    */
@@ -356,28 +408,28 @@ interface FieldAtomProps<Value> {
   onChange(event: React.ChangeEvent<HTMLInputElement>): void;
   onChange(event: React.ChangeEvent<HTMLTextAreaElement>): void;
   onChange(event: React.ChangeEvent<HTMLSelectElement>): void;
-}
+};
 ```
 
 #### [⇗ Back to top](#table-of-contents)
 
 ---
 
-### useFieldAtomState()
+### useFieldState()
 
 A hook that returns the state of a field atom. This includes the field's value, whether it has been touched, whether it is dirty, the validation status, and any errors.
 
 #### Arguments
 
-| Name      | Type               | Required? | Description                                                             |
-| --------- | ------------------ | --------- | ----------------------------------------------------------------------- |
-| fieldAtom | `FieldAtom<Value>` | Yes       | The atom that stores the field's state                                  |
-| scope     | `Scope`            | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
+| Name      | Type               | Required? | Description                                                                         |
+| --------- | ------------------ | --------- | ----------------------------------------------------------------------------------- |
+| fieldAtom | `FieldAtom<Value>` | Yes       | The atom that stores the field's state                                              |
+| options   | `UseAtomOptions`   | No        | Options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks |
 
 #### Returns
 
 ```ts
-interface FieldAtomState<Value> {
+type UseFieldState<Value> = {
   /**
    * The value of the field
    */
@@ -401,28 +453,28 @@ interface FieldAtomState<Value> {
    * The error state of the field
    */
   errors: ExtractAtomValue<ExtractAtomValue<FieldAtom<Value>>["errors"]>;
-}
+};
 ```
 
 #### [⇗ Back to top](#table-of-contents)
 
 ---
 
-### useFieldAtomActions()
+### useFieldActions()
 
 A hook that returns a set of actions that can be used to interact with the field atom state.
 
 #### Arguments
 
-| Name      | Type               | Required? | Description                                                             |
-| --------- | ------------------ | --------- | ----------------------------------------------------------------------- |
-| fieldAtom | `FieldAtom<Value>` | Yes       | The atom that stores the field's state                                  |
-| scope     | `Scope`            | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
+| Name      | Type               | Required? | Description                                                                         |
+| --------- | ------------------ | --------- | ----------------------------------------------------------------------------------- |
+| fieldAtom | `FieldAtom<Value>` | Yes       | The atom that stores the field's state                                              |
+| options   | `UseAtomOptions`   | No        | Options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks |
 
 #### Returns
 
 ```ts
-interface FieldAtomActions<Value> {
+type UseFieldActions<Value> = {
   /**
    * A function that validates the field's value with a `"user"` validation
    * event.
@@ -435,7 +487,7 @@ interface FieldAtomActions<Value> {
    * @param {Value} value - The new value of the field
    */
   setValue(
-    value: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["value"]>
+    value: ExtractAtomArgs<ExtractAtomValue<FieldAtom<Value>>["value"]>[0]
   ): void;
   /**
    * A function for changing the touched state of a field. This will trigger a
@@ -444,7 +496,7 @@ interface FieldAtomActions<Value> {
    * @param {boolean} touched - The new touched state of the field
    */
   setTouched(
-    touched: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["touched"]>
+    touched: ExtractAtomArgs<ExtractAtomValue<FieldAtom<Value>>["touched"]>[0]
   ): void;
   /**
    * A function for changing the error state of a field
@@ -452,7 +504,7 @@ interface FieldAtomActions<Value> {
    * @param {string[]} errors - The new error state of the field
    */
   setErrors(
-    errors: ExtractAtomUpdate<ExtractAtomValue<FieldAtom<Value>>["errors"]>
+    errors: ExtractAtomArgs<ExtractAtomValue<FieldAtom<Value>>["errors"]>[0]
   ): void;
   /**
    * Focuses the field atom's `<input>`, `<select>`, or `<textarea>` element
@@ -463,14 +515,14 @@ interface FieldAtomActions<Value> {
    * Resets the field atom to its initial state.
    */
   reset(): void;
-}
+};
 ```
 
 #### [⇗ Back to top](#table-of-contents)
 
 ---
 
-### useFieldAtomInitialValue()
+### useFieldInitialValue()
 
 A hook that sets the initial value of a field atom. Initial values can only be set
 once per scope. Therefore, if the initial value used is changed during rerenders,
@@ -482,48 +534,48 @@ it won't update the atom value.
 | ------------ | ------------------ | --------- | ------------------------------------------------------------------------------------------- |
 | fieldAtom    | `FieldAtom<Value>` | Yes       | The atom that stores the field's state                                                      |
 | initialValue | `Value`            | No        | The initial value to set the atom to. If this is `undefined`, no initial value will be set. |
-| scope        | `Scope`            | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310)                     |
+| options      | `UseAtomOptions`   | No        | Options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks         |
 
 #### [⇗ Back to top](#table-of-contents)
 
 ---
 
-### useFieldAtomValue()
+### useFieldValue()
 
 A hook that returns the value of a field atom.
 
 #### Arguments
 
-| Name      | Type               | Required? | Description                                                             |
-| --------- | ------------------ | --------- | ----------------------------------------------------------------------- |
-| fieldAtom | `FieldAtom<Value>` | Yes       | The atom that stores the field's state                                  |
-| scope     | `Scope`            | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
+| Name      | Type               | Required? | Description                                                                         |
+| --------- | ------------------ | --------- | ----------------------------------------------------------------------------------- |
+| fieldAtom | `FieldAtom<Value>` | Yes       | The atom that stores the field's state                                              |
+| options   | `UseAtomOptions`   | No        | Options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks |
 
 #### Returns
 
 ```ts
-typeof value;
+type UseFieldValue<Value> = Value;
 ```
 
 #### [⇗ Back to top](#table-of-contents)
 
 ---
 
-### useFieldAtomErrors()
+### useFieldErrors()
 
 A hook that returns the errors of a field atom.
 
 #### Arguments
 
-| Name      | Type               | Required? | Description                                                             |
-| --------- | ------------------ | --------- | ----------------------------------------------------------------------- |
-| fieldAtom | `FieldAtom<Value>` | Yes       | The atom that stores the field's state                                  |
-| scope     | `Scope`            | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
+| Name      | Type               | Required? | Description                                                                         |
+| --------- | ------------------ | --------- | ----------------------------------------------------------------------------------- |
+| fieldAtom | `FieldAtom<Value>` | Yes       | The atom that stores the field's state                                              |
+| options   | `UseAtomOptions`   | No        | Options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks |
 
 #### Returns
 
 ```ts
-string[]
+type UseFieldErrors<Value> = UseFieldState<Value>["errors"];
 ```
 
 #### [⇗ Back to top](#table-of-contents)
@@ -539,18 +591,18 @@ validate, and reset your form.
 
 #### Arguments
 
-| Name   | Type                                | Required? | Description                                                                                                          |
-| ------ | ----------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------- |
-| fields | [`FormAtomFields`](#formatomfields) | Yes       | An object containing field atoms to be included in the form. Field atoms can be deeply nested in objects and arrays. |
+| Name   | Type                            | Required? | Description                                                                                                          |
+| ------ | ------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------- |
+| fields | [`FormFields`](#formatomfields) | Yes       | An object containing field atoms to be included in the form. Field atoms can be deeply nested in objects and arrays. |
 
-#### `FormAtomFields`
+#### `FormFields`
 
 ```ts
-type FormAtomFields = {
+type FormFields = {
   [key: string | number]:
     | FieldAtom<any>
-    | FormAtomFields
-    | FormAtomFields[]
+    | FormFields
+    | FormFields[]
     | FieldAtom<any>[];
 };
 ```
@@ -558,7 +610,7 @@ type FormAtomFields = {
 #### Returns
 
 ```ts
-type FormAtom<Fields extends FormAtomFields> = Atom<{
+type FormAtom<Fields extends FormFields> = Atom<{
   /**
    * An atom containing an object of nested field atoms
    */
@@ -571,12 +623,12 @@ type FormAtom<Fields extends FormAtomFields> = Atom<{
    * An read-only atom that derives the form's values from
    * its nested field atoms.
    */
-  values: Atom<FormAtomValues<Fields>>;
+  values: Atom<FormFieldValues<Fields>>;
   /**
    * An read-only atom that derives the form's errors from
    * its nested field atoms.
    */
-  errors: Atom<FormAtomErrors<Fields>>;
+  errors: Atom<FormFieldErrors<Fields>>;
   /**
    * A read-only atom that returns `true` if any of the fields in
    * the form are dirty.
@@ -585,7 +637,7 @@ type FormAtom<Fields extends FormAtomFields> = Atom<{
   /**
    * A read-only atom derives the touched state of its nested field atoms.
    */
-  touchedFields: Atom<FormAtomTouchedFields<Fields>>;
+  touchedFields: Atom<TouchedFields<Fields>>;
   /**
    * A write-only atom that resets the form's nested field atoms
    */
@@ -593,17 +645,17 @@ type FormAtom<Fields extends FormAtomFields> = Atom<{
   /**
    * A write-only atom that validates the form's nested field atoms
    */
-  validate: WritableAtom<null, void | FieldAtomValidateOn>;
+  validate: WritableAtom<null, void | ValidateOn>;
   /**
    * A read-only atom that derives the form's validation status
    */
-  validateStatus: Atom<FormAtomValidateStatus>;
+  validateStatus: Atom<ValidateStatus>;
   /**
    * A write-only atom for submitting the form
    */
   submit: WritableAtom<
     null,
-    (values: FormAtomValues<Fields>) => void | Promise<void>
+    (values: FormFieldValues<Fields>) => void | Promise<void>
   >;
   /**
    * A read-only atom that reads the number of times the form has
@@ -613,7 +665,7 @@ type FormAtom<Fields extends FormAtomFields> = Atom<{
   /**
    * An atom that contains the form's submission status
    */
-  submitStatus: WritableAtom<FormAtomSubmitStatus, FormAtomSubmitStatus>;
+  submitStatus: WritableAtom<SubmitStatus, SubmitStatus>;
 }>;
 ```
 
@@ -621,21 +673,21 @@ type FormAtom<Fields extends FormAtomFields> = Atom<{
 
 ---
 
-### useFormAtom()
+### useForm()
 
 A hook that returns an object that contains the `fieldAtoms` and actions to validate, submit, and reset the form.
 
 #### Arguments
 
-| Name     | Type               | Required? | Description                                                             |
-| -------- | ------------------ | --------- | ----------------------------------------------------------------------- |
-| formAtom | `FormAtom<Fields>` | Yes       | The atom that stores the form's state                                   |
-| scope    | `Scope`            | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
+| Name     | Type               | Required? | Description                                                                         |
+| -------- | ------------------ | --------- | ----------------------------------------------------------------------------------- |
+| formAtom | `FormAtom<Fields>` | Yes       | The atom that stores the form's state                                               |
+| options  | `UseAtomOptions`   | No        | Options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks |
 
 #### Returns
 
 ```ts
-interface UseFormAtom<Fields extends FormAtomFields> {
+type UseFormAtom<Fields extends FormFields> = {
   /**
    * An object containing the values of a form's nested field atoms
    */
@@ -647,11 +699,7 @@ interface UseFormAtom<Fields extends FormAtomFields> {
    *   when the form is submitted
    */
   submit(
-    handleSubmit: (
-      values: Parameters<
-        ExtractAtomUpdate<ExtractAtomValue<FormAtom<Fields>>["submit"]>
-      >[0]
-    ) => void | Promise<void>
+    handleSubmit: (values: FormFieldValues<Fields>) => void | Promise<void>
   ): (e?: React.FormEvent<HTMLFormElement>) => void;
   /**
    * A function that validates the form's nested field atoms with a
@@ -663,28 +711,28 @@ interface UseFormAtom<Fields extends FormAtomFields> {
    * initial states.
    */
   reset(): void;
-}
+};
 ```
 
 #### [⇗ Back to top](#table-of-contents)
 
 ---
 
-### useFormAtomState()
+### useFormState()
 
-A hook that returns the primary state of the form atom including values, errors, submit and validation status, as well as the `fieldAtoms`. Note that this hook will cuase its parent component to re-render any time those states change, so it can be useful to use more targeted state hooks like `useFormAtomStatus`.
+A hook that returns the primary state of the form atom including values, errors, submit and validation status, as well as the `fieldAtoms`. Note that this hook will cuase its parent component to re-render any time those states change, so it can be useful to use more targeted state hooks like `useFormStatus`.
 
 #### Arguments
 
-| Name     | Type               | Required? | Description                                                             |
-| -------- | ------------------ | --------- | ----------------------------------------------------------------------- |
-| formAtom | `FormAtom<Fields>` | Yes       | The atom that stores the form's state                                   |
-| scope    | `Scope`            | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
+| Name     | Type               | Required? | Description                                                                         |
+| -------- | ------------------ | --------- | ----------------------------------------------------------------------------------- |
+| formAtom | `FormAtom<Fields>` | Yes       | The atom that stores the form's state                                               |
+| options  | `UseAtomOptions`   | No        | Options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks |
 
 #### Returns
 
 ```ts
-interface FormAtomState<Fields extends FormAtomFields> {
+type UseFormState<Fields extends FormFields> = {
   /**
    * An object containing the form's nested field atoms
    */
@@ -692,11 +740,11 @@ interface FormAtomState<Fields extends FormAtomFields> {
   /**
    * An object containing the values of a form's nested field atoms
    */
-  values: FormAtomValues<Fields>;
+  values: FormFieldValues<Fields>;
   /**
    * An object containing the errors of a form's nested field atoms
    */
-  errors: FormAtomErrors<Fields>;
+  errors: FormFieldErrors<Fields>;
   /**
    * `true` if any of the fields in the form are dirty.
    */
@@ -704,7 +752,7 @@ interface FormAtomState<Fields extends FormAtomFields> {
   /**
    * An object containing the touched state of the form's nested field atoms.
    */
-  touchedFields: FormAtomTouchedFields<Fields>;
+  touchedFields: TouchedFields<Fields>;
   /**
    * The number of times a form has been submitted
    */
@@ -712,33 +760,33 @@ interface FormAtomState<Fields extends FormAtomFields> {
   /**
    * The validation status of the form
    */
-  validateStatus: FormAtomValidateStatus;
+  validateStatus: ValidateStatus;
   /**
    * The submission status of the form
    */
-  submitStatus: FormAtomSubmitStatus;
-}
+  submitStatus: SubmitStatus;
+};
 ```
 
 #### [⇗ Back to top](#table-of-contents)
 
 ---
 
-### useFormAtomActions()
+### useFormActions()
 
 A hook that returns a set of actions that can be used to update the state of the form atom. This includes updating fields, submitting, resetting, and validating the form.
 
 #### Arguments
 
-| Name     | Type               | Required? | Description                                                             |
-| -------- | ------------------ | --------- | ----------------------------------------------------------------------- |
-| formAtom | `FormAtom<Fields>` | Yes       | The atom that stores the form's state                                   |
-| scope    | `Scope`            | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
+| Name     | Type               | Required? | Description                                                                         |
+| -------- | ------------------ | --------- | ----------------------------------------------------------------------------------- |
+| formAtom | `FormAtom<Fields>` | Yes       | The atom that stores the form's state                                               |
+| options  | `UseAtomOptions`   | No        | Options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks |
 
 #### Returns
 
 ```ts
-interface FormAtomActions<Fields extends FormAtomFields> {
+type UseFormActions<Fields extends FormFields> = {
   /**
    * A function for adding/removing fields from the form.
    *
@@ -747,7 +795,7 @@ interface FormAtomActions<Fields extends FormAtomFields> {
    *   fields.
    */
   updateFields(
-    fields: ExtractAtomUpdate<ExtractAtomValue<FormAtom<Fields>>["fields"]>
+    fields: ExtractAtomArgs<ExtractAtomValue<FormAtom<Fields>>["fields"]>[0]
   ): void;
   /**
    * A function for handling form submissions.
@@ -756,11 +804,7 @@ interface FormAtomActions<Fields extends FormAtomFields> {
    *   when the form is submitted
    */
   submit(
-    handleSubmit: (
-      values: Parameters<
-        ExtractAtomUpdate<ExtractAtomValue<FormAtom<Fields>>["submit"]>
-      >[0]
-    ) => void | Promise<void>
+    handleSubmit: (values: FormFieldValues<Fields>) => void | Promise<void>
   ): (e?: React.FormEvent<HTMLFormElement>) => void;
   /**
    * A function that validates the form's nested field atoms with a
@@ -772,68 +816,78 @@ interface FormAtomActions<Fields extends FormAtomFields> {
    * initial states.
    */
   reset(): void;
-}
+};
 ```
 
 #### [⇗ Back to top](#table-of-contents)
 
 ---
 
-### useFormAtomValues()
+### useFormFieldValues()
 
 A hook that returns the values of the form atom.
 
 #### Arguments
 
-| Name     | Type               | Required? | Description                                                             |
-| -------- | ------------------ | --------- | ----------------------------------------------------------------------- |
-| formAtom | `FormAtom<Fields>` | Yes       | The atom that stores the form's state                                   |
-| scope    | `Scope`            | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
+| Name     | Type               | Required? | Description                                                                         |
+| -------- | ------------------ | --------- | ----------------------------------------------------------------------------------- |
+| formAtom | `FormAtom<Fields>` | Yes       | The atom that stores the form's state                                               |
+| options  | `UseAtomOptions`   | No        | Options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks |
 
 #### Returns
 
 ```ts
-type FormAtomValues<Fields extends FormAtomFields> = {
-  [Key in keyof Fields]: Fields[Key] extends FieldAtom<infer Value>
-    ? Value
-    : Fields[Key] extends FormAtomFields
-    ? FormAtomValues<Fields[Key]>
-    : Fields[Key] extends any[]
-    ? FormAtomValues<{
-        [Index in keyof Fields[Key]]: Fields[Key][Index];
-      }>
-    : never;
-};
+type UseFormValues<Fields extends FormFields> = FormFieldValues<Fields>;
 ```
 
 #### [⇗ Back to top](#table-of-contents)
 
 ---
 
-### useFormAtomErrors()
+### useFormErrors()
 
 A hook that returns the errors of the form atom.
 
 #### Arguments
 
-| Name     | Type               | Required? | Description                                                             |
-| -------- | ------------------ | --------- | ----------------------------------------------------------------------- |
-| formAtom | `FormAtom<Fields>` | Yes       | The atom that stores the form's state                                   |
-| scope    | `Scope`            | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
+| Name     | Type               | Required? | Description                                                                         |
+| -------- | ------------------ | --------- | ----------------------------------------------------------------------------------- |
+| formAtom | `FormAtom<Fields>` | Yes       | The atom that stores the form's state                                               |
+| options  | `UseAtomOptions`   | No        | Options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks |
 
 #### Returns
 
 ```ts
-type FormAtomErrors<Fields extends FormAtomFields> = {
-  [Key in keyof Fields]: Fields[Key] extends FieldAtom<any>
-    ? string[]
-    : Fields[Key] extends FormAtomFields
-    ? FormAtomErrors<Fields[Key]>
-    : Fields[Key] extends any[]
-    ? FormAtomErrors<{
-        [Index in keyof Fields[Key]]: Fields[Key][Index];
-      }>
-    : never;
+type UseFormErrors<Fields extends FormFields> = FormFieldErrors<Fields>;
+```
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
+### useFormStatus()
+
+A hook that returns the `submitStatus` and `validateStatus` of the form atom.
+
+#### Arguments
+
+| Name     | Type               | Required? | Description                                                                         |
+| -------- | ------------------ | --------- | ----------------------------------------------------------------------------------- |
+| formAtom | `FormAtom<Fields>` | Yes       | The atom that stores the form's state                                               |
+| options  | `UseAtomOptions`   | No        | Options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks |
+
+#### Returns
+
+```ts
+type UseFormStatus = {
+  /**
+   * The validation status of the form
+   */
+  validateStatus: ValidateStatus;
+  /**
+   * The submission status of the form
+   */
+  submitStatus: SubmitStatus;
 };
 ```
 
@@ -841,51 +895,25 @@ type FormAtomErrors<Fields extends FormAtomFields> = {
 
 ---
 
-### useFormAtomStatus()
-
-A hook that returns the `submitStatus` and `validateStatus` of the form atom.
-
-#### Arguments
-
-| Name     | Type               | Required? | Description                                                             |
-| -------- | ------------------ | --------- | ----------------------------------------------------------------------- |
-| formAtom | `FormAtom<Fields>` | Yes       | The atom that stores the form's state                                   |
-| scope    | `Scope`            | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
-
-#### Returns
-
-```ts
-interface FormAtomStatus {
-  /**
-   * The validation status of the form
-   */
-  validateStatus: FormAtomValidateStatus;
-  /**
-   * The submission status of the form
-   */
-  submitStatus: FormAtomSubmitStatus;
-}
-```
-
-#### [⇗ Back to top](#table-of-contents)
-
----
-
-### useFormAtomSubmit()
+### useFormSubmit()
 
 A hook that returns a callback for handling form submission.
 
 #### Arguments
 
-| Name     | Type               | Required? | Description                                                             |
-| -------- | ------------------ | --------- | ----------------------------------------------------------------------- |
-| formAtom | `FormAtom<Fields>` | Yes       | The atom that stores the form's state                                   |
-| scope    | `Scope`            | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
+| Name     | Type               | Required? | Description                                                                         |
+| -------- | ------------------ | --------- | ----------------------------------------------------------------------------------- |
+| formAtom | `FormAtom<Fields>` | Yes       | The atom that stores the form's state                                               |
+| options  | `UseAtomOptions`   | No        | Options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks |
 
 #### Returns
 
 ```ts
-(values: FormAtomValues) => (e?: React.FormEvent<HTMLFormElement>) => void | Promise<void>
+type UseFormSubmit<Fields extends FormFields> = {
+  (values: (value: FormFieldValues<Fields>) => void | Promise<void>): (
+    e?: React.FormEvent<HTMLFormElement>
+  ) => void;
+};
 ```
 
 #### [⇗ Back to top](#table-of-contents)
@@ -901,12 +929,12 @@ scope using a Jotai Provider.
 
 #### Props
 
-| Name      | Type                                                                                     | Required? | Description                                                             |
-| --------- | ---------------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------- |
-| atom      | `FormAtom<FormAtomFields>`                                                               | Yes       | A form atom                                                             |
-| scope     | `Scope`                                                                                  | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
-| component | `React.ComponentType<{state: FieldAtomState<Value>; actions: FieldAtomActions<Value>;}>` | No        | A React component to render as the input field                          |
-| render    | `(state: FieldAtomState<Value>, actions: FieldAtomActions<Value>) => JSX.Element`        | No        | A render prop                                                           |
+| Name      | Type                                                                                 | Required? | Description                                                  |
+| --------- | ------------------------------------------------------------------------------------ | --------- | ------------------------------------------------------------ |
+| atom      | `FormAtom<FormFields>`                                                               | Yes       | A form atom                                                  |
+| store     | `AtomStore`                                                                          | No        | [A Jotai store](https://jotai.org/docs/api/core#createstore) |
+| component | `React.ComponentType<{state: UseFormState<Value>; actions: UseFormActions<Value>;}>` | No        | A React component to render as the input field               |
+| render    | `(state: UseFormState<Value>, actions: UseFormActions<Value>) => JSX.Element`        | No        | A render prop                                                |
 
 #### [⇗ Back to top](#table-of-contents)
 
@@ -920,13 +948,13 @@ the props can unpack directly into the underlying component.
 
 #### Props
 
-| Name         | Type                                                                                     | Required? | Description                                                             |
-| ------------ | ---------------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------- |
-| atom         | `FieldAtom<Value>`                                                                       | Yes       | A field atom                                                            |
-| initialValue | `Value`                                                                                  | No        | The initial value of the field                                          |
-| scope        | `Scope`                                                                                  | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
-| component    | `React.ComponentType<{state: FieldAtomState<Value>; actions: FieldAtomActions<Value>;}>` | No        | A React component to render as the input field                          |
-| render       | `(state: FieldAtomState<Value>, actions: FieldAtomActions<Value>) => JSX.Element`        | No        | A render prop                                                           |
+| Name         | Type                                                                                   | Required? | Description                                                  |
+| ------------ | -------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------ |
+| atom         | `FieldAtom<Value>`                                                                     | Yes       | A field atom                                                 |
+| initialValue | `Value`                                                                                | No        | The initial value of the field                               |
+| store        | `AtomStore`                                                                            | No        | [A Jotai store](https://jotai.org/docs/api/core#createstore) |
+| component    | `React.ComponentType<{state: UseFieldState<Value>; actions: UseFieldActions<Value>;}>` | No        | A React component to render as the input field               |
+| render       | `(state: UseFieldState<Value>, actions: UseFieldActions<Value>) => JSX.Element`        | No        | A render prop                                                |
 
 #### [⇗ Back to top](#table-of-contents)
 
@@ -939,13 +967,13 @@ most useful for fields that aren't rendered as native HTML elements.
 
 #### Props
 
-| Name         | Type                                                                                     | Required? | Description                                                             |
-| ------------ | ---------------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------- |
-| atom         | `FieldAtom<Value>`                                                                       | Yes       | A field atom                                                            |
-| initialValue | `Value`                                                                                  | No        | The initial value of the field                                          |
-| scope        | `Scope`                                                                                  | No        | [A Jotai scope](https://twitter.com/dai_shi/status/1383784883147874310) |
-| component    | `React.ComponentType<{state: FieldAtomState<Value>; actions: FieldAtomActions<Value>;}>` | No        | A React component to render as the field                                |
-| render       | `(state: FieldAtomState<Value>, actions: FieldAtomActions<Value>) => JSX.Element`        | No        | A render prop                                                           |
+| Name         | Type                                                                                   | Required? | Description                                                  |
+| ------------ | -------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------ |
+| atom         | `FieldAtom<Value>`                                                                     | Yes       | A field atom                                                 |
+| initialValue | `Value`                                                                                | No        | The initial value of the field                               |
+| store        | `AtomStore`                                                                            | No        | [A Jotai store](https://jotai.org/docs/api/core#createstore) |
+| component    | `React.ComponentType<{state: UseFieldState<Value>; actions: UseFieldActions<Value>;}>` | No        | A React component to render as the field                     |
+| render       | `(state: UseFieldState<Value>, actions: UseFieldActions<Value>) => JSX.Element`        | No        | A render prop                                                |
 
 #### [⇗ Back to top](#table-of-contents)
 
@@ -962,13 +990,107 @@ and calls a visitor function for each atom it finds.
 
 | Name    | Type                                                       | Required? | Description                                                                                                    |
 | ------- | ---------------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------- |
-| fields  | `FormAtomFields`                                           | Yes       | An object containing nested field atoms                                                                        |
+| fields  | `FormFields`                                               | Yes       | An object containing nested field atoms                                                                        |
 | visitor | `(field: FieldAtom<any>, path: string[]) => void \| false` | Yes       | A function that will be called for each field atom. You can exit early by returning `false` from the function. |
 
 #### Returns
 
 ```ts
 void
+```
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
+## Utility types
+
+### FormValues
+
+A utility type for inferring the value types of a form's nested field atoms.
+
+```ts
+const nameForm = formAtom({
+  name: fieldAtom({ value: "" }),
+});
+
+type NameFormValues = FormValues<typeof nameForm>;
+```
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
+### FormErrors
+
+A utility type for inferring the error types of a form's nested field atoms.
+
+```ts
+const nameForm = formAtom({
+  name: fieldAtom({ value: "" }),
+});
+
+type NameFormErrors = FormErrors<typeof nameForm>;
+```
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
+## form-atoms/zod
+
+### zodValidate()
+
+Validate your field atoms with Zod schemas. This function validates on every `"user"` and
+`"submit"` event, in addition to other events you specify.
+
+```ts
+import { z } from "zod";
+import { formAtom, fieldAtom } from "form-atoms";
+import { zodValidate } from "form-atoms/zod";
+
+const schema = z.object({
+  name: z.string().min(3),
+});
+
+const nameForm = formAtom({
+  name: fieldAtom({
+    validate: zodValidate(schema.shape.name, {
+      on: "submit",
+      when: "dirty",
+    }),
+  }),
+});
+```
+
+#### Arguments
+
+| Name   | Type                                      | Required? | Description                                          |
+| ------ | ----------------------------------------- | --------- | ---------------------------------------------------- |
+| schema | `((get: Getter) => z.Schema) \| z.Schema` | Yes       | A Zod schema or a function that returns a Zod schema |
+| config | [`ZodValidateConfig`](#zodvalidateconfig) | No        | Configuration options                                |
+
+#### ZodValidateConfig
+
+```ts
+export type ZodValidateConfig = {
+  /**
+   * The event or events that triggers validation.
+   */
+  on?: ZodValidateOn | ZodValidateOn[];
+  /**
+   * Validate if the field is:
+   * - `touched`
+   * - `dirty`
+   */
+  when?: "touched" | "dirty" | ("touched" | "dirty")[];
+  /**
+   * Format the error message returned by the validator.
+   *
+   * @param error - A ZodError object
+   */
+  formatError?: (error: ZodError) => string[];
+};
 ```
 
 #### [⇗ Back to top](#table-of-contents)

@@ -3,7 +3,7 @@ import type { Getter } from "jotai";
 import type { z } from "zod";
 import { ZodError, ZodType } from "zod";
 
-import type { FieldAtomValidateOn, Validate } from ".";
+import type { Validate, ValidateOn } from ".";
 
 /**
  * Validate your field atoms with Zod schemas. This function validates
@@ -21,6 +21,7 @@ import type { FieldAtomValidateOn, Validate } from ".";
  *   name: fieldAtom({
  *     validate: zodValidate(schema.shape.name, {
  *       on: "blur",
+ *       when: "dirty",
  *     })
  *   })
  * })
@@ -30,16 +31,12 @@ export function zodValidate<Value>(
   schema: ((get: Getter) => z.Schema) | z.Schema,
   config: ZodValidateConfig = {}
 ) {
-  const {
-    on,
-    ifDirty,
-    ifTouched,
-    formatError = (err) => err.flatten().formErrors,
-    failFast = true,
-  } = config;
+  const { on, when, formatError = (err) => err.flatten().formErrors } = config;
   const ors: ((
     state: Parameters<Exclude<Validate<Value>, undefined>>[0]
   ) => Promise<string[] | undefined>)[] = [];
+  const ifDirty = when?.includes("dirty");
+  const ifTouched = when?.includes("touched");
 
   const chain = Object.assign(
     async (
@@ -52,12 +49,11 @@ export function zodValidate<Value>(
         !!on?.includes(state.event);
 
       if (shouldHandleEvent) {
-        const shouldHandleDirty =
-          ifDirty === undefined || ifDirty === state.dirty;
-        const shouldHandleTouched =
-          ifTouched === undefined || ifTouched === state.touched;
-
-        if (shouldHandleDirty && shouldHandleTouched) {
+        if (
+          when === undefined ||
+          ifDirty === state.dirty ||
+          ifTouched === state.touched
+        ) {
           const validator =
             schema instanceof ZodType ? schema : schema(state.get);
 
@@ -80,15 +76,11 @@ export function zodValidate<Value>(
 
           if (errors?.length) {
             result = result ? result.concat(errors) : errors;
-
-            if (failFast) {
-              break;
-            }
           } else if (errors) {
             result = result ? result.concat(errors) : errors;
           }
 
-          if (failFast && result) {
+          if (result) {
             return result;
           }
         }
@@ -97,8 +89,8 @@ export function zodValidate<Value>(
       return result;
     },
     {
-      or(config: Omit<ZodValidateConfig, "failFast" | "formatError">) {
-        const or = zodValidate(schema, { formatError, failFast, ...config });
+      or(config: Omit<ZodValidateConfig, "formatError">) {
+        const or = zodValidate(schema, { formatError, ...config });
         ors.push(or);
         return chain;
       },
@@ -114,26 +106,17 @@ export type ZodValidateConfig = {
    */
   on?: ZodValidateOn | ZodValidateOn[];
   /**
-   * Validate if the field has been touched.
+   * Validate if the field is:
+   * - `touched`
+   * - `dirty`
    */
-  ifTouched?: boolean;
-  /**
-   * Validate if the field is dirty.
-   */
-  ifDirty?: boolean;
+  when?: "touched" | "dirty" | ("touched" | "dirty")[];
   /**
    * Format the error message returned by the validator.
    *
    * @param error - A ZodError object
    */
   formatError?: (error: ZodError) => string[];
-  /**
-   * If `true`, the validation will only report the first error in the chain.
-   * If `false`, the validation will report all errors in the chain.
-   *
-   * @default true
-   */
-  failFast?: boolean;
 };
 
-export type ZodValidateOn = Exclude<FieldAtomValidateOn, "user" | "submit">;
+export type ZodValidateOn = Exclude<ValidateOn, "user" | "submit">;

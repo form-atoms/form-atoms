@@ -8,24 +8,24 @@ import type { ExtractAtomValue } from "jotai";
 import { Provider } from "jotai";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import type { FieldAtom, UseFormAtom } from ".";
+import type { FieldAtom, UseForm } from ".";
 import {
   Field,
   Form,
   InputField,
   fieldAtom,
   formAtom,
-  useFieldAtom,
-  useFieldAtomErrors,
-  useFieldAtomInitialValue,
-  useFieldAtomValue,
-  useFormAtom,
-  useFormAtomActions,
-  useFormAtomErrors,
-  useFormAtomState,
-  useFormAtomStatus,
-  useFormAtomSubmit,
-  useFormAtomValues,
+  useFieldErrors,
+  useFieldInitialValue,
+  useFieldValue,
+  useForm,
+  useFormActions,
+  useFormErrors,
+  useFormState,
+  useFormStatus,
+  useFormSubmit,
+  useFormValues,
+  useInputField,
 } from ".";
 
 vi.useFakeTimers();
@@ -38,7 +38,7 @@ afterEach(() => {
 describe("<Field>", () => {
   it('should render "component" prop', () => {
     const atom = fieldAtom({ value: "test" });
-    const field = renderHook(() => useFieldAtom(atom));
+    const field = renderHook(() => useInputField(atom));
     render(
       <Field
         atom={atom}
@@ -54,7 +54,7 @@ describe("<Field>", () => {
 
   it('should render "render" prop', () => {
     const atom = fieldAtom({ value: "test" });
-    const field = renderHook(() => useFieldAtom(atom));
+    const field = renderHook(() => useInputField(atom));
     render(
       <Field
         atom={atom}
@@ -90,7 +90,7 @@ describe("<Field>", () => {
 
   it("should set an object value", () => {
     const atom = fieldAtom({ value: { id: "0123", name: "Foo" } });
-    const field = renderHook(() => useFieldAtomValue(atom));
+    const field = renderHook(() => useFieldValue(atom));
     render(
       <Field
         atom={atom}
@@ -113,7 +113,7 @@ describe("<Field>", () => {
 
   it("should set an array value", () => {
     const atom = fieldAtom({ value: [] as any[] });
-    const field = renderHook(() => useFieldAtomValue(atom));
+    const field = renderHook(() => useFieldValue(atom));
     render(
       <Field
         atom={atom}
@@ -169,11 +169,9 @@ describe("<Form>", () => {
     });
 
     const FormComponent = (
-      props: UseFormAtom<
-        ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>
-      >
+      props: UseForm<ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>>
     ) => {
-      const field = useFieldAtom(props.fieldAtoms.name);
+      const field = useInputField(props.fieldAtoms.name);
 
       return (
         <form onSubmit={props.submit((values) => console.log(values.name))}>
@@ -192,11 +190,9 @@ describe("<Form>", () => {
     });
 
     const FormComponent = (
-      props: UseFormAtom<
-        ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>
-      >
+      props: UseForm<ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>>
     ) => {
-      const field = useFieldAtom(props.fieldAtoms.name);
+      const field = useInputField(props.fieldAtoms.name);
 
       return (
         <form onSubmit={props.submit((values) => console.log(values.name))}>
@@ -215,12 +211,10 @@ describe("<Form>", () => {
     });
 
     const FormComponentA = (
-      props: UseFormAtom<
-        ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>
-      >
+      props: UseForm<ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>>
     ) => {
-      const field = useFieldAtom(props.fieldAtoms.name);
-      useFieldAtomInitialValue(props.fieldAtoms.name, "a");
+      const field = useInputField(props.fieldAtoms.name);
+      useFieldInitialValue(props.fieldAtoms.name, "a");
 
       return (
         <form onSubmit={props.submit((values) => console.log(values.name))}>
@@ -230,12 +224,10 @@ describe("<Form>", () => {
     };
 
     const FormComponentB = (
-      props: UseFormAtom<
-        ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>
-      >
+      props: UseForm<ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>>
     ) => {
-      const field = useFieldAtom(props.fieldAtoms.name);
-      useFieldAtomInitialValue(props.fieldAtoms.name, "b");
+      const field = useInputField(props.fieldAtoms.name);
+      useFieldInitialValue(props.fieldAtoms.name, "b");
 
       return (
         <form onSubmit={props.submit((values) => console.log(values.name))}>
@@ -306,7 +298,7 @@ describe("useFieldAtom()", () => {
       name: "firstName",
       value: "test",
     });
-    const { result } = renderHook(() => useFieldAtom(firstNameAtom));
+    const { result } = renderHook(() => useInputField(firstNameAtom));
 
     expect(result.current.state.dirty).toBeFalsy();
 
@@ -328,7 +320,7 @@ describe("useFieldAtom()", () => {
       name: "firstName",
       value: "test",
     });
-    const { result } = renderHook(() => useFieldAtom(firstNameAtom));
+    const { result } = renderHook(() => useInputField(firstNameAtom));
 
     expect(result.current.state.touched).toBeFalsy();
 
@@ -348,7 +340,7 @@ describe("useFieldAtom()", () => {
       }),
     };
     const firstNameAtom = fieldAtom(atomConfig);
-    const { result } = renderHook(() => useFieldAtom(firstNameAtom));
+    const { result } = renderHook(() => useInputField(firstNameAtom));
     domAct(() => {
       result.current.props.onBlur({} as any);
     });
@@ -367,7 +359,7 @@ describe("useFieldAtom()", () => {
       }),
     };
     const firstNameAtom = fieldAtom(atomConfig);
-    const { result } = renderHook(() => useFieldAtom(firstNameAtom));
+    const { result } = renderHook(() => useInputField(firstNameAtom));
     domAct(() => {
       result.current.props.onChange({ target: { value: "test" } } as any);
     });
@@ -385,7 +377,7 @@ describe("useFieldAtom()", () => {
         return ["error"];
       },
     });
-    const { result } = renderHook(() => useFieldAtom(firstNameAtom));
+    const { result } = renderHook(() => useInputField(firstNameAtom));
 
     expect(result.current.props["aria-invalid"]).toBeFalsy();
 
@@ -404,7 +396,7 @@ describe("useFieldAtom()", () => {
         return ["error"];
       },
     });
-    const { result } = renderHook(() => useFieldAtom(firstNameAtom));
+    const { result } = renderHook(() => useInputField(firstNameAtom));
 
     expect(result.current.state.errors).toEqual([]);
 
@@ -420,7 +412,7 @@ describe("useFieldAtom()", () => {
       name: "firstName",
       value: "test",
     });
-    const { result } = renderHook(() => useFieldAtom(firstNameAtom));
+    const { result } = renderHook(() => useInputField(firstNameAtom));
 
     expect(result.current.state.touched).toBeFalsy();
 
@@ -440,7 +432,7 @@ describe("useFieldAtom()", () => {
       }),
     };
     const firstNameAtom = fieldAtom(atomConfig);
-    const { result } = renderHook(() => useFieldAtom(firstNameAtom));
+    const { result } = renderHook(() => useInputField(firstNameAtom));
 
     expect(result.current.state.errors).toEqual([]);
 
@@ -469,7 +461,7 @@ describe("useFieldAtom()", () => {
       }),
     };
     const firstNameAtom = fieldAtom(atomConfig);
-    const { result } = renderHook(() => useFieldAtom(firstNameAtom));
+    const { result } = renderHook(() => useInputField(firstNameAtom));
 
     expect(result.current.state.errors).toEqual([]);
 
@@ -490,7 +482,7 @@ describe("useFieldAtom()", () => {
       }),
     };
     const firstNameAtom = fieldAtom(atomConfig);
-    const { result } = renderHook(() => useFieldAtom(firstNameAtom));
+    const { result } = renderHook(() => useInputField(firstNameAtom));
 
     expect(result.current.state.errors).toEqual([]);
 
@@ -520,7 +512,7 @@ describe("useFieldAtom()", () => {
       }),
     };
     const firstNameAtom = fieldAtom(atomConfig);
-    const { result } = renderHook(() => useFieldAtom(firstNameAtom));
+    const { result } = renderHook(() => useInputField(firstNameAtom));
 
     expect(result.current.state.errors).toEqual([]);
 
@@ -546,7 +538,7 @@ describe("useFieldAtom()", () => {
       name: "firstName",
       value: "test",
     });
-    const { result } = renderHook(() => useFieldAtom(firstNameAtom));
+    const { result } = renderHook(() => useInputField(firstNameAtom));
     const handleFocus = vi.fn();
 
     domAct(() => {
@@ -568,7 +560,7 @@ describe("useFieldAtom()", () => {
         return ["error"];
       },
     });
-    const { result } = renderHook(() => useFieldAtom(firstNameAtom));
+    const { result } = renderHook(() => useInputField(firstNameAtom));
 
     domAct(() => {
       result.current.actions.setValue("abc");
@@ -599,7 +591,7 @@ describe("useFieldAtom()", () => {
         return Promise.resolve(["error"]);
       },
     });
-    const { result } = renderHook(() => useFieldAtom(firstNameAtom));
+    const { result } = renderHook(() => useInputField(firstNameAtom));
 
     domAct(() => {
       result.current.actions.validate();
@@ -617,7 +609,7 @@ describe("useFieldAtom()", () => {
         return Promise.resolve(["error"]);
       },
     });
-    const { result } = renderHook(() => useFieldAtom(firstNameAtom));
+    const { result } = renderHook(() => useInputField(firstNameAtom));
 
     domAct(() => {
       result.current.actions.validate();
@@ -641,7 +633,7 @@ describe("useFieldAtom()", () => {
         });
       },
     });
-    const { result } = renderHook(() => useFieldAtom(firstNameAtom));
+    const { result } = renderHook(() => useInputField(firstNameAtom));
 
     domAct(() => {
       result.current.actions.validate();
@@ -663,8 +655,8 @@ describe("useFieldAtomInitialValue()", () => {
       value: "test",
     });
     const field = renderHook(() => {
-      useFieldAtomInitialValue(firstNameAtom, "jared");
-      return useFieldAtom(firstNameAtom);
+      useFieldInitialValue(firstNameAtom, "jared");
+      return useInputField(firstNameAtom);
     });
     expect(field.result.current.props.value).toBe("jared");
   });
@@ -673,8 +665,8 @@ describe("useFieldAtomInitialValue()", () => {
     const firstNameAtom = fieldAtom({
       value: "test",
     });
-    const field = renderHook(() => useFieldAtom(firstNameAtom));
-    renderHook(() => useFieldAtomInitialValue(firstNameAtom, undefined));
+    const field = renderHook(() => useInputField(firstNameAtom));
+    renderHook(() => useFieldInitialValue(firstNameAtom, undefined));
     expect(field.result.current.props.value).toBe("test");
   });
 });
@@ -685,7 +677,7 @@ describe("useFieldAtomValue()", () => {
       name: "firstName",
       value: "test",
     });
-    const { result } = renderHook(() => useFieldAtomValue(firstNameAtom));
+    const { result } = renderHook(() => useFieldValue(firstNameAtom));
 
     expect(result.current).toBe("test");
   });
@@ -700,8 +692,8 @@ describe("useFieldAtomErrors", () => {
         return ["error"];
       },
     });
-    const atom = renderHook(() => useFieldAtom(firstNameAtom));
-    const { result } = renderHook(() => useFieldAtomErrors(firstNameAtom));
+    const atom = renderHook(() => useInputField(firstNameAtom));
+    const { result } = renderHook(() => useFieldErrors(firstNameAtom));
     domAct(() => {
       atom.result.current.actions.validate();
     });
@@ -729,7 +721,7 @@ describe("useFormAtom()", () => {
         }),
       ],
     });
-    const { result } = renderHook(() => useFormAtom(atom));
+    const { result } = renderHook(() => useForm(atom));
     expect(result.current.fieldAtoms.name.first).not.toBeUndefined();
     expect(result.current.fieldAtoms.name.last).not.toBeUndefined();
     expect(result.current.fieldAtoms.hobbies[0]).not.toBeUndefined();
@@ -748,10 +740,10 @@ describe("useFormAtom()", () => {
       ],
     };
     const atom = formAtom(config);
-    const { result } = renderHook(() => useFormAtom(atom));
-    const form = renderHook(() => useFormAtomState(atom));
-    const nameField = renderHook(() => useFieldAtom(config.name));
-    const hobbiesField = renderHook(() => useFieldAtom(config.hobbies[0]));
+    const { result } = renderHook(() => useForm(atom));
+    const form = renderHook(() => useFormState(atom));
+    const nameField = renderHook(() => useInputField(config.name));
+    const hobbiesField = renderHook(() => useInputField(config.hobbies[0]));
 
     domAct(() => {
       nameField.result.current.actions.setValue("jared");
@@ -796,8 +788,8 @@ describe("useFormAtom()", () => {
       ],
     };
     const atom = formAtom(config);
-    const { result } = renderHook(() => useFormAtom(atom));
-    const form = renderHook(() => useFormAtomState(atom));
+    const { result } = renderHook(() => useForm(atom));
+    const form = renderHook(() => useFormState(atom));
 
     domAct(() => {
       result.current.validate();
@@ -826,8 +818,8 @@ describe("useFormAtom()", () => {
       ],
     };
     const atom = formAtom(config);
-    const { result } = renderHook(() => useFormAtom(atom));
-    const form = renderHook(() => useFormAtomState(atom));
+    const { result } = renderHook(() => useForm(atom));
+    const form = renderHook(() => useFormState(atom));
 
     domAct(() => {
       result.current.submit(async () => {})();
@@ -854,8 +846,8 @@ describe("useFormAtom()", () => {
       ],
     };
     const atom = formAtom(config);
-    const { result } = renderHook(() => useFormAtom(atom));
-    const form = renderHook(() => useFormAtomState(atom));
+    const { result } = renderHook(() => useForm(atom));
+    const form = renderHook(() => useFormState(atom));
     const handleSubmit = vi.fn(async () => {});
     domAct(() => {
       result.current.submit(handleSubmit)();
@@ -882,8 +874,8 @@ describe("useFormAtom()", () => {
       ],
     };
     const atom = formAtom(config);
-    const { result } = renderHook(() => useFormAtom(atom));
-    const form = renderHook(() => useFormAtomState(atom));
+    const { result } = renderHook(() => useForm(atom));
+    const form = renderHook(() => useFormState(atom));
     const handleSubmit = vi.fn(() => {});
     domAct(() => {
       result.current.submit(handleSubmit)();
@@ -913,8 +905,8 @@ describe("useFormAtom()", () => {
       hobbies: [fieldAtom(hobbyConfig)],
     };
     const atom = formAtom(config);
-    const { result } = renderHook(() => useFormAtom(atom));
-    const form = renderHook(() => useFormAtomState(atom));
+    const { result } = renderHook(() => useForm(atom));
+    const form = renderHook(() => useFormState(atom));
     const handleSubmit = vi.fn(() => {});
     domAct(() => {
       result.current.submit(handleSubmit)();
@@ -946,8 +938,8 @@ describe("useFormAtom()", () => {
       ],
     };
     const atom = formAtom(config);
-    const { result } = renderHook(() => useFormAtom(atom));
-    const form = renderHook(() => useFormAtomState(atom));
+    const { result } = renderHook(() => useForm(atom));
+    const form = renderHook(() => useFormState(atom));
 
     domAct(() => {
       result.current.validate();
@@ -976,8 +968,8 @@ describe("useFormAtom()", () => {
       ],
     };
     const atom = formAtom(config);
-    const { result } = renderHook(() => useFormAtom(atom));
-    const form = renderHook(() => useFormAtomState(atom));
+    const { result } = renderHook(() => useForm(atom));
+    const form = renderHook(() => useFormState(atom));
 
     domAct(() => {
       result.current.validate();
@@ -1010,8 +1002,8 @@ describe("useFormAtom()", () => {
       ],
     };
     const atom = formAtom(config);
-    const { result } = renderHook(() => useFormAtom(atom));
-    const form = renderHook(() => useFormAtomState(atom));
+    const { result } = renderHook(() => useForm(atom));
+    const form = renderHook(() => useFormState(atom));
 
     domAct(() => {
       result.current.validate();
@@ -1043,8 +1035,8 @@ describe("useFormAtom()", () => {
       ],
     };
     const atom = formAtom(config);
-    const { result } = renderHook(() => useFormAtom(atom));
-    const form = renderHook(() => useFormAtomState(atom));
+    const { result } = renderHook(() => useForm(atom));
+    const form = renderHook(() => useFormState(atom));
 
     domAct(() => {
       result.current.validate();
@@ -1066,8 +1058,8 @@ describe("useFormAtom()", () => {
       ],
     };
     const atom = formAtom(config);
-    const field = renderHook(() => useFieldAtom(config.name));
-    const form = renderHook(() => useFormAtomState(atom));
+    const field = renderHook(() => useInputField(config.name));
+    const form = renderHook(() => useFormState(atom));
     expect(form.result.current.dirty).toBe(false);
 
     domAct(() => {
@@ -1090,7 +1082,7 @@ describe("useFormAtom()", () => {
       ],
     };
     const atom = formAtom(config);
-    const form = renderHook(() => useFormAtomState(atom));
+    const form = renderHook(() => useFormState(atom));
 
     expect(form.result.current.touchedFields).toEqual({
       name: false,
@@ -1130,8 +1122,8 @@ describe("useFormAtomValues()", () => {
         name: FieldAtom<string>;
       }[];
     }>(config);
-    const { result } = renderHook(() => useFormAtomValues(atom));
-    const field = renderHook(() => useFieldAtom(config.name.first));
+    const { result } = renderHook(() => useFormValues(atom));
+    const field = renderHook(() => useInputField(config.name.first));
 
     expect(result.current).toEqual({
       name: {
@@ -1189,8 +1181,8 @@ describe("useFormAtomErrors()", () => {
       };
       hobbies: FieldAtom<string>[];
     }>(config);
-    const field = renderHook(() => useFieldAtom(config.name.first));
-    const errors = renderHook(() => useFormAtomErrors(atom));
+    const field = renderHook(() => useInputField(config.name.first));
+    const errors = renderHook(() => useFormErrors(atom));
 
     expect(errors.result.current).toEqual({
       name: {
@@ -1231,8 +1223,8 @@ describe("useFormAtomErrors()", () => {
         first: FieldAtom<string>;
       };
     }>(config);
-    const form = renderHook(() => useFormAtom(atom));
-    const errors = renderHook(() => useFormAtomErrors(atom));
+    const form = renderHook(() => useForm(atom));
+    const errors = renderHook(() => useFormErrors(atom));
 
     expect(errors.result.current).toEqual({
       name: {
@@ -1271,7 +1263,7 @@ describe("useFormAtomActions()", () => {
       name: FieldAtom<string>;
       hobbies: FieldAtom<string>[];
     }>(config);
-    const actions = renderHook(() => useFormAtomActions(atom));
+    const actions = renderHook(() => useFormActions(atom));
     expect(actions.result.current).toEqual({
       updateFields: expect.any(Function),
       validate: expect.any(Function),
@@ -1289,7 +1281,7 @@ describe("useFormAtomActions()", () => {
       }),
     };
     const atom = formAtom<{ name: FieldAtom<string> }>(config);
-    const actions = renderHook(() => useFormAtomActions(atom));
+    const actions = renderHook(() => useFormActions(atom));
 
     domAct(() => {
       actions.result.current.validate();
@@ -1317,8 +1309,8 @@ describe("useFormAtomActions()", () => {
       name: FieldAtom<string>;
       hobbies: FieldAtom<string>[];
     }>(config);
-    const actions = renderHook(() => useFormAtomActions(atom));
-    const state = renderHook(() => useFormAtom(atom));
+    const actions = renderHook(() => useFormActions(atom));
+    const state = renderHook(() => useForm(atom));
 
     domAct(() => {
       actions.result.current.updateFields((current) => {
@@ -1345,7 +1337,7 @@ describe("useFormAtomActions()", () => {
       ],
     };
     const atom = formAtom(config);
-    const { result } = renderHook(() => useFormAtomActions(atom));
+    const { result } = renderHook(() => useFormActions(atom));
     const handleSubmit = vi.fn(async () => {});
 
     domAct(() => {
@@ -1367,7 +1359,7 @@ describe("useFormAtomStatus()", () => {
         value: "jared",
       }),
     });
-    const status = renderHook(() => useFormAtomStatus(atom));
+    const status = renderHook(() => useFormStatus(atom));
 
     expect(status.result.current).toEqual({
       submitStatus: "idle",
@@ -1376,7 +1368,7 @@ describe("useFormAtomStatus()", () => {
   });
 });
 
-describe("useFormAtomSubmit()", () => {
+describe("useSubmit()", () => {
   it("should submit the form", async () => {
     const handleSubmit = vi.fn(async () => {});
     const atom = formAtom({
@@ -1384,7 +1376,7 @@ describe("useFormAtomSubmit()", () => {
         value: "jared",
       }),
     });
-    const { result } = renderHook(() => useFormAtomSubmit(atom));
+    const { result } = renderHook(() => useFormSubmit(atom));
 
     domAct(() => {
       result.current(handleSubmit)();
@@ -1401,7 +1393,7 @@ function createTextField<Value extends string | number | readonly string[]>(
   fieldAtom: FieldAtom<Value>
 ) {
   return function Field() {
-    const field = useFieldAtom(fieldAtom);
+    const field = useInputField(fieldAtom);
     return <input type="text" {...field.props} />;
   };
 }

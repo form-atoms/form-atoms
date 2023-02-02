@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { zodValidate } from "./zod";
 
-import { fieldAtom, useFieldAtom } from ".";
+import { fieldAtom, useInputField } from ".";
 
 describe("zodValidate()", () => {
   it("should validate without a config", async () => {
@@ -13,7 +13,7 @@ describe("zodValidate()", () => {
       validate: zodValidate(z.string().min(3, "3 plz")),
     });
 
-    const field = renderHook(() => useFieldAtom(nameAtom));
+    const field = renderHook(() => useInputField(nameAtom));
 
     domAct(() => {
       field.result.current.actions.validate();
@@ -32,7 +32,7 @@ describe("zodValidate()", () => {
       ),
     });
 
-    const field = renderHook(() => useFieldAtom(nameAtom));
+    const field = renderHook(() => useInputField(nameAtom));
 
     domAct(() => {
       field.result.current.actions.validate();
@@ -53,15 +53,14 @@ describe("zodValidate()", () => {
         z.string().min(3, "3 plz").regex(/foo/, "must match foo"),
         {
           on: "touch",
-          failFast: true,
+          when: "touched",
         }
       ).or({
         on: "change",
-        ifDirty: true,
       }),
     });
 
-    const field = renderHook(() => useFieldAtom(nameAtom));
+    const field = renderHook(() => useInputField(nameAtom));
 
     domAct(() => {
       field.result.current.actions.setTouched(true);
@@ -76,49 +75,6 @@ describe("zodValidate()", () => {
     ]);
   });
 
-  it("should throw every error in chain", async () => {
-    const nameAtom = fieldAtom({
-      value: "",
-      validate: zodValidate(
-        z.string().min(3, "3 plz").regex(/foo/, "must match foo"),
-        {
-          on: "touch",
-          failFast: false,
-        }
-      )
-        .or({
-          on: "change",
-          ifDirty: true,
-        })
-        .or({
-          on: "change",
-        }),
-    });
-
-    const field = renderHook(() => useFieldAtom(nameAtom));
-
-    domAct(() => {
-      field.result.current.actions.setTouched(true);
-    });
-
-    domAct(() => {
-      field.result.current.actions.setValue("ab");
-    });
-
-    await domAct(() => Promise.resolve());
-
-    domAct(() => {
-      field.result.current.actions.setValue("abc");
-    });
-
-    await domAct(() => Promise.resolve());
-    expect(field.result.current.state.validateStatus).toBe("invalid");
-    expect(field.result.current.state.errors).toEqual([
-      "must match foo",
-      "must match foo",
-    ]);
-  });
-
   it("should use custom error formatting", async () => {
     const nameAtom = fieldAtom({
       value: "",
@@ -129,12 +85,11 @@ describe("zodValidate()", () => {
             err.errors.map((e) =>
               JSON.stringify({ code: e.code, message: e.message })
             ),
-          failFast: false,
         }
       ),
     });
 
-    const field = renderHook(() => useFieldAtom(nameAtom));
+    const field = renderHook(() => useInputField(nameAtom));
 
     domAct(() => {
       field.result.current.actions.validate();
@@ -154,7 +109,7 @@ describe("zodValidate()", () => {
       validate: zodValidate(z.string().min(3, "3 plz"), { on: "change" }),
     });
 
-    const field = renderHook(() => useFieldAtom(nameAtom));
+    const field = renderHook(() => useInputField(nameAtom));
 
     expect(field.result.current.state.validateStatus).toBe("valid");
     expect(field.result.current.state.errors).toEqual([]);
@@ -173,11 +128,11 @@ describe("zodValidate()", () => {
       value: "",
       validate: zodValidate(z.string().min(3, "3 plz"), {
         on: "change",
-        ifDirty: true,
+        when: "dirty",
       }),
     });
 
-    const field = renderHook(() => useFieldAtom(nameAtom));
+    const field = renderHook(() => useInputField(nameAtom));
 
     domAct(() => {
       field.result.current.actions.validate();
@@ -201,11 +156,11 @@ describe("zodValidate()", () => {
       value: "",
       validate: zodValidate(z.string().min(3, "3 plz"), {
         on: "change",
-        ifTouched: true,
+        when: "touched",
       }),
     });
 
-    const field = renderHook(() => useFieldAtom(nameAtom));
+    const field = renderHook(() => useInputField(nameAtom));
 
     domAct(() => {
       field.result.current.actions.setTouched(true);
@@ -227,11 +182,11 @@ describe("zodValidate()", () => {
       value: "",
       validate: zodValidate(z.string().min(3, "3 plz")).or({
         on: "change",
-        ifDirty: true,
+        when: "dirty",
       }),
     });
 
-    const field = renderHook(() => useFieldAtom(nameAtom));
+    const field = renderHook(() => useInputField(nameAtom));
 
     domAct(() => {
       field.result.current.actions.validate();
@@ -264,7 +219,7 @@ describe("zodValidate()", () => {
       validate: zodValidate(() => z.string().min(3, "3 plz")),
     });
 
-    const field = renderHook(() => useFieldAtom(nameAtom));
+    const field = renderHook(() => useInputField(nameAtom));
 
     domAct(() => {
       field.result.current.actions.validate();
