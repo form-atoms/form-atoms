@@ -1,5 +1,5 @@
 {
   "buildCommand": "build",
-  "sandboxes": ["/examples/async"],
+  "sandboxes": ["/examples/async-zd"],
   "node": "18"
 }

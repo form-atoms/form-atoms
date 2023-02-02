@@ -1,25 +1,22 @@
 import React from "react";
-
-import { Form, InputField, fieldAtom, formAtom } from "form-atoms";
-
+import { zodValidate } from "form-atoms/zod";
+import { formAtom, fieldAtom, InputField, Form } from "form-atoms";
 import { FieldErrors } from "./components/field-errors";
+import { z } from "zod";
+
+const nameSchema = z.object({
+  name: z.string().refine(async (value) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    return value.length < 3 ? false : true;
+  }),
+});
 
 const nameAtom = fieldAtom({
   value: "",
-  // Validate callbacks can be asynchronous. In this example
-  // we force the validator to wait 500ms before returning a
-  // result.
-  async validate({
-    // The value to validate
-    value,
-  }) {
-    // Wait 500ms
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    // validate() expects that you return an empty array
-    // for valid fields and an array of strings for
-    // invalid fields
-    return value.length > 8 ? [] : ["Value must be longer than 8 characters"];
-  },
+  validate: zodValidate(nameSchema.shape.name, {
+    on: "blur",
+    when: "dirty",
+  }),
 });
 
 export const nameFormAtom = formAtom({
@@ -38,7 +35,11 @@ export default function ValidateOn() {
                 <span>Name</span>
 
                 <FieldErrors atom={fieldAtoms.name}>
-                  <InputField atom={fieldAtoms.name} component="input" />
+                  <InputField
+                    atom={fieldAtoms.name}
+                    initialValue="Jared"
+                    component="input"
+                  />
                 </FieldErrors>
               </label>
 
