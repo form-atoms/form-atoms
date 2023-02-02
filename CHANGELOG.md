@@ -1,3 +1,10 @@
+# [2.0.0-next.2](https://github.com/jaredLunde/form-atoms/compare/v2.0.0-next.1...v2.0.0-next.2) (2023-02-02)
+
+
+### Bug Fixes
+
+* empty arrays not included in submit values ([#31](https://github.com/jaredLunde/form-atoms/issues/31)) ([837140d](https://github.com/jaredLunde/form-atoms/commit/837140d598a9c6568dbde30eacc989e5f645076b)), closes [#26](https://github.com/jaredLunde/form-atoms/issues/26)
+
 # [2.0.0-next.1](https://github.com/jaredLunde/form-atoms/compare/v1.3.0-next.3...v2.0.0-next.1) (2023-02-02)
 
 ### Code Refactoring
