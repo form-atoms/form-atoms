@@ -118,10 +118,18 @@ export function formAtom<Fields extends FormFields>(
     const fields = get(fieldsAtom);
     const values = {} as FormFieldValues<Fields>;
 
-    walkFields(fields, (field, path) => {
-      const fieldAtom = get(field);
-      setPath(values, path, get(fieldAtom.value));
-    });
+    walkFields(
+      fields,
+      (field, path) => {
+        if (field) {
+          const fieldAtom = get(field);
+          setPath(values, path, get(fieldAtom.value));
+        } else {
+          setPath(values, path, []);
+        }
+      },
+      { includeEmptyArrays: true }
+    );
 
     return values;
   });
@@ -914,9 +922,34 @@ export {
  */
 export function walkFields<Fields extends FormFields>(
   fields: Fields,
+  visitor: (field: FieldAtom<any> | null, path: string[]) => void | false,
+  options: {
+    includeEmptyArrays: true;
+  },
+  path?: string[]
+): void;
+export function walkFields<Fields extends FormFields>(
+  fields: Fields,
   visitor: (field: FieldAtom<any>, path: string[]) => void | false,
+  options: {
+    includeEmptyArrays: false;
+  },
+  path?: string[]
+): void;
+export function walkFields<Fields extends FormFields>(
+  fields: Fields,
+  visitor: (field: FieldAtom<any>, path: string[]) => void | false,
+  options?: {
+    includeEmptyArrays?: boolean;
+  },
+  path?: string[]
+): void;
+export function walkFields<Fields extends FormFields>(
+  fields: Fields,
+  visitor: (field: FieldAtom<any>, path: string[]) => void | false,
+  options: any = {},
   path: string[] = []
-) {
+): void {
   for (const key in fields) {
     path.push(key);
     const field = fields[key];
@@ -924,20 +957,25 @@ export function walkFields<Fields extends FormFields>(
     if (isAtom(field)) {
       if (visitor(field, path) === false) return;
     } else if (Array.isArray(field)) {
-      for (const key in field) {
-        path.push(key);
-        const subField = field[key];
+      if (!field.length && options.includeEmptyArrays) {
+        // @ts-expect-error: it's fine for now
+        visitor(null, path);
+      } else {
+        for (const key in field) {
+          path.push(key);
+          const subField = field[key];
 
-        if (isAtom(subField)) {
-          if (visitor(subField, path) === false) return;
-        } else {
-          walkFields(subField, visitor, path);
+          if (isAtom(subField)) {
+            if (visitor(subField, path) === false) return;
+          } else {
+            walkFields(subField, visitor, options, path);
+          }
         }
-
-        path.pop();
       }
+
+      path.pop();
     } else if (typeof field === "object") {
-      walkFields(field, visitor, path);
+      walkFields(field, visitor, options, path);
     }
 
     path.pop();
