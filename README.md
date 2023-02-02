@@ -45,10 +45,10 @@ npm i form-atoms jotai
 
 ## Quick start
 
-[Check out the example on CodeSandbox ↗](https://codesandbox.io/s/getting-started-with-form-atoms-ddhgq2?file=/src/App.tsx)
+[Check out the example on CodeSandbox ↗](https://codesandbox.io/s/getting-started-with-form-atoms-v2-ddhgq2?file=/src/App.tsx)
 
 ```js
-import { fieldAtom, useField, formAtom, useForm } from "form-atoms";
+import { fieldAtom, useInputField, formAtom, useForm } from "form-atoms";
 
 const nameFormAtom = formAtom({
   name: {
@@ -72,7 +72,7 @@ function Form() {
 }
 
 function Field({ label, atom }) {
-  const field = useField(atom);
+  const field = useInputField(atom);
   return (
     <label>
       <span>{label}</span>
@@ -142,11 +142,11 @@ by using it, but you gain a ton of performance and without footguns.
 
 ## Recipes
 
-1. [**How to validate on `(blur, change, touch, submit)`**](https://codesandbox.io/s/form-atoms-validate-on-event-example-3gdywk?file=/src/App.tsx)
-1. [**How to validate a field conditional to the state of another field**](https://codesandbox.io/s/form-atoms-validate-on-dependent-state-1bidrd?file=/src/App.tsx)
+1. [**How to validate on `(blur, change, touch, submit)`**](https://codesandbox.io/s/form-atoms-v2-validate-on-event-example-forked-dkge0i?file=/src/App.tsx)
+1. [**How to validate a field conditional to the state of another field**](https://codesandbox.io/s/form-atoms-v2-validate-on-dependent-state-pscr8p?file=/src/App.tsx)
 1. [**How to validate a field asynchronously**](https://codesandbox.io/s/form-atoms-v2-validate-asynchronously-i86wyo?file=/src/App.tsx)
 1. [**How to validate using a Zod schema**](https://codesandbox.io/s/form-atoms-v2-validate-using-zod-1n1rrr?file=/src/App.tsx)
-1. [**How to create a nested fields**](https://codesandbox.io/s/form-atoms-nested-fields-example-7otpdy?file=/src/App.tsx)
+1. [**How to create a nested fields**](https://codesandbox.io/s/form-atoms-v2-nested-fields-example-lirr6w)
 1. [**How to create an array of fields**](https://codesandbox.io/s/form-atoms-v2-array-fields-example-22kf4d?file=/src/App.tsx)
 
 ---
@@ -1044,6 +1044,8 @@ type NameFormErrors = FormErrors<typeof nameForm>;
 
 Validate your field atoms with Zod schemas. This function validates on every `"user"` and
 `"submit"` event, in addition to other events you specify.
+
+[**Check out an example on CodeSandbox**](https://codesandbox.io/s/form-atoms-v2-validate-using-zod-1n1rrr?file=/src/App.tsx)
 
 ```ts
 import { z } from "zod";
