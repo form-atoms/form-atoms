@@ -1,3 +1,10 @@
+# [2.0.0-next.3](https://github.com/jaredLunde/form-atoms/compare/v2.0.0-next.2...v2.0.0-next.3) (2023-02-02)
+
+
+### Bug Fixes
+
+* fix reset w/ initial value ([#33](https://github.com/jaredLunde/form-atoms/issues/33)) ([8b49243](https://github.com/jaredLunde/form-atoms/commit/8b49243a964d84dd08e04500853e9dca8d405a02))
+
 # [2.0.0-next.2](https://github.com/jaredLunde/form-atoms/compare/v2.0.0-next.1...v2.0.0-next.2) (2023-02-02)
 
 
