@@ -254,7 +254,7 @@ describe("<Form>", () => {
   });
 });
 
-describe("useFieldAtom()", () => {
+describe("useField()", () => {
   it("should add default props", () => {
     const firstNameAtom = fieldAtom({
       name: "firstName",
@@ -649,7 +649,7 @@ describe("useFieldAtom()", () => {
   });
 });
 
-describe("useFieldAtomInitialValue()", () => {
+describe("useFieldInitialValue()", () => {
   it("should set an initial value", () => {
     const firstNameAtom = fieldAtom({
       value: "test",
@@ -671,7 +671,7 @@ describe("useFieldAtomInitialValue()", () => {
   });
 });
 
-describe("useFieldAtomValue()", () => {
+describe("useFieldValue()", () => {
   it("should return the value of the atom", () => {
     const firstNameAtom = fieldAtom({
       name: "firstName",
@@ -683,7 +683,7 @@ describe("useFieldAtomValue()", () => {
   });
 });
 
-describe("useFieldAtomErrors", () => {
+describe("useFieldErrors", () => {
   it("should return the errors of the atom", () => {
     const firstNameAtom = fieldAtom({
       name: "firstName",
@@ -701,7 +701,7 @@ describe("useFieldAtomErrors", () => {
   });
 });
 
-describe("useFormAtom()", () => {
+describe("useForm()", () => {
   it("should create the form atom", () => {
     const atom = formAtom({
       name: {
@@ -872,6 +872,9 @@ describe("useFormAtom()", () => {
           value: "test",
         }),
       ],
+      empty: {
+        array: [],
+      },
     };
     const atom = formAtom(config);
     const { result } = renderHook(() => useForm(atom));
@@ -886,6 +889,9 @@ describe("useFormAtom()", () => {
     expect(handleSubmit).toHaveBeenCalledWith({
       name: "lunde",
       hobbies: ["test"],
+      empty: {
+        array: [],
+      },
     });
   });
 
@@ -1117,7 +1123,7 @@ describe("useFormAtom()", () => {
   });
 });
 
-describe("useFormAtomValues()", () => {
+describe("useFormValues()", () => {
   it("should derive values from its fields", () => {
     const config = {
       name: {
@@ -1177,7 +1183,7 @@ describe("useFormAtomValues()", () => {
   });
 });
 
-describe("useFormAtomErrors()", () => {
+describe("useFormErrors()", () => {
   it("should derive errors from its fields", () => {
     const config = {
       name: {
@@ -1273,7 +1279,7 @@ describe("useFormAtomErrors()", () => {
   });
 });
 
-describe("useFormAtomActions()", () => {
+describe("useFormActions()", () => {
   it("should return expected object", () => {
     const config = {
       name: fieldAtom({
@@ -1378,7 +1384,7 @@ describe("useFormAtomActions()", () => {
   });
 });
 
-describe("useFormAtomStatus()", () => {
+describe("useFormStatus()", () => {
   it("should return object containing submit and validate status", () => {
     const atom = formAtom({
       name: fieldAtom({
