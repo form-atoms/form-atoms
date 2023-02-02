@@ -1,3 +1,14 @@
+# [2.0.0-next.1](https://github.com/jaredLunde/form-atoms/compare/v1.3.0-next.3...v2.0.0-next.1) (2023-02-02)
+
+### Code Refactoring
+
+- upgrade to jotai v2 ([#29](https://github.com/jaredLunde/form-atoms/issues/29)) ([e533e40](https://github.com/jaredLunde/form-atoms/commit/e533e409a3de1a35affd0e61fcdb41259cdb4039)), closes [#27](https://github.com/jaredLunde/form-atoms/issues/27) [#28](https://github.com/jaredLunde/form-atoms/issues/28) [#18](https://github.com/jaredLunde/form-atoms/issues/18) [#17](https://github.com/jaredLunde/form-atoms/issues/17)
+
+### BREAKING CHANGES
+
+- Renames form and field hooks to exclude "Atom" and be more terse. Renames most
+  exported types and several type signatures.
+
 # [1.3.0-next.3](https://github.com/jaredLunde/form-atoms/compare/v1.3.0-next.2...v1.3.0-next.3) (2023-01-29)
 
 ### Features
