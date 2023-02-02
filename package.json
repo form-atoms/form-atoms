@@ -124,6 +124,7 @@
     "node_modules",
     "coverage",
     "dist",
+    "/examples",
     "/types",
     "test",
     "*.config.js"
