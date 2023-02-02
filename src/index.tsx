@@ -9,8 +9,15 @@ import type {
   WritableAtom,
   createStore,
 } from "jotai";
-import { Provider, atom, useAtom, useAtomValue, useSetAtom } from "jotai";
-import { RESET, atomWithReset, useHydrateAtoms } from "jotai/utils";
+import {
+  Provider,
+  atom,
+  useAtom,
+  useAtomValue,
+  useSetAtom,
+  useStore,
+} from "jotai";
+import { RESET, atomWithReset } from "jotai/utils";
 
 import { setPath } from "./utils";
 
@@ -558,11 +565,12 @@ export function fieldAtom<Value>(
   config: FieldAtomConfig<Value>
 ): FieldAtom<Value> {
   const nameAtom = atomWithReset(config.name);
-  const initialValueAtom = atomWithReset<Value>(config.value);
+  const initialValueAtom = atomWithReset<Value | undefined>(undefined);
   const valueAtom = atomWithReset<Value>(config.value);
   const touchedAtom = atomWithReset(config.touched ?? false);
   const dirtyAtom = atom((get) => {
-    return get(valueAtom) !== get(initialValueAtom);
+    const initialValue = get(initialValueAtom) ?? config.value;
+    return get(valueAtom) !== initialValue;
   });
   const errorsAtom = atom<string[]>([]);
 
@@ -619,8 +627,7 @@ export function fieldAtom<Value>(
   const resetAtom = atom<null, [void], void>(null, (get, set) => {
     set(errorsAtom, []);
     set(touchedAtom, RESET);
-    set(initialValueAtom, RESET);
-    set(valueAtom, RESET);
+    set(valueAtom, get(initialValueAtom) ?? config.value);
     // Need to set a new pointer to prevent stale validation results
     // from being set to state after this invocation.
     set(validateCountAtom, (count) => ++count);
@@ -828,14 +835,23 @@ export function useFieldInitialValue<Value>(
   options?: UseAtomOptions
 ): UseFieldInitialValue {
   const field = useAtomValue(fieldAtom, options);
-  useHydrateAtoms(
-    initialValue === undefined
-      ? []
-      : [
-          [field._initialValue, initialValue],
-          [field.value, initialValue] as const,
-        ],
-    options
+  const store = useStore(options);
+
+  React.useEffect(
+    () => {
+      if (
+        typeof initialValue === "undefined" ||
+        store.get(field._initialValue) !== undefined ||
+        store.get(field.dirty)
+      ) {
+        return;
+      }
+
+      store.set(field._initialValue, initialValue);
+      store.set(field.value, initialValue);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [store, field._initialValue, field.value, field.dirty]
   );
 }
 
@@ -1172,8 +1188,13 @@ export type FieldAtom<Value> = Atom<{
    * An atom containing the field's initial value
    */
   _initialValue: WritableAtom<
-    Value,
-    [Value | typeof RESET | ((prev: Value) => Value)],
+    Value | undefined,
+    [
+      | Value
+      | undefined
+      | typeof RESET
+      | ((prev: Value | undefined) => Value | undefined)
+    ],
     void
   >;
   _validateCount: WritableAtom<

@@ -5,7 +5,7 @@ import { render, screen } from "@testing-library/react";
 import { act as domAct, renderHook } from "@testing-library/react-hooks/dom";
 import userEvent from "@testing-library/user-event";
 import type { ExtractAtomValue } from "jotai";
-import { Provider } from "jotai";
+import { Provider, createStore } from "jotai";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { FieldAtom, UseForm } from ".";
@@ -583,6 +583,39 @@ describe("useField()", () => {
     expect(result.current.state.validateStatus).toEqual("valid");
   });
 
+  it("should reset the atom when reset is called w/ initial value", () => {
+    const firstNameAtom = fieldAtom({
+      name: "firstName",
+      value: "",
+      validate() {
+        return ["error"];
+      },
+    });
+    const { result } = renderHook(() =>
+      useInputField(firstNameAtom, { initialValue: "test" })
+    );
+
+    domAct(() => {
+      result.current.actions.setValue("abc");
+      result.current.actions.setTouched(true);
+      result.current.actions.validate();
+    });
+
+    expect(result.current.state.value).toBe("abc");
+    expect(result.current.state.touched).toBeTruthy();
+    expect(result.current.state.errors).toEqual(["error"]);
+    expect(result.current.state.validateStatus).toEqual("invalid");
+
+    domAct(() => {
+      result.current.actions.reset();
+    });
+
+    expect(result.current.state.value).toBe("test");
+    expect(result.current.state.touched).toBeFalsy();
+    expect(result.current.state.errors).toEqual([]);
+    expect(result.current.state.validateStatus).toEqual("valid");
+  });
+
   it("should validate asynchronously", async () => {
     const firstNameAtom = fieldAtom({
       name: "firstName",
@@ -658,6 +691,7 @@ describe("useFieldInitialValue()", () => {
       useFieldInitialValue(firstNameAtom, "jared");
       return useInputField(firstNameAtom);
     });
+
     expect(field.result.current.props.value).toBe("jared");
   });
 
@@ -667,7 +701,67 @@ describe("useFieldInitialValue()", () => {
     });
     const field = renderHook(() => useInputField(firstNameAtom));
     renderHook(() => useFieldInitialValue(firstNameAtom, undefined));
+
     expect(field.result.current.props.value).toBe("test");
+  });
+
+  it("should set an initial value if initial value once", () => {
+    const firstNameAtom = fieldAtom({
+      value: "test",
+    });
+    const firstStore = createStore();
+    const field = renderHook(
+      ({ initialValue, store }) =>
+        useInputField(firstNameAtom, { initialValue, store }),
+      { initialProps: { initialValue: "jared", store: firstStore } }
+    );
+
+    expect(field.result.current.props.value).toBe("jared");
+
+    field.rerender({ initialValue: "john", store: firstStore });
+    expect(field.result.current.props.value).toBe("jared");
+
+    domAct(() => {
+      field.result.current.actions.setValue("jared l");
+    });
+
+    field.rerender({ initialValue: "john", store: createStore() });
+    expect(field.result.current.props.value).toBe("john");
+
+    field.rerender({ initialValue: "john", store: firstStore });
+    expect(field.result.current.props.value).toBe("jared l");
+  });
+
+  it("should not set initial value if field is dirty", () => {
+    const firstNameAtom = fieldAtom({
+      value: "test",
+    });
+    const firstStore = createStore();
+    const field = renderHook(
+      ({ initialValue, store }) =>
+        useInputField(firstNameAtom, { initialValue, store }),
+      { initialProps: { initialValue: undefined, store: firstStore } }
+    );
+
+    expect(field.result.current.props.value).toBe("test");
+    // @ts-expect-error
+    field.rerender({ initialValue: "john", store: firstStore });
+    expect(field.result.current.props.value).toBe("test");
+
+    domAct(() => {
+      field.result.current.actions.setValue("jared l");
+    });
+
+    // @ts-expect-error
+    field.rerender({ initialValue: "john", store: firstStore });
+    expect(field.result.current.props.value).toBe("jared l");
+
+    renderHook(
+      ({ store }) => useFieldInitialValue(firstNameAtom, "john", { store }),
+      { initialProps: { store: firstStore } }
+    );
+
+    expect(field.result.current.props.value).toBe("jared l");
   });
 });
 

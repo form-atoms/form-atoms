@@ -28,22 +28,28 @@ export default function ValidateOn() {
     <Template title="Validate a field asynchronously">
       <Form
         atom={nameFormAtom}
-        render={({ submit, fieldAtoms }) => {
+        render={({ submit, fieldAtoms, reset }) => {
           return (
-            <form onSubmit={submit((values) => alert(JSON.stringify(values)))}>
+            <form
+              onSubmit={submit((values) => alert(JSON.stringify(values)))}
+              onReset={reset}
+            >
               <label>
                 <span>Name</span>
 
                 <FieldErrors atom={fieldAtoms.name}>
                   <InputField
                     atom={fieldAtoms.name}
-                    initialValue="Jared"
+                    initialValue={String(Math.random())}
                     component="input"
                   />
                 </FieldErrors>
               </label>
 
               <button type="submit">Submit</button>
+              <button type="reset" className="outline">
+                Reset
+              </button>
             </form>
           );
         }}
