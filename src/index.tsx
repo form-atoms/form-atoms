@@ -851,7 +851,7 @@ export function useFieldInitialValue<Value>(
       store.set(field.value, initialValue);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [store, field._initialValue, field.value]
+    [store, field._initialValue, field.value, field.dirty]
   );
 }
 
