@@ -1,3 +1,10 @@
+# [2.0.0-next.4](https://github.com/jaredLunde/form-atoms/compare/v2.0.0-next.3...v2.0.0-next.4) (2023-02-02)
+
+
+### Bug Fixes
+
+* fix nested array walk ([#34](https://github.com/jaredLunde/form-atoms/issues/34)) ([448f538](https://github.com/jaredLunde/form-atoms/commit/448f538264b5bf8bed91b088812229e21b774a83))
+
 # [2.0.0-next.3](https://github.com/jaredLunde/form-atoms/compare/v2.0.0-next.2...v2.0.0-next.3) (2023-02-02)
 
 
