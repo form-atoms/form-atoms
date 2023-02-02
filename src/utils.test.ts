@@ -1,3 +1,5 @@
+import { describe, expect, it } from "vitest";
+
 import { setPath } from "./utils";
 
 describe("setPath()", () => {
@@ -47,5 +49,15 @@ describe("setPath()", () => {
     });
     setPath(obj, ["a", "b", "1"], 1);
     expect(obj.a.b).toBe(obj.a.b);
+  });
+
+  it("should set a deep existing nested array value", () => {
+    const obj = { a: [{ b: [0] }] };
+    setPath(obj, ["a", "0", "b", "1"], 1);
+    expect(obj).toEqual({
+      a: [{ b: [0, 1] }],
+    });
+    setPath(obj, ["a", "b", "1"], 1);
+    expect(obj.a[0].b).toBe(obj.a[0].b);
   });
 });
