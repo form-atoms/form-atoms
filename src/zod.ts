@@ -51,8 +51,8 @@ export function zodValidate<Value>(
       if (shouldHandleEvent) {
         if (
           when === undefined ||
-          ifDirty === state.dirty ||
-          ifTouched === state.touched
+          (ifDirty && state.dirty) ||
+          (ifTouched && state.touched)
         ) {
           const validator =
             schema instanceof ZodType ? schema : schema(state.get);
