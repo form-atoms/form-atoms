@@ -41,9 +41,7 @@ npm i form-atoms jotai
 - [x] **Controlled inputs** because no, uncontrolled inputs are not preferrable
 - [x] **Ready for concurrent React** - validation updates have a lower priority
 - [x] **Familiar API** that is very similar to other form libraries
-- [x] **Async field-level validation**
-- [x] **Async submission**
-- [x] **[Zod](https://github.com/colinhacks/zod) support**
+- [x] **Async field-level validation** with [Zod support](https://github.com/colinhacks/zod)
 
 ## Quick start
 
@@ -149,12 +147,6 @@ by using it, but you gain a ton of performance and without footguns.
 1. [**How to validate a field asynchronously**](https://codesandbox.io/s/form-atoms-validate-on-dependent-state-forked-yo1eh5?file=/src/App.tsx)
 1. [**How to create a nested fields**](https://codesandbox.io/s/form-atoms-nested-fields-example-7otpdy?file=/src/App.tsx)
 1. [**How to create an array of fields**](https://codesandbox.io/s/form-atoms-array-fields-example-5evmlz?file=/src/App.tsx)
-
-> ☀︎ Coming soon
-
-1. [**How to handle errors**](#)
-1. [**How to set initial values inside of a React component**](#)
-1. [**How to use a custom input**](#)
 
 ---
 
@@ -845,17 +837,7 @@ A hook that returns the values of the form atom.
 #### Returns
 
 ```ts
-type FormFieldValues<Fields extends FormFields> = {
-  [Key in keyof Fields]: Fields[Key] extends FieldAtom<infer Value>
-    ? Value
-    : Fields[Key] extends FormFields
-    ? FormFieldValues<Fields[Key]>
-    : Fields[Key] extends any[]
-    ? FormFieldValues<{
-        [Index in keyof Fields[Key]]: Fields[Key][Index];
-      }>
-    : never;
-};
+type UseFormValues<Fields extends FormFields> = FormFieldValues<Fields>;
 ```
 
 #### [⇗ Back to top](#table-of-contents)
@@ -876,17 +858,7 @@ A hook that returns the errors of the form atom.
 #### Returns
 
 ```ts
-type FormFieldErrors<Fields extends FormFields> = {
-  [Key in keyof Fields]: Fields[Key] extends FieldAtom<any>
-    ? string[]
-    : Fields[Key] extends FormFields
-    ? FormFieldErrors<Fields[Key]>
-    : Fields[Key] extends any[]
-    ? FormFieldErrors<{
-        [Index in keyof Fields[Key]]: Fields[Key][Index];
-      }>
-    : never;
-};
+type UseFormErrors<Fields extends FormFields> = FormFieldErrors<Fields>;
 ```
 
 #### [⇗ Back to top](#table-of-contents)
