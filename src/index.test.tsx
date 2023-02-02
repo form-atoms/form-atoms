@@ -989,6 +989,126 @@ describe("useForm()", () => {
     });
   });
 
+  it("should sync submit form with values 2", async () => {
+    const config = {
+      cities: [
+        {
+          name: fieldAtom({ value: "Atlantits" }),
+          people: [{ name: [fieldAtom({ value: "Shrek" })] }],
+        },
+        {
+          name: fieldAtom({ value: "Asdfgard" }),
+          people: [{ name: [fieldAtom({ value: "Thorus" })] }],
+        },
+      ],
+    };
+    const atom = formAtom(config);
+    const { result } = renderHook(() => useForm(atom));
+    const form = renderHook(() => useFormState(atom));
+    const handleSubmit = vi.fn(() => {});
+    domAct(() => {
+      result.current.submit(handleSubmit)();
+    });
+
+    await domAct(() => Promise.resolve());
+    expect(form.result.current.submitStatus).toBe("submitted");
+    expect(handleSubmit).toHaveBeenCalledWith({
+      cities: [
+        {
+          name: "Atlantits",
+          people: [{ name: ["Shrek"] }],
+        },
+        {
+          name: "Asdfgard",
+          people: [{ name: ["Thorus"] }],
+        },
+      ],
+    });
+  });
+
+  it.only("should sync submit form with values 3", async () => {
+    const config = {
+      cities: [
+        {
+          name: fieldAtom({ value: "Atlantits" }),
+          people: [{ name: fieldAtom({ value: "Shrek" }) }],
+        },
+        {
+          name: fieldAtom({ value: "Asdfgard" }),
+          people: [{ name: fieldAtom({ value: "Thorus" }) }],
+        },
+      ],
+    };
+    const atom = formAtom(config);
+    const { result } = renderHook(() => useForm(atom));
+    const form = renderHook(() => useFormState(atom));
+    const handleSubmit = vi.fn(() => {});
+    domAct(() => {
+      result.current.submit(handleSubmit)();
+    });
+
+    await domAct(() => Promise.resolve());
+    expect(form.result.current.submitStatus).toBe("submitted");
+    expect(handleSubmit).toHaveBeenCalledWith({
+      cities: [
+        {
+          name: "Atlantits",
+          people: [{ name: "Shrek" }],
+        },
+        {
+          name: "Asdfgard",
+          people: [{ name: "Thorus" }],
+        },
+      ],
+    });
+  });
+
+  it("should sync submit form with values 4", async () => {
+    const config = {
+      name: fieldAtom({
+        value: "lunde",
+      }),
+      hobbies: [
+        fieldAtom({
+          name: "hobbies.0",
+          value: "test",
+        }),
+      ],
+      empty: {
+        array: [],
+      },
+      empty2: {
+        array: [
+          fieldAtom({
+            value: "def",
+          }),
+        ],
+        array2: [],
+      },
+    };
+    const atom = formAtom(config);
+    const { result } = renderHook(() => useForm(atom));
+    const form = renderHook(() => useFormState(atom));
+    const handleSubmit = vi.fn(() => {});
+    domAct(() => {
+      result.current.submit(handleSubmit)();
+    });
+
+    await domAct(() => Promise.resolve());
+    expect(form.result.current.submitStatus).toBe("submitted");
+    expect(handleSubmit).toHaveBeenCalledWith({
+      name: "lunde",
+      hobbies: ["test"],
+      empty: {
+        array: [],
+      },
+      empty2: {
+        array: ["def"],
+        array2: [],
+      },
+    });
+  });
+
   it("should prevent submit when form state is invalid", async () => {
     const hobbyConfig = {
       name: "hobbies.0",
