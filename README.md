@@ -147,7 +147,7 @@ by using it, but you gain a ton of performance and without footguns.
 1. [**How to validate a field asynchronously**](https://codesandbox.io/s/form-atoms-v2-validate-asynchronously-i86wyo?file=/src/App.tsx)
 1. [**How to validate using a Zod schema**](https://codesandbox.io/s/form-atoms-v2-validate-using-zod-1n1rrr?file=/src/App.tsx)
 1. [**How to create a nested fields**](https://codesandbox.io/s/form-atoms-nested-fields-example-7otpdy?file=/src/App.tsx)
-1. [**How to create an array of fields**](https://codesandbox.io/s/form-atoms-array-fields-example-5evmlz?file=/src/App.tsx)
+1. [**How to create an array of fields**](https://codesandbox.io/s/form-atoms-v2-array-fields-example-22kf4d?file=/src/App.tsx)
 
 ---
 
