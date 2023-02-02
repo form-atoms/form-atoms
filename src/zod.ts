@@ -35,8 +35,8 @@ export function zodValidate<Value>(
   const ors: ((
     state: Parameters<Exclude<Validate<Value>, undefined>>[0]
   ) => Promise<string[] | undefined>)[] = [];
-  const ifDirty = when?.includes("dirty");
-  const ifTouched = when?.includes("touched");
+  const ifDirty = !!when?.includes("dirty");
+  const ifTouched = !!when?.includes("touched");
 
   const chain = Object.assign(
     async (
@@ -51,8 +51,8 @@ export function zodValidate<Value>(
       if (shouldHandleEvent) {
         if (
           when === undefined ||
-          ifDirty === state.dirty ||
-          ifTouched === state.touched
+          (ifDirty && state.dirty) ||
+          (ifTouched && state.touched)
         ) {
           const validator =
             schema instanceof ZodType ? schema : schema(state.get);

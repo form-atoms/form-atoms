@@ -1069,6 +1069,32 @@ describe("useFormAtom()", () => {
     expect(form.result.current.dirty).toBe(true);
   });
 
+  it("should return the dirty state w/ initial value set", async () => {
+    const config = {
+      name: fieldAtom({
+        value: "lunde",
+      }),
+      hobbies: [
+        fieldAtom({
+          name: "hobbies.0",
+          value: "test",
+        }),
+      ],
+    };
+    const atom = formAtom(config);
+    const field = renderHook(() =>
+      useInputField(config.name, { initialValue: "Jared" })
+    );
+    const form = renderHook(() => useFormState(atom));
+    expect(form.result.current.dirty).toBe(false);
+
+    domAct(() => {
+      field.result.current.actions.setValue("Jared L");
+    });
+
+    expect(form.result.current.dirty).toBe(true);
+  });
+
   it("should return the touched state", async () => {
     const config = {
       name: fieldAtom({
