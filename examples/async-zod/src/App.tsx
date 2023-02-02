@@ -40,14 +40,16 @@ export default function ValidateOn() {
                 <FieldErrors atom={fieldAtoms.name}>
                   <InputField
                     atom={fieldAtoms.name}
-                    initialValue="Jared"
+                    initialValue={String(Math.random())}
                     component="input"
                   />
                 </FieldErrors>
               </label>
 
               <button type="submit">Submit</button>
-              <button type="reset">Reset</button>
+              <button type="reset" className="outline">
+                Reset
+              </button>
             </form>
           );
         }}
