@@ -957,8 +957,8 @@ export function walkFields<Fields extends FormFields>(
     if (isAtom(field)) {
       if (visitor(field, path) === false) return;
     } else if (Array.isArray(field)) {
-      if (options.includeEmptyArrays && !field.length) {
-        // @ts-expect-error
+      if (!field.length && options.includeEmptyArrays) {
+        // @ts-expect-error: it's fine for now
         visitor(null, path);
       } else {
         for (const key in field) {
@@ -970,10 +970,10 @@ export function walkFields<Fields extends FormFields>(
           } else {
             walkFields(subField, visitor, options, path);
           }
-
-          path.pop();
         }
       }
+
+      path.pop();
     } else if (typeof field === "object") {
       walkFields(field, visitor, options, path);
     }
