@@ -1,6 +1,6 @@
 import React from "react";
 
-import { useFieldAtomErrors, useFieldAtomState } from "form-atoms";
+import { useFieldErrors, useFieldState } from "form-atoms";
 import type { FieldAtom } from "form-atoms";
 
 export function FieldErrors<Value>({
@@ -12,8 +12,8 @@ export function FieldErrors<Value>({
 }) {
   // @ts-expect-error: useId() exists brah
   const id = React.useId();
-  const { validateStatus } = useFieldAtomState(atom);
-  const errors = useFieldAtomErrors(atom);
+  const { validateStatus } = useFieldState(atom);
+  const errors = useFieldErrors(atom);
   return (
     <div>
       {React.cloneElement(children, {
