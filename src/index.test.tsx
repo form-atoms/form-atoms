@@ -1026,7 +1026,7 @@ describe("useForm()", () => {
     });
   });
 
-  it.only("should sync submit form with values 3", async () => {
+  it("should sync submit form with values 3", async () => {
     const config = {
       cities: [
         {
