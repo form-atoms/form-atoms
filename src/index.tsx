@@ -986,10 +986,10 @@ export function walkFields<Fields extends FormFields>(
           } else {
             walkFields(subField, visitor, options, path);
           }
+
+          path.pop();
         }
       }
-
-      path.pop();
     } else if (typeof field === "object") {
       walkFields(field, visitor, options, path);
     }
