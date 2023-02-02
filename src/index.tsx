@@ -619,8 +619,7 @@ export function fieldAtom<Value>(
   const resetAtom = atom<null, [void], void>(null, (get, set) => {
     set(errorsAtom, []);
     set(touchedAtom, RESET);
-    set(initialValueAtom, RESET);
-    set(valueAtom, RESET);
+    set(valueAtom, get(initialValueAtom));
     // Need to set a new pointer to prevent stale validation results
     // from being set to state after this invocation.
     set(validateCountAtom, (count) => ++count);

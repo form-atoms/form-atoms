@@ -28,9 +28,12 @@ export default function ValidateOn() {
     <Template title="Validate a field asynchronously">
       <Form
         atom={nameFormAtom}
-        render={({ submit, fieldAtoms }) => {
+        render={({ submit, fieldAtoms, reset }) => {
           return (
-            <form onSubmit={submit((values) => alert(JSON.stringify(values)))}>
+            <form
+              onSubmit={submit((values) => alert(JSON.stringify(values)))}
+              onReset={reset}
+            >
               <label>
                 <span>Name</span>
 
@@ -44,6 +47,7 @@ export default function ValidateOn() {
               </label>
 
               <button type="submit">Submit</button>
+              <button type="reset">Reset</button>
             </form>
           );
         }}

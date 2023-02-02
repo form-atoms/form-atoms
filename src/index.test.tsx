@@ -583,6 +583,39 @@ describe("useField()", () => {
     expect(result.current.state.validateStatus).toEqual("valid");
   });
 
+  it("should reset the atom when reset is called w/ initial value", () => {
+    const firstNameAtom = fieldAtom({
+      name: "firstName",
+      value: "",
+      validate() {
+        return ["error"];
+      },
+    });
+    const { result } = renderHook(() =>
+      useInputField(firstNameAtom, { initialValue: "test" })
+    );
+
+    domAct(() => {
+      result.current.actions.setValue("abc");
+      result.current.actions.setTouched(true);
+      result.current.actions.validate();
+    });
+
+    expect(result.current.state.value).toBe("abc");
+    expect(result.current.state.touched).toBeTruthy();
+    expect(result.current.state.errors).toEqual(["error"]);
+    expect(result.current.state.validateStatus).toEqual("invalid");
+
+    domAct(() => {
+      result.current.actions.reset();
+    });
+
+    expect(result.current.state.value).toBe("test");
+    expect(result.current.state.touched).toBeFalsy();
+    expect(result.current.state.errors).toEqual([]);
+    expect(result.current.state.validateStatus).toEqual("valid");
+  });
+
   it("should validate asynchronously", async () => {
     const firstNameAtom = fieldAtom({
       name: "firstName",
