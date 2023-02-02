@@ -1,23 +1,45 @@
-# [2.0.0-next.4](https://github.com/jaredLunde/form-atoms/compare/v2.0.0-next.3...v2.0.0-next.4) (2023-02-02)
-
+# [2.0.0](https://github.com/jaredLunde/form-atoms/compare/v1.2.5...v2.0.0) (2023-02-02)
 
 ### Bug Fixes
 
-* fix nested array walk ([#34](https://github.com/jaredLunde/form-atoms/issues/34)) ([448f538](https://github.com/jaredLunde/form-atoms/commit/448f538264b5bf8bed91b088812229e21b774a83))
+- empty arrays not included in submit values ([#31](https://github.com/jaredLunde/form-atoms/issues/31)) ([837140d](https://github.com/jaredLunde/form-atoms/commit/837140d598a9c6568dbde30eacc989e5f645076b)), closes [#26](https://github.com/jaredLunde/form-atoms/issues/26)
+- fix nested array walk ([#34](https://github.com/jaredLunde/form-atoms/issues/34)) ([448f538](https://github.com/jaredLunde/form-atoms/commit/448f538264b5bf8bed91b088812229e21b774a83))
+- fix package entries ([#24](https://github.com/jaredLunde/form-atoms/issues/24)) ([a18cfc5](https://github.com/jaredLunde/form-atoms/commit/a18cfc5e006f88477de4bea13ed9116b6c5ac14b))
+- fix release ([#22](https://github.com/jaredLunde/form-atoms/issues/22)) ([a4fff3b](https://github.com/jaredLunde/form-atoms/commit/a4fff3bba4b28adaf17886a95361aff3705f8c8e))
+- fix reset w/ initial value ([#33](https://github.com/jaredLunde/form-atoms/issues/33)) ([8b49243](https://github.com/jaredLunde/form-atoms/commit/8b49243a964d84dd08e04500853e9dca8d405a02))
+
+### Code Refactoring
+
+- upgrade to jotai v2 ([#29](https://github.com/jaredLunde/form-atoms/issues/29)) ([e533e40](https://github.com/jaredLunde/form-atoms/commit/e533e409a3de1a35affd0e61fcdb41259cdb4039)), closes [#27](https://github.com/jaredLunde/form-atoms/issues/27) [#28](https://github.com/jaredLunde/form-atoms/issues/28) [#18](https://github.com/jaredLunde/form-atoms/issues/18) [#17](https://github.com/jaredLunde/form-atoms/issues/17)
+
+### Features
+
+- add zod validator ([#23](https://github.com/jaredLunde/form-atoms/issues/23)) ([06ca2c4](https://github.com/jaredLunde/form-atoms/commit/06ca2c450b13d8ca8f0c9b5cacf1fc75cc172d9f))
+- bump next major ([#35](https://github.com/jaredLunde/form-atoms/issues/35)) ([fb3400e](https://github.com/jaredLunde/form-atoms/commit/fb3400eccfaaa7446e6b939509ebed183c2e7f2c)), closes [#20](https://github.com/jaredLunde/form-atoms/issues/20)
+- update build scripts and tests ([#21](https://github.com/jaredLunde/form-atoms/issues/21)) ([b242e02](https://github.com/jaredLunde/form-atoms/commit/b242e0265a5c1e9930219a901a8103b063f3d53a))
+
+### BREAKING CHANGES
+
+- Renames form and field hooks to exclude "Atom" and be more terse. Renames most
+  exported types and several type signatures.
+
+# [2.0.0-next.4](https://github.com/jaredLunde/form-atoms/compare/v2.0.0-next.3...v2.0.0-next.4) (2023-02-02)
+
+### Bug Fixes
+
+- fix nested array walk ([#34](https://github.com/jaredLunde/form-atoms/issues/34)) ([448f538](https://github.com/jaredLunde/form-atoms/commit/448f538264b5bf8bed91b088812229e21b774a83))
 
 # [2.0.0-next.3](https://github.com/jaredLunde/form-atoms/compare/v2.0.0-next.2...v2.0.0-next.3) (2023-02-02)
 
-
 ### Bug Fixes
 
-* fix reset w/ initial value ([#33](https://github.com/jaredLunde/form-atoms/issues/33)) ([8b49243](https://github.com/jaredLunde/form-atoms/commit/8b49243a964d84dd08e04500853e9dca8d405a02))
+- fix reset w/ initial value ([#33](https://github.com/jaredLunde/form-atoms/issues/33)) ([8b49243](https://github.com/jaredLunde/form-atoms/commit/8b49243a964d84dd08e04500853e9dca8d405a02))
 
 # [2.0.0-next.2](https://github.com/jaredLunde/form-atoms/compare/v2.0.0-next.1...v2.0.0-next.2) (2023-02-02)
 
-
 ### Bug Fixes
 
-* empty arrays not included in submit values ([#31](https://github.com/jaredLunde/form-atoms/issues/31)) ([837140d](https://github.com/jaredLunde/form-atoms/commit/837140d598a9c6568dbde30eacc989e5f645076b)), closes [#26](https://github.com/jaredLunde/form-atoms/issues/26)
+- empty arrays not included in submit values ([#31](https://github.com/jaredLunde/form-atoms/issues/31)) ([837140d](https://github.com/jaredLunde/form-atoms/commit/837140d598a9c6568dbde30eacc989e5f645076b)), closes [#26](https://github.com/jaredLunde/form-atoms/issues/26)
 
 # [2.0.0-next.1](https://github.com/jaredLunde/form-atoms/compare/v1.3.0-next.3...v2.0.0-next.1) (2023-02-02)
 
