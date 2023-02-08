@@ -1314,7 +1314,7 @@ export type FormErrors<Form extends FormAtom<any>> = Form extends FormAtom<
 /**
  * An object containing the values of a form's nested field atoms
  */
-export type FormFieldValues<Fields extends FormFields> = {
+export type FormFieldValues<Fields extends FormFields> = Flatten<{
   [Key in keyof Fields]: Fields[Key] extends FieldAtom<infer Value>
     ? Value
     : Fields[Key] extends FormFields
@@ -1326,12 +1326,12 @@ export type FormFieldValues<Fields extends FormFields> = {
       ? FormFieldValues<Item>[]
       : never
     : never;
-};
+}>;
 
 /**
  * An object containing the errors of a form's nested field atoms
  */
-export type FormFieldErrors<Fields extends FormFields> = {
+export type FormFieldErrors<Fields extends FormFields> = Flatten<{
   [Key in keyof Fields]: Fields[Key] extends FieldAtom<any>
     ? string[]
     : Fields[Key] extends FormFields
@@ -1343,12 +1343,12 @@ export type FormFieldErrors<Fields extends FormFields> = {
       ? FormFieldErrors<Item>[]
       : never
     : never;
-};
+}>;
 
 /**
  * An object containing the errors of a form's touched fields
  */
-export type TouchedFields<Fields extends FormFields> = {
+export type TouchedFields<Fields extends FormFields> = Flatten<{
   [Key in keyof Fields]: Fields[Key] extends FieldAtom<any>
     ? boolean
     : Fields[Key] extends FormFields
@@ -1360,7 +1360,7 @@ export type TouchedFields<Fields extends FormFields> = {
       ? TouchedFields<Item>[]
       : never
     : never;
-};
+}>;
 
 export type UseForm<Fields extends FormFields> = {
   /**
@@ -1691,3 +1691,6 @@ export type UseAtomOptions = {
    */
   store?: AtomStore;
 };
+
+type Flatten<T> = Identity<{ [K in keyof T]: T[K] }>;
+type Identity<T> = T;
