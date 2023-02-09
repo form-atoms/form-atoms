@@ -851,7 +851,7 @@ const fileTypes = new Set(["file"] as const);
  * Formats a date string based on the type of input. This is necessary because
  * HTML expects different formats for different input types. For example,
  * `date` expects a date in the format `YYYY-MM-DD` while `datetime-local`
- * expects a date in the format `YYYY-MM-DDTHH:mm:ss`.
+ * expects a date in the format `YYYY-MM-DDTHH:mm`.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Date_and_time_formats
  * @param date - The date to format.
@@ -861,22 +861,19 @@ function formatDateString(date: Date, type: React.HTMLInputTypeAttribute) {
   const isoDate = date.toISOString();
 
   if (type === "date") {
-    return isoDate.split("T")[0];
+    return isoDate.slice(0, 10);
   } else if (type === "datetime-local") {
-    // 2017-06-01T08:30
-    return isoDate.split(".")[0];
+    // Formatted to YYYY-MM-DDTHH:mm
+    return isoDate.slice(0, 16);
   } else if (type === "month") {
     // 2001-06
-    return isoDate.split("T")[0].replace(/-\d\d$/, "");
+    return isoDate.slice(0, 7);
   } else if (type === "week") {
     // Format is YYYY-Www where YYYY is the year and ww is the week number.
-    return (
-      isoDate.split("T")[0].replace(/-\d\d-\d\d$/, "") +
-      `-W${getWeek(date).padStart(2, "0")}`
-    );
+    return getIsoWeek(date);
   } else if (type === "time") {
     // The value of the time in the 24-hour format e.g. `15:30`
-    return isoDate.split("T")[1].split(".")[0];
+    return isoDate.slice(11, 19);
   }
 
   return isoDate;
@@ -885,11 +882,6 @@ function formatDateString(date: Date, type: React.HTMLInputTypeAttribute) {
 /**
  * Gets the week number of a date.
  * 
- * A week string specifies a week within a particular year. A valid week string
- * consists of a valid year number, followed by a hyphen character ("-", or U+002D),
- * then the capital letter "W" (U+0057), followed by a two-digit week of the
- * year value.
- 
  * The week of the year is a two-digit string between 01 and 53. Each week begins
  * on Monday and ends on Sunday. That means it's possible for the first few days of
  * January to be considered part of the previous week-year, and for the last few days
@@ -904,28 +896,32 @@ function formatDateString(date: Date, type: React.HTMLInputTypeAttribute) {
  *   The first day of the year (January 1) is a Wednesday and the year is a leap year
  * All other years have 52 weeks.
  */
-function getWeek(date: Date): string {
-  // Create a copy of this date object
-  const target = new Date(date.valueOf());
-  // ISO week date weeks start on monday
-  // so correct the day number
-  const dayNr = (date.getDay() + 6) % 7;
-  // ISO 8601 states that week 1 is the week
-  // with the first thursday of that year.
-  // Set the target date to the thursday in the target week
-  target.setDate(target.getDate() - dayNr + 3);
-  // Store the millisecond value of the target date
-  const firstThursday = target.valueOf();
-  // Set the target to the first thursday of the year
-  // First set the target to january first
-  target.setMonth(0, 1);
-  // Not a thursday? Correct the date to the next thursday
-  if (target.getDay() != 4) {
-    target.setMonth(0, 1 + ((4 - target.getDay() + 7) % 7));
+function getIsoWeek(date: Date): string {
+  // Copy date so don't modify original
+  date = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+  );
+  // Set to nearest Thursday: current date + 4 - current day number
+  // Make Sunday's day number 7
+  date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+  // Get first day of year
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  // Calculate full weeks to nearest Thursday
+  let weekNo = Math.ceil(
+    ((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7
+  );
+  // Handle last week of the previous year
+  if (weekNo < 1) {
+    const prevYearStart = new Date(Date.UTC(date.getUTCFullYear() - 1, 0, 1));
+    weekNo = Math.ceil(
+      ((date.getTime() - prevYearStart.getTime()) / 86400000 + 1) / 7
+    );
+    return (
+      date.getUTCFullYear() - 1 + "-W" + (weekNo < 10 ? "0" + weekNo : weekNo)
+    );
   }
-  // The week number is the number of weeks between the
-  // first thursday of the year and the thursday in the target week
-  return "" + (1 + Math.ceil((firstThursday - target.valueOf()) / 604800000));
+  // Return array of year and week number
+  return date.getUTCFullYear() + "-W" + ("" + weekNo).padStart(2, "0");
 }
 
 /**
