@@ -67,10 +67,60 @@ function FormAtom<Fields extends FormFields>(
  *
  * @param {FieldProps<Value>} props - Component props
  */
-export function InputField<Value extends string | number | string[]>(
-  props: InputFieldProps<Value>
-) {
+export function InputField<
+  Type extends React.HTMLInputTypeAttribute,
+  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>
+>(props: InputFieldProps<Type, Value>) {
   const fieldAtom = useInputField(props.atom, {
+    initialValue: props.initialValue,
+    type: props.type,
+    store: props.store,
+    delay: props.delay,
+  });
+
+  if ("render" in props) {
+    return props.render(fieldAtom.props, fieldAtom.state, fieldAtom.actions);
+  }
+
+  return React.createElement(props.component, fieldAtom.props);
+}
+
+/**
+ * A React component that renders field atoms with initial values. This is
+ * most useful for fields that are rendered as native HTML elements because
+ * the props can unpack directly into the underlying component.
+ *
+ * @param {FieldProps<Value>} props - Component props
+ */
+export function SelectField<
+  Multiple extends Readonly<boolean> = false,
+  Value extends string = string
+>(props: SelectFieldProps<Multiple, Value>) {
+  const fieldAtom = useSelectField(props.atom, {
+    initialValue: props.initialValue,
+    multiple: props.multiple,
+    store: props.store,
+    delay: props.delay,
+  });
+
+  if ("render" in props) {
+    return props.render(fieldAtom.props, fieldAtom.state, fieldAtom.actions);
+  }
+
+  return React.createElement(props.component, fieldAtom.props);
+}
+
+/**
+ * A React component that renders field atoms with initial values. This is
+ * most useful for fields that are rendered as native HTML elements because
+ * the props can unpack directly into the underlying component.
+ *
+ * @param {FieldProps<Value>} props - Component props
+ */
+export function TextareaField<Value extends string>(
+  props: TextareaFieldProps<Value>
+) {
+  const fieldAtom = useTextareaField(props.atom, {
     initialValue: props.initialValue,
     store: props.store,
     delay: props.delay,
@@ -706,20 +756,20 @@ export function useFieldActions<Value>(
 
 /**
  * A hook that returns a set of props that can be destructured
- * directly into an `<input>`, `<select>`, or `<textarea>` element.
+ * directly into an `<input>` element.
  *
  * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
  * @param {UseAtomOptions} options - Options to pass to the underlying `useAtomValue`
  *  and `useSetAtom` hooks.
- * @returns A set of props that can be destructured directly into an `<input>`,
- *   `<select>`, or `<textarea>` element.
+ * @returns A set of props that can be destructured directly into an `<input>`.
  */
 export function useInputFieldProps<
-  Value extends string | number | readonly string[]
+  Type extends React.HTMLInputTypeAttribute,
+  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>
 >(
   fieldAtom: FieldAtom<Value>,
-  options?: UseAtomOptions
-): UseInputFieldProps<Value> {
+  options: UseInputFieldPropsOptions<Type> = {}
+): UseInputFieldProps<Type> {
   const field = useAtomValue(fieldAtom, options);
   const name = useAtomValue(field.name, options);
   const [value, setValue] = useAtom(field.value, options);
@@ -728,12 +778,25 @@ export function useInputFieldProps<
   const validate = useSetAtom(field.validate, options);
   const ref = useSetAtom(field.ref, options);
   const [, startTransition] = useTransition();
+  const { type: fieldType = "text" } = options;
 
   return React.useMemo(
     () => ({
       name,
-      value: value as Value,
+      // @ts-expect-error: it's fine, we will test
+      value:
+        value instanceof FileList
+          ? undefined
+          : value === null
+          ? ""
+          : Array.isArray(value)
+          ? value.map((v) => v + "")
+          : value instanceof Date
+          ? value.toISOString()
+          : value,
       "aria-invalid": validateStatus === "invalid",
+      // @ts-expect-error: it's fine because we default to string which == text
+      type: fieldType,
       ref,
       onBlur() {
         setTouched(true);
@@ -742,16 +805,131 @@ export function useInputFieldProps<
         });
       },
       onChange(event) {
-        // @ts-expect-error
-        setValue(event.target.value);
+        const target = event.currentTarget;
+        const setAnyValue: any = setValue;
+        const anyFieldType: any = fieldType;
+
+        setAnyValue(
+          fileTypes.has(anyFieldType)
+            ? target.files
+            : dateTypes.has(anyFieldType)
+            ? target.valueAsDate
+            : numberTypes.has(anyFieldType)
+            ? target.valueAsNumber
+            : target.value
+        );
 
         startTransition(() => {
           validate("change");
         });
       },
     }),
-    [name, value, validateStatus, ref, setTouched, validate, setValue]
+    [
+      name,
+      value,
+      validateStatus,
+      ref,
+      setTouched,
+      validate,
+      setValue,
+      fieldType,
+    ]
   );
+}
+
+const numberTypes = new Set(["number", "range"] as const);
+const dateTypes = new Set([
+  "date",
+  "datetime-local",
+  "month",
+  "time",
+  "week",
+] as const);
+const fileTypes = new Set(["file"] as const);
+
+/**
+ * A hook that returns a set of props that can be destructured
+ * directly into an `<textarea>` element.
+ *
+ * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
+ * @param {UseAtomOptions} options - Options to pass to the underlying `useAtomValue`
+ *  and `useSetAtom` hooks.
+ * @returns A set of props that can be destructured directly into an `<textarea>`.
+ */
+export function useTextareaFieldProps<Value extends string>(
+  fieldAtom: FieldAtom<Value>,
+  options: UseTextareaFieldPropsOptions = {}
+): UseTextareaFieldProps<Value> {
+  const props = useInputFieldProps<"text", Value>(fieldAtom, options);
+  // @ts-expect-error: we are futzing around with onChange/onBlur/ref but
+  //  it's my library so I can do what I want
+  return React.useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { type, ...forwardedProps } = props;
+    return forwardedProps;
+  }, [props]);
+}
+
+/**
+ * A hook that returns a set of props that can be destructured
+ * directly into an `<select>` element.
+ *
+ * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
+ * @param {UseAtomOptions} options - Options to pass to the underlying `useAtomValue`
+ *  and `useSetAtom` hooks.
+ * @returns A set of props that can be destructured directly into an `<select>`.
+ */
+export function useSelectFieldProps<
+  Multiple extends Readonly<boolean> = false,
+  Value extends string = string
+>(
+  fieldAtom: FieldAtom<Multiple extends true ? Value[] : Value>,
+  options: UseSelectFieldPropsOptions<Multiple> = {}
+): UseSelectFieldProps<Multiple, Value> {
+  const field = useAtomValue(fieldAtom, options);
+  const setValue = useSetAtom(field.value, options);
+  const validate = useSetAtom(field.validate, options);
+  const [, startTransition] = useTransition();
+  const { multiple } = options;
+  // @ts-expect-error: we will live
+  const inputProps = useInputFieldProps<any, string | string[]>(
+    fieldAtom,
+    options
+  );
+
+  return React.useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { type, onChange, ...forwardedProps } = inputProps;
+
+    return {
+      ...forwardedProps,
+      multiple,
+      onChange(event: React.ChangeEvent<HTMLSelectElement>) {
+        if (multiple) {
+          const options = event.currentTarget.options;
+          const values: string[] = [];
+
+          for (let i = 0; i < options.length; i++) {
+            const option = options[i];
+
+            if (option.selected) {
+              values.push(option.value);
+            }
+          }
+
+          // @ts-expect-error: it's fine
+          setValue(values);
+        } else {
+          // @ts-expect-error: it's fine
+          setValue(event.currentTarget.value);
+        }
+
+        startTransition(() => {
+          validate("change");
+        });
+      },
+    } as unknown as UseSelectFieldProps<Multiple, Value>;
+  }, [inputProps, validate, startTransition, setValue, multiple]);
 }
 
 /**
@@ -886,20 +1064,60 @@ export function useField<Value>(
  *  and `useSetAtom` hooks.
  */
 export function useInputField<
-  Value extends string | number | readonly string[]
+  Type extends React.HTMLInputTypeAttribute,
+  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>
 >(
   fieldAtom: FieldAtom<Value>,
-  options?: UseInputFieldOptions<Value>
-): UseInputField<Value> {
-  const props = useInputFieldProps<Value>(fieldAtom, options);
-  const actions = useFieldActions<Value>(fieldAtom, options);
-  const state = useFieldState<Value>(fieldAtom, options);
+  options?: UseInputFieldOptions<Type, Value>
+): UseInputField<Type, Value> {
+  const props = useInputFieldProps(fieldAtom, options);
+  const field = useField(fieldAtom, options);
   useFieldInitialValue(fieldAtom, options?.initialValue, options);
 
-  return React.useMemo<UseInputField<Value>>(
-    () => ({ props, actions, state }),
-    [props, actions, state]
+  return React.useMemo<UseInputField<Type, Value>>(
+    () => ({ props, ...field }),
+    [props, field]
   );
+}
+
+/**
+ * A hook that returns `props`, `state`, and `actions` of a field atom from
+ * `useInputFieldAtomProps`, `useFieldState`, and `useFieldActions`.
+ *
+ * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
+ * @param {UseInputFieldOptions} options - Options to pass to the underlying `useAtomValue`
+ *  and `useSetAtom` hooks.
+ */
+export function useSelectField<
+  Multiple extends Readonly<boolean> = false,
+  Value extends string = string
+>(
+  fieldAtom: FieldAtom<Multiple extends true ? Value[] : Value>,
+  options?: UseSelectFieldOptions<Multiple, Value>
+): UseSelectField<Multiple, Value> {
+  const props = useSelectFieldProps<Multiple, Value>(fieldAtom, options);
+  const field = useField(fieldAtom, options);
+  useFieldInitialValue(fieldAtom, options?.initialValue, options);
+  return React.useMemo(() => ({ props, ...field }), [props, field]);
+}
+
+/**
+ * A hook that returns `props`, `state`, and `actions` of a field atom from
+ * `useInputFieldAtomProps`, `useFieldState`, and `useFieldActions`.
+ *
+ * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
+ * @param {UseInputFieldOptions} options - Options to pass to the underlying `useAtomValue`
+ *  and `useSetAtom` hooks.
+ */
+export function useTextareaField<Value extends string>(
+  fieldAtom: FieldAtom<Value>,
+  options?: UseTextareaFieldOptions<Value>
+): UseTextareaField<Value> {
+  const props = useTextareaFieldProps(fieldAtom, options);
+  const field = useField(fieldAtom, options);
+  useFieldInitialValue(fieldAtom, options?.initialValue, options);
+
+  return React.useMemo(() => ({ props, ...field }), [props, field]);
 }
 
 const useTransition: () => [boolean, typeof React.startTransition] =
@@ -1000,8 +1218,82 @@ export function walkFields<Fields extends FormFields>(
 
 export { Provider } from "jotai";
 
-export type InputFieldProps<Value extends string | number | string[]> =
-  (UseAtomOptions & {
+export type InputFieldProps<
+  Type extends React.HTMLInputTypeAttribute,
+  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>
+> = (UseInputFieldOptions<Type, Value> & {
+  /**
+   * A field atom
+   */
+  atom: FieldAtom<Value>;
+  /**
+   * The initial value of the field
+   */
+  initialValue?: Value;
+}) &
+  (
+    | {
+        /**
+         * A render prop
+         *
+         * @param props - Props that can be directly unpacked into a native HTML `<input>` element
+         * @param state - The state of the field atom
+         * @param actions - The actions of the field atom
+         */
+        render(
+          props: UseInputFieldProps<Type>,
+          state: UseFieldState<Value>,
+          actions: UseFieldActions<Value>
+        ): JSX.Element;
+      }
+    | {
+        /**
+         * A React component
+         */
+        component: "input" | React.ComponentType<UseInputFieldProps<Type>>;
+      }
+  );
+
+export type SelectFieldProps<
+  Multiple extends Readonly<boolean>,
+  Value extends string
+> = (UseSelectFieldOptions<Multiple, Value> & {
+  /**
+   * A field atom
+   */
+  atom: FieldAtom<Multiple extends true ? Value[] : Value>;
+  /**
+   * The initial value of the field
+   */
+  initialValue?: Multiple extends true ? Value[] : Value;
+}) &
+  (
+    | {
+        /**
+         * A render prop
+         *
+         * @param props - Props that can be directly unpacked into a native HTML `<select>` element
+         * @param state - The state of the field atom
+         * @param actions - The actions of the field atom
+         */
+        render(
+          props: UseSelectFieldProps<Multiple, Value>,
+          state: UseFieldState<Multiple extends true ? Value[] : Value>,
+          actions: UseFieldActions<Multiple extends true ? Value[] : Value>
+        ): JSX.Element;
+      }
+    | {
+        /**
+         * A React component
+         */
+        component:
+          | "select"
+          | React.ComponentType<UseSelectFieldProps<Multiple, Value>>;
+      }
+  );
+
+export type TextareaFieldProps<Value extends string> =
+  (UseTextareaFieldOptions<Value> & {
     /**
      * A field atom
      */
@@ -1016,12 +1308,12 @@ export type InputFieldProps<Value extends string | number | string[]> =
           /**
            * A render prop
            *
-           * @param props - Props that can be directly unpacked into a native HTML input element
+           * @param props - Props that can be directly unpacked into a native HTML `<textarea>` element
            * @param state - The state of the field atom
            * @param actions - The actions of the field atom
            */
           render(
-            props: UseInputFieldProps<Value>,
+            props: UseTextareaFieldProps<Value>,
             state: UseFieldState<Value>,
             actions: UseFieldActions<Value>
           ): JSX.Element;
@@ -1031,10 +1323,8 @@ export type InputFieldProps<Value extends string | number | string[]> =
            * A React component
            */
           component:
-            | "input"
             | "textarea"
-            | "select"
-            | React.ComponentType<UseInputFieldProps<Value>>;
+            | React.ComponentType<UseTextareaFieldProps<Value>>;
         }
     );
 
@@ -1486,11 +1776,14 @@ export type UseField<Value> = {
   state: UseFieldState<Value>;
 };
 
-export type UseInputField<Value> = {
+export type UseInputField<
+  Type extends React.HTMLInputTypeAttribute,
+  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>
+> = {
   /**
-   * `<input>`, `<select>`, or `<textarea>` props for the field
+   * `<input>` props for the field
    */
-  props: UseInputFieldProps<Value>;
+  props: UseInputFieldProps<Type>;
   /**
    * Actions for managing the state of the field
    */
@@ -1501,7 +1794,142 @@ export type UseInputField<Value> = {
   state: UseFieldState<Value>;
 };
 
-export type UseInputFieldProps<Value> = {
+export type UseInputFieldProps<Type extends React.HTMLInputTypeAttribute> = {
+  /**
+   * The name of the field if there is one
+   */
+  name: string | undefined;
+  /**
+   * The value of the field
+   */
+  value: Type extends DateType
+    ? string
+    : Type extends NumberType
+    ? number
+    : Type extends FileList
+    ? undefined
+    : string;
+  /**
+   * The type of the field
+   *
+   * @default "text"
+   */
+  type: Type;
+  /**
+   * A WAI-ARIA property that tells a screen reader whether the
+   * field is invalid
+   */
+  "aria-invalid": boolean;
+  /**
+   * A React callback ref that is used to bind the field atom to
+   * an `<input>` element so that it can be read and focused.
+   */
+  ref: React.RefCallback<HTMLInputElement>;
+  onBlur(event: React.FormEvent<HTMLInputElement>): void;
+  onChange(event: React.ChangeEvent<HTMLInputElement>): void;
+};
+
+export type UseInputFieldPropsOptions<
+  Type extends React.HTMLInputTypeAttribute
+> = UseAtomOptions & {
+  /**
+   * The type of the `<input>` element
+   *
+   * @default "text"
+   * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#%3Cinput%3E_types
+   */
+  type?: Type;
+};
+
+export type DateType = typeof dateTypes extends Set<infer T> ? T : never;
+export type NumberType = typeof numberTypes extends Set<infer T> ? T : never;
+export type FileType = typeof fileTypes extends Set<infer T> ? T : never;
+
+/**
+ * A utility type that maps input types to their corresponding
+ * value types.
+ */
+export type InputFieldValueForType<Type extends React.HTMLInputTypeAttribute> =
+  Type extends NumberType
+    ? number
+    : Type extends DateType
+    ? Date | null
+    : Type extends FileType
+    ? FileList | null
+    : string;
+
+export type UseSelectField<
+  Multiple extends Readonly<boolean>,
+  Value extends string
+> = {
+  /**
+   * `<input>` props for the field
+   */
+  props: UseSelectFieldProps<Multiple, Value>;
+  /**
+   * Actions for managing the state of the field
+   */
+  actions: UseFieldActions<Multiple extends true ? Value[] : Value>;
+  /**
+   * The current state of the field
+   */
+  state: UseFieldState<Multiple extends true ? Value[] : Value>;
+};
+
+export type UseSelectFieldProps<
+  Multiple extends Readonly<boolean>,
+  Value extends string
+> = {
+  /**
+   * The name of the field if there is one
+   */
+  name: string | undefined;
+  /**
+   * The value of the field
+   */
+  value: Multiple extends true ? Value[] : Value;
+  /**
+   * Whether the field is a multiple select
+   */
+  multiple?: Multiple;
+  /**
+   * A WAI-ARIA property that tells a screen reader whether the
+   * field is invalid
+   */
+  "aria-invalid": boolean;
+  /**
+   * A React callback ref that is used to bind the field atom to
+   * an `<input>` element so that it can be read and focused.
+   */
+  ref: React.RefCallback<HTMLSelectElement>;
+  onBlur(event: React.FormEvent<HTMLSelectElement>): void;
+  onChange(event: React.ChangeEvent<HTMLSelectElement>): void;
+};
+
+export type UseSelectFieldPropsOptions<Multiple extends Readonly<boolean>> =
+  UseAtomOptions & {
+    /**
+     * Whether the field is a multiple select
+     */
+    multiple?: Multiple;
+  };
+
+export type UseTextareaField<Value extends string> = {
+  /**
+   * `<input>` props for the field
+   */
+  props: UseTextareaFieldProps<Value>;
+  /**
+   * Actions for managing the state of the field
+   */
+  actions: UseFieldActions<Value>;
+  /**
+   * The current state of the field
+   */
+  state: UseFieldState<Value>;
+};
+
+export type UseTextareaFieldProps<Value extends string> = {
   /**
    * The name of the field if there is one
    */
@@ -1517,19 +1945,14 @@ export type UseInputFieldProps<Value> = {
   "aria-invalid": boolean;
   /**
    * A React callback ref that is used to bind the field atom to
-   * an `<input>`, `<select>`, or `<textarea>` element so that it
-   * can be read and focused.
+   * an `<input>` element so that it can be read and focused.
    */
-  ref: React.RefCallback<
-    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-  >;
-  onBlur(event: React.FormEvent<HTMLInputElement>): void;
+  ref: React.RefCallback<HTMLTextAreaElement>;
   onBlur(event: React.FormEvent<HTMLTextAreaElement>): void;
-  onBlur(event: React.FormEvent<HTMLSelectElement>): void;
-  onChange(event: React.ChangeEvent<HTMLInputElement>): void;
   onChange(event: React.ChangeEvent<HTMLTextAreaElement>): void;
-  onChange(event: React.ChangeEvent<HTMLSelectElement>): void;
 };
+
+export type UseTextareaFieldPropsOptions = UseAtomOptions;
 
 export type UseFieldActions<Value> = {
   /**
@@ -1564,8 +1987,7 @@ export type UseFieldActions<Value> = {
     errors: ExtractAtomArgs<ExtractAtomValue<FieldAtom<Value>>["errors"]>[0]
   ): void;
   /**
-   * Focuses the field atom's `<input>`, `<select>`, or `<textarea>` element
-   * if there is one bound to it.
+   * Focuses the field atom's `<input>` element if there is one bound to it.
    */
   focus(): void;
   /**
@@ -1605,15 +2027,35 @@ export type UseFieldErrors<Value> = UseFieldState<Value>["errors"];
 export type UseFieldInitialValue = void;
 export type UseFieldOptions<Value> = UseAtomOptions & { initialValue?: Value };
 export type UseInputFieldOptions<
-  Value extends string | number | readonly string[]
-> = UseAtomOptions & {
+  Type extends React.HTMLInputTypeAttribute,
+  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>
+> = UseInputFieldPropsOptions<Type> & {
+  /**
+   * The initial value of the field
+   */
   initialValue?: Value;
 };
+export type UseSelectFieldOptions<
+  Multiple extends Readonly<boolean> = false,
+  Value extends string = string
+> = UseSelectFieldPropsOptions<Multiple> & {
+  /**
+   * The initial value of the field
+   */
+  initialValue?: Multiple extends true ? Value[] : Value;
+};
+export type UseTextareaFieldOptions<Value extends string> =
+  UseTextareaFieldPropsOptions & {
+    /**
+     * The initial value of the field
+     */
+    initialValue?: Value;
+  };
 
 export type FieldAtomConfig<Value> = {
   /**
    * Optionally provide a name for the field that will be added
-   * to any attached `<input>`, `<select>`, or `<textarea>` elements
+   * to any attached `<input>` elements
    */
   name?: string;
   /**
