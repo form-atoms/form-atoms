@@ -1,3 +1,10 @@
+# [3.0.0-next.2](https://github.com/jaredLunde/form-atoms/compare/v3.0.0-next.1...v3.0.0-next.2) (2023-02-09)
+
+
+### Bug Fixes
+
+* fix number type to allow for null values ([#39](https://github.com/jaredLunde/form-atoms/issues/39)) ([4e4ad72](https://github.com/jaredLunde/form-atoms/commit/4e4ad72a63d1ac81e4069b167a5645bff3fa332b))
+
 # [3.0.0-next.1](https://github.com/jaredLunde/form-atoms/compare/v2.1.0...v3.0.0-next.1) (2023-02-09)
 
 
