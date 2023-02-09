@@ -861,10 +861,10 @@ const fileTypes = new Set(["file"] as const);
  */
 function formatDateString(date: Date, type: React.HTMLInputTypeAttribute) {
   // Adjust the date to account for the timezone offset.
-  date = dateWithTzOffset(date);
   const isoDate = date.toISOString();
 
   if (type === "date") {
+    date = dateWithTzOffset(date);
     return isoDate.slice(0, 10);
   } else if (type === "datetime-local") {
     // Formatted to YYYY-MM-DDTHH:mm
