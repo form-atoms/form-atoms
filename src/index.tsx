@@ -812,6 +812,8 @@ export function useInputFieldProps<
         setAnyValue(
           fileTypes.has(anyFieldType)
             ? target.files
+            : anyFieldType === "datetime-local"
+            ? new Date(target.valueAsNumber)
             : dateTypes.has(anyFieldType)
             ? target.valueAsDate
             : numberTypes.has(anyFieldType)
@@ -901,15 +903,7 @@ function formatDateString(date: Date, type: React.HTMLInputTypeAttribute) {
 function getIsoWeek(date: Date): string {
   date = dateWithTzOffset(date);
   date = new Date(
-    Date.UTC(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      date.getHours(),
-      date.getMinutes(),
-      date.getSeconds(),
-      date.getMilliseconds()
-    )
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
   );
   // Set to nearest Thursday: current date + 4 - current day number
   // Make Sunday's day number 7
@@ -921,10 +915,13 @@ function getIsoWeek(date: Date): string {
     ((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7
   );
   // Handle last week of the previous year
-  if (weekNo < 1) {
+  if (weekNo === 0) {
     const prevYearStart = new Date(Date.UTC(date.getUTCFullYear() - 1, 0, 1));
     weekNo = Math.ceil(
-      ((date.getTime() - prevYearStart.getTime()) / 86400000 + 1) / 7
+      ((date.getTime() - prevYearStart.getTime()) / 86400000 +
+        1 +
+        (isLeapYear(date.getUTCFullYear() - 1) ? 366 : 365)) /
+        7
     );
     return (
       date.getUTCFullYear() - 1 + "-W" + (weekNo < 10 ? "0" + weekNo : weekNo)
@@ -937,6 +934,10 @@ function getIsoWeek(date: Date): string {
 function dateWithTzOffset(date: Date): Date {
   const offset = date.getTimezoneOffset() / 60;
   return new Date(date.getTime() + offset * 60 * 60 * 1000);
+}
+
+function isLeapYear(year: number): boolean {
+  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
 }
 
 /**
