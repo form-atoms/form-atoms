@@ -149,6 +149,10 @@ by using it, but you gain a ton of performance and without footguns.
 1. [**How to create a nested fields**](https://codesandbox.io/s/form-atoms-v2-nested-fields-example-lirr6w)
 1. [**How to create an array of fields**](https://codesandbox.io/s/form-atoms-v2-array-fields-example-22kf4d?file=/src/App.tsx)
 
+## Projects using `form-atoms`
+
+- [**@form-atoms/field**](https://github.com/MiroslavPetrik/form-atoms-field) - Declarative & headless form fields build on top of Jotai & form-atoms
+
 ---
 
 ## Field atoms
