@@ -780,7 +780,9 @@ export function useInputFieldProps<
       name,
       // @ts-expect-error: it's fine, we will test
       value:
-        value instanceof FileList || value === null
+        fieldType === "file"
+          ? undefined
+          : value === null
           ? ""
           : Array.isArray(value)
           ? value.map((v) => v + "")
@@ -1812,7 +1814,7 @@ export type UseInputFieldProps<Type extends React.HTMLInputTypeAttribute> = {
     : Type extends NumberType
     ? number | string
     : Type extends FileType
-    ? string
+    ? undefined
     : string;
   /**
    * The type of the field
