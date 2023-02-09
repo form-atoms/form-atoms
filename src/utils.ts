@@ -49,7 +49,7 @@ export function formatDateString(
   }
 
   date = removeTzOffset(date);
-  return isoDate.slice(0, 10);
+  return date.toISOString().slice(0, 10);
 }
 
 /**
