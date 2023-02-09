@@ -107,6 +107,46 @@ export default function ValidateOn() {
                     type="file"
                   />
                 </FieldErrors>
+
+                <FieldErrors atom={fieldAtoms.select}>
+                  <SelectField
+                    atom={fieldAtoms.select}
+                    initialValue="1"
+                    render={(props) => {
+                      return (
+                        <select {...props}>
+                          <option value="1">One</option>
+                          <option value="2">Two</option>
+                          <option value="3">Three</option>
+                        </select>
+                      );
+                    }}
+                  />
+                </FieldErrors>
+
+                <FieldErrors atom={fieldAtoms.selectMultiple}>
+                  <SelectField
+                    atom={fieldAtoms.selectMultiple}
+                    initialValue={["1"]}
+                    multiple
+                    render={(props) => {
+                      return (
+                        <select {...props}>
+                          <option value="1">One</option>
+                          <option value="2">Two</option>
+                          <option value="3">Three</option>
+                        </select>
+                      );
+                    }}
+                  />
+                </FieldErrors>
+
+                <FieldErrors atom={fieldAtoms.textarea}>
+                  <TextareaField
+                    atom={fieldAtoms.textarea}
+                    initialValue="Hello world"
+                  />
+                </FieldErrors>
               </label>
 
               <button type="submit">Submit</button>
