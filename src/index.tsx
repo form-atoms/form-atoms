@@ -779,16 +779,15 @@ export function useInputFieldProps<
     () => ({
       name,
       // @ts-expect-error: it's fine, we will test
-      value:
-        value instanceof FileList
-          ? undefined
-          : value === null
-          ? ""
-          : Array.isArray(value)
-          ? value.map((v) => v + "")
-          : value instanceof Date
-          ? formatDateString(value, fieldType)
-          : value,
+      value: fileTypes.has(fieldType)
+        ? undefined
+        : value === null
+        ? ""
+        : Array.isArray(value)
+        ? value.map((v) => v + "")
+        : value instanceof Date
+        ? formatDateString(value, fieldType)
+        : value,
       "aria-invalid": validateStatus === "invalid",
       // @ts-expect-error: it's fine because we default to string which == text
       type: fieldType,
@@ -1052,7 +1051,7 @@ export function useField<Value>(
 
 /**
  * A hook that returns `props`, `state`, and `actions` of a field atom from
- * `useInputFieldAtomProps`, `useFieldState`, and `useFieldActions`.
+ * `useInputFieldProps`, `useFieldState`, and `useFieldActions`.
  *
  * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
  * @param {UseInputFieldOptions} options - Options to pass to the underlying `useAtomValue`
@@ -1071,7 +1070,7 @@ export function useInputField<
 
 /**
  * A hook that returns `props`, `state`, and `actions` of a field atom from
- * `useInputFieldAtomProps`, `useFieldState`, and `useFieldActions`.
+ * `useInputFieldProps`, `useFieldState`, and `useFieldActions`.
  *
  * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
  * @param {UseInputFieldOptions} options - Options to pass to the underlying `useAtomValue`
@@ -1091,7 +1090,7 @@ export function useSelectField<
 
 /**
  * A hook that returns `props`, `state`, and `actions` of a field atom from
- * `useInputFieldAtomProps`, `useFieldState`, and `useFieldActions`.
+ * `useInputFieldProps`, `useFieldState`, and `useFieldActions`.
  *
  * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
  * @param {UseInputFieldOptions} options - Options to pass to the underlying `useAtomValue`
@@ -1812,8 +1811,8 @@ export type UseInputFieldProps<Type extends React.HTMLInputTypeAttribute> = {
   value: Type extends DateType
     ? string
     : Type extends NumberType
-    ? number
-    : Type extends FileList
+    ? number | string
+    : Type extends FileType
     ? undefined
     : string;
   /**
@@ -1858,7 +1857,7 @@ export type FileType = typeof fileTypes extends Set<infer T> ? T : never;
  */
 export type InputFieldValueForType<Type extends React.HTMLInputTypeAttribute> =
   Type extends NumberType
-    ? number
+    ? number | null
     : Type extends DateType
     ? Date | null
     : Type extends FileType

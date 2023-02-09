@@ -241,7 +241,7 @@ describe("<InputField>", () => {
   });
 
   it('should render "component" prop in scope w/ number type', () => {
-    const atom = fieldAtom({ value: 0 });
+    const atom = fieldAtom<number | null>({ value: 0 });
     render(
       <InputField
         atom={atom}
