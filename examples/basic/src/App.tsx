@@ -54,7 +54,7 @@ export default function ValidateOn() {
               <label>
                 <span>Name</span>
 
-                <FieldErrors atom={fieldAtoms.name}>
+                <FieldErrors atom={fieldAtoms.text}>
                   <InputField
                     atom={fieldAtoms.text}
                     initialValue={String(Math.random())}
@@ -111,7 +111,7 @@ export default function ValidateOn() {
                 <FieldErrors atom={fieldAtoms.select}>
                   <SelectField
                     atom={fieldAtoms.select}
-                    initialValue="1"
+                    initialValue="2"
                     render={(props) => {
                       return (
                         <select {...props}>
@@ -127,7 +127,7 @@ export default function ValidateOn() {
                 <FieldErrors atom={fieldAtoms.selectMultiple}>
                   <SelectField
                     atom={fieldAtoms.selectMultiple}
-                    initialValue={["1"]}
+                    initialValue={["1", "3"]}
                     multiple
                     render={(props) => {
                       return (
@@ -145,6 +145,7 @@ export default function ValidateOn() {
                   <TextareaField
                     atom={fieldAtoms.textarea}
                     initialValue="Hello world"
+                    component="textarea"
                   />
                 </FieldErrors>
               </label>

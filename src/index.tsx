@@ -792,7 +792,7 @@ export function useInputFieldProps<
           : Array.isArray(value)
           ? value.map((v) => v + "")
           : value instanceof Date
-          ? value.toISOString()
+          ? formatDateString(value, fieldType)
           : value,
       "aria-invalid": validateStatus === "invalid",
       // @ts-expect-error: it's fine because we default to string which == text
@@ -842,10 +842,66 @@ const dateTypes = new Set([
   "date",
   "datetime-local",
   "month",
-  "time",
   "week",
+  "time",
 ] as const);
 const fileTypes = new Set(["file"] as const);
+
+/**
+ * Formats a date string based on the type of input
+ *
+ * @param date
+ * @param type
+ */
+function formatDateString(date: Date, type: React.HTMLInputTypeAttribute) {
+  if (type === "date") {
+    return date.toISOString().split("T")[0];
+  } else if (type === "datetime-local") {
+    return date.toISOString().replace("Z", "");
+  } else if (type === "month") {
+    return date
+      .toISOString()
+      .split("T")[0]
+      .replace(/-\d\d$/, "");
+  } else if (type === "week") {
+    return (
+      date
+        .toISOString()
+        .split("T")[0]
+        .replace(/-\d\d$/, "") +
+      "W" +
+      getWeek(date)
+    );
+  } else if (type === "time") {
+    return date.toISOString().split("T")[1];
+  }
+
+  return date.toISOString();
+}
+
+function getWeek(date: Date) {
+  // Create a copy of this date object
+  const target = new Date(date.valueOf());
+  // ISO week date weeks start on monday
+  // so correct the day number
+  const dayNr = (date.getDay() + 6) % 7;
+  // ISO 8601 states that week 1 is the week
+  // with the first thursday of that year.
+  // Set the target date to the thursday in the target week
+  target.setDate(target.getDate() - dayNr + 3);
+  // Store the millisecond value of the target date
+  const firstThursday = target.valueOf();
+  // Set the target to the first thursday of the year
+  // First set the target to january first
+  target.setMonth(0, 1);
+  // Not a thursday? Correct the date to the next thursday
+  if (target.getDay() != 4) {
+    target.setMonth(0, 1 + ((4 - target.getDay() + 7) % 7));
+  }
+  // The weeknumber is the number of weeks between the
+  // first thursday of the year and the thursday in the target week
+  return 1 + Math.ceil((firstThursday - target.valueOf()) / 604800000);
+}
 
 /**
  * A hook that returns a set of props that can be destructured
