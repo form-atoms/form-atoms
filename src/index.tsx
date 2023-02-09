@@ -779,16 +779,15 @@ export function useInputFieldProps<
     () => ({
       name,
       // @ts-expect-error: it's fine, we will test
-      value:
-        fieldType === "file"
-          ? undefined
-          : value === null
-          ? ""
-          : Array.isArray(value)
-          ? value.map((v) => v + "")
-          : value instanceof Date
-          ? formatDateString(value, fieldType)
-          : value,
+      value: fileTypes.has(fieldType)
+        ? undefined
+        : value === null
+        ? ""
+        : Array.isArray(value)
+        ? value.map((v) => v + "")
+        : value instanceof Date
+        ? formatDateString(value, fieldType)
+        : value,
       "aria-invalid": validateStatus === "invalid",
       // @ts-expect-error: it's fine because we default to string which == text
       type: fieldType,
