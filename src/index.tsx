@@ -848,38 +848,63 @@ const dateTypes = new Set([
 const fileTypes = new Set(["file"] as const);
 
 /**
- * Formats a date string based on the type of input
+ * Formats a date string based on the type of input. This is necessary because
+ * HTML expects different formats for different input types. For example,
+ * `date` expects a date in the format `YYYY-MM-DD` while `datetime-local`
+ * expects a date in the format `YYYY-MM-DDTHH:mm:ss`.
  *
- * @param date
- * @param type
+ * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Date_and_time_formats
+ * @param date - The date to format.
+ * @param type - The type of input.
  */
 function formatDateString(date: Date, type: React.HTMLInputTypeAttribute) {
+  const isoDate = date.toISOString();
+
   if (type === "date") {
-    return date.toISOString().split("T")[0];
+    return isoDate.split("T")[0];
   } else if (type === "datetime-local") {
-    return date.toISOString().replace("Z", "");
+    // 2017-06-01T08:30
+    return isoDate.split(".")[0];
   } else if (type === "month") {
-    return date
-      .toISOString()
-      .split("T")[0]
-      .replace(/-\d\d$/, "");
+    // 2001-06
+    return isoDate.split("T")[0].replace(/-\d\d$/, "");
   } else if (type === "week") {
+    // Format is YYYY-Www where YYYY is the year and ww is the week number.
     return (
-      date
-        .toISOString()
-        .split("T")[0]
-        .replace(/-\d\d$/, "") +
-      "W" +
-      getWeek(date)
+      isoDate.split("T")[0].replace(/-\d\d-\d\d$/, "") +
+      `-W${getWeek(date).padStart(2, "0")}`
     );
   } else if (type === "time") {
-    return date.toISOString().split("T")[1];
+    // The value of the time in the 24-hour format e.g. `15:30`
+    return isoDate.split("T")[1].split(".")[0];
   }
 
-  return date.toISOString();
+  return isoDate;
 }
 
-function getWeek(date: Date) {
+/**
+ * Gets the week number of a date.
+ * 
+ * A week string specifies a week within a particular year. A valid week string
+ * consists of a valid year number, followed by a hyphen character ("-", or U+002D),
+ * then the capital letter "W" (U+0057), followed by a two-digit week of the
+ * year value.
+ 
+ * The week of the year is a two-digit string between 01 and 53. Each week begins
+ * on Monday and ends on Sunday. That means it's possible for the first few days of
+ * January to be considered part of the previous week-year, and for the last few days
+ * of December to be considered part of the following week-year. The first week of the
+ * year is the week that contains the first Thursday of the year. For example, the first
+ * Thursday of 1953 was on January 1, so that week—beginning on Monday, December 29—
+ * is considered the first week of the year. Therefore, December 30, 1952 occurs during
+ * the week 1953-W01.
+ 
+ * A year has 53 weeks if:
+ *   The first day of the calendar year (January 1) is a Thursday or
+ *   The first day of the year (January 1) is a Wednesday and the year is a leap year
+ * All other years have 52 weeks.
+ */
+function getWeek(date: Date): string {
   // Create a copy of this date object
   const target = new Date(date.valueOf());
   // ISO week date weeks start on monday
@@ -898,9 +923,9 @@ function getWeek(date: Date) {
   if (target.getDay() != 4) {
     target.setMonth(0, 1 + ((4 - target.getDay() + 7) % 7));
   }
-  // The weeknumber is the number of weeks between the
+  // The week number is the number of weeks between the
   // first thursday of the year and the thursday in the target week
-  return 1 + Math.ceil((firstThursday - target.valueOf()) / 604800000);
+  return "" + (1 + Math.ceil((firstThursday - target.valueOf()) / 604800000));
 }
 
 /**

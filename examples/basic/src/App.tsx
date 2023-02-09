@@ -20,6 +20,15 @@ export const nameFormAtom = formAtom({
   datetimeLocal: fieldAtom<Date>({
     value: new Date(),
   }),
+  month: fieldAtom<Date>({
+    value: new Date(),
+  }),
+  week: fieldAtom<Date>({
+    value: new Date(),
+  }),
+  time: fieldAtom<Date>({
+    value: new Date(),
+  }),
   number: fieldAtom({
     value: 0,
   }),
@@ -78,6 +87,36 @@ export default function ValidateOn() {
                     initialValue={new Date(Date.now() + 24 * 60 * 60 * 1000)}
                     component="input"
                     type="datetime-local"
+                  />
+                </FieldErrors>
+
+                <FieldErrors atom={fieldAtoms.month}>
+                  <InputField
+                    atom={fieldAtoms.month}
+                    // Tomorrow
+                    initialValue={new Date(Date.now() + 24 * 60 * 60 * 1000)}
+                    component="input"
+                    type="month"
+                  />
+                </FieldErrors>
+
+                <FieldErrors atom={fieldAtoms.week}>
+                  <InputField
+                    atom={fieldAtoms.week}
+                    // Tomorrow
+                    initialValue={new Date(Date.now() + 24 * 60 * 60 * 1000)}
+                    component="input"
+                    type="week"
+                  />
+                </FieldErrors>
+
+                <FieldErrors atom={fieldAtoms.time}>
+                  <InputField
+                    atom={fieldAtoms.time}
+                    // Tomorrow
+                    initialValue={new Date(Date.now() + 24 * 60 * 60 * 1000)}
+                    component="input"
+                    type="time"
                   />
                 </FieldErrors>
 
