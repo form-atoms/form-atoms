@@ -1,5 +1,5 @@
 {
-  "name": "form-atoms-validate-zod",
+  "name": "form-atoms-basic",
   "version": "1.0.0",
   "description": "",
   "main": "src/index.tsx",
