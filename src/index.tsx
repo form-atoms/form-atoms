@@ -19,7 +19,9 @@ import {
 } from "jotai";
 import { RESET, atomWithReset } from "jotai/utils";
 
-import { setPath } from "./utils";
+import { formatDateString, setPath } from "./utils";
+
+export { Provider } from "jotai";
 
 //
 // Components
@@ -32,10 +34,9 @@ import { setPath } from "./utils";
  * @param {FormProps<Fields>} props - Component props
  */
 export function Form<Fields extends FormFields>(props: FormProps<Fields>) {
-  const { store, ...atomProps } = props;
   return (
-    <Provider store={store}>
-      <FormAtom {...atomProps} />
+    <Provider store={props.store}>
+      <FormAtom {...props} />
     </Provider>
   );
 }
@@ -57,7 +58,7 @@ function FormAtom<Fields extends FormFields>(
     return props.render(form);
   }
 
-  return <props.component {...form} />;
+  return React.createElement(props.component, form);
 }
 
 /**
@@ -71,18 +72,8 @@ export function InputField<
   Type extends React.HTMLInputTypeAttribute,
   Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>
 >(props: InputFieldProps<Type, Value>) {
-  const fieldAtom = useInputField(props.atom, {
-    initialValue: props.initialValue,
-    type: props.type,
-    store: props.store,
-    delay: props.delay,
-  });
-
-  if ("render" in props) {
-    return props.render(fieldAtom.props, fieldAtom.state, fieldAtom.actions);
-  }
-
-  return React.createElement(props.component, fieldAtom.props);
+  const fieldAtom = useInputField(props.atom, props);
+  return render(props, fieldAtom);
 }
 
 /**
@@ -96,18 +87,8 @@ export function SelectField<
   Multiple extends Readonly<boolean> = false,
   Value extends string = string
 >(props: SelectFieldProps<Multiple, Value>) {
-  const fieldAtom = useSelectField(props.atom, {
-    initialValue: props.initialValue,
-    multiple: props.multiple,
-    store: props.store,
-    delay: props.delay,
-  });
-
-  if ("render" in props) {
-    return props.render(fieldAtom.props, fieldAtom.state, fieldAtom.actions);
-  }
-
-  return React.createElement(props.component, fieldAtom.props);
+  const fieldAtom = useSelectField(props.atom, props);
+  return render(props, fieldAtom);
 }
 
 /**
@@ -120,12 +101,25 @@ export function SelectField<
 export function TextareaField<Value extends string>(
   props: TextareaFieldProps<Value>
 ) {
-  const fieldAtom = useTextareaField(props.atom, {
-    initialValue: props.initialValue,
-    store: props.store,
-    delay: props.delay,
-  });
+  const fieldAtom = useTextareaField(props.atom, props);
+  return render(props, fieldAtom);
+}
 
+function render(
+  props:
+    | {
+        render(
+          props:
+            | UseInputFieldProps<any>
+            | UseTextareaFieldProps<any>
+            | UseSelectFieldProps<any, any>,
+          state: UseFieldState<any>,
+          actions: UseFieldActions<any>
+        ): JSX.Element;
+      }
+    | { component: string | React.ComponentType<any> },
+  fieldAtom: { props: any; state: any; actions: any }
+) {
   if ("render" in props) {
     return props.render(fieldAtom.props, fieldAtom.state, fieldAtom.actions);
   }
@@ -140,17 +134,13 @@ export function TextareaField<Value extends string>(
  * @param {FieldProps<Value>} props - Component props
  */
 export function Field<Value>(props: FieldProps<Value>) {
-  const { state, actions } = useField(props.atom, {
-    initialValue: props.initialValue,
-    store: props.store,
-    delay: props.delay,
-  });
+  const { state, actions } = useField(props.atom, props);
 
   if ("render" in props) {
     return props.render(state, actions);
   }
 
-  return <props.component state={state} actions={actions} />;
+  return React.createElement(props.component, { state, actions });
 }
 
 //
@@ -450,11 +440,11 @@ export function useFormState<Fields extends FormFields>(
 
   return React.useMemo(
     () => ({
-      fieldAtoms: fieldAtoms as Fields,
-      values: values as any,
-      errors: errors as any,
+      fieldAtoms,
+      values,
+      errors,
       dirty,
-      touchedFields: touchedFields as any,
+      touchedFields,
       submitCount,
       submitStatus,
       validateStatus,
@@ -810,15 +800,17 @@ export function useInputFieldProps<
         const anyFieldType: any = fieldType;
 
         setAnyValue(
-          fileTypes.has(anyFieldType)
-            ? target.files
-            : anyFieldType === "datetime-local"
+          anyFieldType === "datetime-local"
             ? new Date(target.valueAsNumber)
-            : dateTypes.has(anyFieldType)
-            ? target.valueAsDate
-            : numberTypes.has(anyFieldType)
-            ? target.valueAsNumber
-            : target.value
+            : target[
+                fileTypes.has(anyFieldType)
+                  ? "files"
+                  : dateTypes.has(anyFieldType)
+                  ? "valueAsDate"
+                  : numberTypes.has(anyFieldType)
+                  ? "valueAsNumber"
+                  : "value"
+              ]
         );
 
         startTransition(() => {
@@ -848,97 +840,6 @@ const dateTypes = new Set([
   "time",
 ] as const);
 const fileTypes = new Set(["file"] as const);
-
-/**
- * Formats a date string based on the type of input. This is necessary because
- * HTML expects different formats for different input types. For example,
- * `date` expects a date in the format `YYYY-MM-DD` while `datetime-local`
- * expects a date in the format `YYYY-MM-DDTHH:mm`.
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Date_and_time_formats
- * @param date - The date to format.
- * @param type - The type of input.
- */
-function formatDateString(date: Date, type: React.HTMLInputTypeAttribute) {
-  // Adjust the date to account for the timezone offset.
-  const isoDate = date.toISOString();
-
-  if (type === "date") {
-    date = dateWithTzOffset(date);
-    return isoDate.slice(0, 10);
-  } else if (type === "datetime-local") {
-    // Formatted to YYYY-MM-DDTHH:mm
-    return isoDate.slice(0, 16);
-  } else if (type === "month") {
-    // 2001-06
-    return isoDate.slice(0, 7);
-  } else if (type === "week") {
-    // Format is YYYY-Www where YYYY is the year and ww is the week number.
-    return getIsoWeek(date);
-  } else if (type === "time") {
-    // The value of the time in the 24-hour format e.g. `15:30`
-    return isoDate.slice(11, 19);
-  }
-
-  return isoDate;
-}
-
-/**
- * Gets the week number of a date.
- * 
- * The week of the year is a two-digit string between 01 and 53. Each week begins
- * on Monday and ends on Sunday. That means it's possible for the first few days of
- * January to be considered part of the previous week-year, and for the last few days
- * of December to be considered part of the following week-year. The first week of the
- * year is the week that contains the first Thursday of the year. For example, the first
- * Thursday of 1953 was on January 1, so that week—beginning on Monday, December 29—
- * is considered the first week of the year. Therefore, December 30, 1952 occurs during
- * the week 1953-W01.
- 
- * A year has 53 weeks if:
- *   The first day of the calendar year (January 1) is a Thursday or
- *   The first day of the year (January 1) is a Wednesday and the year is a leap year
- * All other years have 52 weeks.
- */
-function getIsoWeek(date: Date): string {
-  date = dateWithTzOffset(date);
-  date = new Date(
-    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
-  );
-  // Set to nearest Thursday: current date + 4 - current day number
-  // Make Sunday's day number 7
-  date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
-  // Get first day of year
-  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-  // Calculate full weeks to nearest Thursday
-  let weekNo = Math.ceil(
-    ((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7
-  );
-  // Handle last week of the previous year
-  if (weekNo === 0) {
-    const prevYearStart = new Date(Date.UTC(date.getUTCFullYear() - 1, 0, 1));
-    weekNo = Math.ceil(
-      ((date.getTime() - prevYearStart.getTime()) / 86400000 +
-        1 +
-        (isLeapYear(date.getUTCFullYear() - 1) ? 366 : 365)) /
-        7
-    );
-    return (
-      date.getUTCFullYear() - 1 + "-W" + (weekNo < 10 ? "0" + weekNo : weekNo)
-    );
-  }
-  // Return array of year and week number
-  return date.getUTCFullYear() + "-W" + ("" + weekNo).padStart(2, "0");
-}
-
-function dateWithTzOffset(date: Date): Date {
-  const tzOffset = new Date().getTimezoneOffset() * 60 * 1000;
-  return new Date(date.getTime() + tzOffset);
-}
-
-function isLeapYear(year: number): boolean {
-  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-}
 
 /**
  * A hook that returns a set of props that can be destructured
@@ -1002,7 +903,7 @@ export function useSelectFieldProps<
           const options = event.currentTarget.options;
           const values: string[] = [];
 
-          for (let i = 0; i < options.length; i++) {
+          for (const i in options) {
             const option = options[i];
 
             if (option.selected) {
@@ -1048,7 +949,7 @@ export function useFieldState<Value>(
 
   return React.useMemo(
     () => ({
-      value: value as unknown as Value,
+      value,
       touched,
       dirty,
       validateStatus,
@@ -1141,11 +1042,7 @@ export function useField<Value>(
   const actions = useFieldActions<Value>(fieldAtom, options);
   const state = useFieldState<Value>(fieldAtom, options);
   useFieldInitialValue(fieldAtom, options?.initialValue, options);
-
-  return React.useMemo<UseField<Value>>(
-    () => ({ actions, state }),
-    [actions, state]
-  );
+  return React.useMemo(() => ({ actions, state }), [actions, state]);
 }
 
 /**
@@ -1164,13 +1061,7 @@ export function useInputField<
   options?: UseInputFieldOptions<Type, Value>
 ): UseInputField<Type, Value> {
   const props = useInputFieldProps(fieldAtom, options);
-  const field = useField(fieldAtom, options);
-  useFieldInitialValue(fieldAtom, options?.initialValue, options);
-
-  return React.useMemo<UseInputField<Type, Value>>(
-    () => ({ props, ...field }),
-    [props, field]
-  );
+  return _useField<Type, Value>(fieldAtom, props, options);
 }
 
 /**
@@ -1189,9 +1080,8 @@ export function useSelectField<
   options?: UseSelectFieldOptions<Multiple, Value>
 ): UseSelectField<Multiple, Value> {
   const props = useSelectFieldProps<Multiple, Value>(fieldAtom, options);
-  const field = useField(fieldAtom, options);
-  useFieldInitialValue(fieldAtom, options?.initialValue, options);
-  return React.useMemo(() => ({ props, ...field }), [props, field]);
+  // @ts-expect-error: it's fine
+  return _useField<Multiple, Value>(fieldAtom, props, options);
 }
 
 /**
@@ -1207,9 +1097,30 @@ export function useTextareaField<Value extends string>(
   options?: UseTextareaFieldOptions<Value>
 ): UseTextareaField<Value> {
   const props = useTextareaFieldProps(fieldAtom, options);
+  return _useField<Value>(fieldAtom, props, options);
+}
+
+function _useField<Value extends string>(
+  fieldAtom: FieldAtom<Value>,
+  props: UseTextareaFieldProps<Value>,
+  options?: UseTextareaFieldOptions<Value>
+): UseTextareaField<Value>;
+function _useField<Multiple extends Readonly<boolean>, Value extends string>(
+  fieldAtom: FieldAtom<Value>,
+  props: UseSelectFieldProps<Multiple, Value>,
+  options?: UseSelectFieldOptions<Multiple, Value>
+): UseSelectField<Multiple, Value>;
+function _useField<
+  Type extends React.HTMLInputTypeAttribute,
+  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>
+>(
+  fieldAtom: FieldAtom<Value>,
+  props: UseInputFieldProps<Type>,
+  options?: UseInputFieldOptions<Type, Value>
+): UseInputField<Type, Value>;
+function _useField(fieldAtom: FieldAtom<any>, props: any, options?: any): any {
   const field = useField(fieldAtom, options);
   useFieldInitialValue(fieldAtom, options?.initialValue, options);
-
   return React.useMemo(() => ({ props, ...field }), [props, field]);
 }
 
@@ -1308,8 +1219,6 @@ export function walkFields<Fields extends FormFields>(
     path.pop();
   }
 }
-
-export { Provider } from "jotai";
 
 export type InputFieldProps<
   Type extends React.HTMLInputTypeAttribute,
