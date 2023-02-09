@@ -858,6 +858,8 @@ const fileTypes = new Set(["file"] as const);
  * @param type - The type of input.
  */
 function formatDateString(date: Date, type: React.HTMLInputTypeAttribute) {
+  // Adjust the date to account for the timezone offset.
+  date = dateWithTzOffset(date);
   const isoDate = date.toISOString();
 
   if (type === "date") {
@@ -897,9 +899,17 @@ function formatDateString(date: Date, type: React.HTMLInputTypeAttribute) {
  * All other years have 52 weeks.
  */
 function getIsoWeek(date: Date): string {
-  // Copy date so don't modify original
+  date = dateWithTzOffset(date);
   date = new Date(
-    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+    Date.UTC(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      date.getHours(),
+      date.getMinutes(),
+      date.getSeconds(),
+      date.getMilliseconds()
+    )
   );
   // Set to nearest Thursday: current date + 4 - current day number
   // Make Sunday's day number 7
@@ -922,6 +932,11 @@ function getIsoWeek(date: Date): string {
   }
   // Return array of year and week number
   return date.getUTCFullYear() + "-W" + ("" + weekNo).padStart(2, "0");
+}
+
+function dateWithTzOffset(date: Date): Date {
+  const offset = date.getTimezoneOffset() / 60;
+  return new Date(date.getTime() + offset * 60 * 60 * 1000);
 }
 
 /**
