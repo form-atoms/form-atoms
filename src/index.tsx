@@ -932,8 +932,8 @@ function getIsoWeek(date: Date): string {
 }
 
 function dateWithTzOffset(date: Date): Date {
-  const offset = date.getTimezoneOffset() / 60;
-  return new Date(date.getTime() + offset * 60 * 60 * 1000);
+  const tzOffset = new Date().getTimezoneOffset() * 60 * 1000;
+  return new Date(date.getTime() + tzOffset);
 }
 
 function isLeapYear(year: number): boolean {
