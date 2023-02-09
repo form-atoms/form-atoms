@@ -1812,7 +1812,7 @@ export type UseInputFieldProps<Type extends React.HTMLInputTypeAttribute> = {
   value: Type extends DateType
     ? string
     : Type extends NumberType
-    ? number
+    ? number | string
     : Type extends FileList
     ? undefined
     : string;
@@ -1858,7 +1858,7 @@ export type FileType = typeof fileTypes extends Set<infer T> ? T : never;
  */
 export type InputFieldValueForType<Type extends React.HTMLInputTypeAttribute> =
   Type extends NumberType
-    ? number
+    ? number | null
     : Type extends DateType
     ? Date | null
     : Type extends FileType
