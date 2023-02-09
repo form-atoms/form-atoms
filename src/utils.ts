@@ -92,7 +92,8 @@ function getIsoWeek(date: Date): string {
     weekNo = Math.ceil(
       ((time - prevYearStartTime) / dayMs +
         1 +
-        (isLeapYear(prevYear) ? 366 : 365)) /
+        // If the year is a leap year, add 1 day
+        (!(year % 4 || (!(year % 100) && year % 400)) ? 366 : 365)) /
         7
     );
     year = prevYear;
@@ -105,8 +106,4 @@ const dayMs = 86400000; // 24 * 60 * 60 * 1000
 
 function removeTzOffset(date: Date): Date {
   return new Date(date.getTime() + new Date().getTimezoneOffset() * 60 * 1000);
-}
-
-function isLeapYear(year: number): boolean {
-  return !(year % 4 || (!(year % 100) && year % 400));
 }
