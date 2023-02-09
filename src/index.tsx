@@ -399,10 +399,15 @@ export function useForm<Fields extends FormFields>(
           validate("user");
         });
       },
-      reset,
+      reset(event) {
+        event?.preventDefault();
+        startTransition(() => {
+          reset();
+        });
+      },
       submit(onSubmit) {
-        return (e) => {
-          e?.preventDefault();
+        return (event) => {
+          event?.preventDefault();
           startTransition(() => {
             handleSubmit(onSubmit);
           });
@@ -1667,7 +1672,7 @@ export type UseForm<Fields extends FormFields> = {
    */
   submit(
     handleSubmit: (values: FormFieldValues<Fields>) => void | Promise<void>
-  ): (e?: React.FormEvent<HTMLFormElement>) => void;
+  ): (event?: React.FormEvent<HTMLFormElement>) => void;
   /**
    * A function that validates the form's nested field atoms with a
    * `"user"` validation event.
@@ -1677,7 +1682,7 @@ export type UseForm<Fields extends FormFields> = {
    * A function that resets the form's nested field atoms to their
    * initial states.
    */
-  reset(): void;
+  reset(event?: React.FormEvent<HTMLFormElement>): void;
 };
 
 export type UseFormStatus = {
@@ -1693,7 +1698,7 @@ export type UseFormStatus = {
 
 export type UseFormSubmit<Fields extends FormFields> = {
   (values: (value: FormFieldValues<Fields>) => void | Promise<void>): (
-    e?: React.FormEvent<HTMLFormElement>
+    event?: React.FormEvent<HTMLFormElement>
   ) => void;
 };
 
@@ -1751,7 +1756,7 @@ export type UseFormActions<Fields extends FormFields> = {
    */
   submit(
     handleSubmit: (values: FormFieldValues<Fields>) => void | Promise<void>
-  ): (e?: React.FormEvent<HTMLFormElement>) => void;
+  ): (event?: React.FormEvent<HTMLFormElement>) => void;
   /**
    * A function that validates the form's nested field atoms with a
    * `"user"` validation event.
