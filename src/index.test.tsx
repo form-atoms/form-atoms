@@ -5,7 +5,7 @@ import { render, screen } from "@testing-library/react";
 import { act as domAct, renderHook } from "@testing-library/react-hooks/dom";
 import userEvent from "@testing-library/user-event";
 import type { ExtractAtomValue } from "jotai";
-import { Provider, createStore } from "jotai";
+import { Provider, createStore, useAtomValue } from "jotai";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { FieldAtom, UseForm } from ".";
@@ -1632,6 +1632,76 @@ describe("useSubmit()", () => {
     expect(handleSubmit).toHaveBeenCalledWith({
       name: "jared",
     });
+  });
+});
+
+describe("fieldAtom()", () => {
+  it("debugLabels contain the field name when specified", () => {
+    const field = fieldAtom({ value: "", name: "city" });
+
+    const {
+      result: { current: atoms },
+    } = renderHook(() => useAtomValue(field));
+
+    expect(atoms.name.debugLabel).toBe("field/name/city");
+    expect(atoms.value.debugLabel).toBe("field/value/city");
+    expect(atoms.touched.debugLabel).toBe("field/touched/city");
+    expect(atoms.dirty.debugLabel).toBe("field/dirty/city");
+    expect(atoms.validate.debugLabel).toBe("field/validate/city");
+    expect(atoms.validateStatus.debugLabel).toBe("field/validateStatus/city");
+    expect(atoms.errors.debugLabel).toBe("field/errors/city");
+    expect(atoms.reset.debugLabel).toBe("field/reset/city");
+    expect(atoms.ref.debugLabel).toBe("field/ref/city");
+    expect(atoms._initialValue.debugLabel).toBe("field/_initialValue/city");
+    expect(atoms._validateCount.debugLabel).toBe("field/_validateCount/city");
+  });
+
+  it("debugLabels are unnamed when field name not specified", () => {
+    const field = fieldAtom({ value: "" });
+
+    const {
+      result: { current: atoms },
+    } = renderHook(() => useAtomValue(field));
+
+    expect(atoms.name.debugLabel).toBe("field/name/<unnamed-field>");
+    expect(atoms.value.debugLabel).toBe("field/value/<unnamed-field>");
+    expect(atoms.touched.debugLabel).toBe("field/touched/<unnamed-field>");
+    expect(atoms.dirty.debugLabel).toBe("field/dirty/<unnamed-field>");
+    expect(atoms.validate.debugLabel).toBe("field/validate/<unnamed-field>");
+    expect(atoms.validateStatus.debugLabel).toBe(
+      "field/validateStatus/<unnamed-field>"
+    );
+    expect(atoms.errors.debugLabel).toBe("field/errors/<unnamed-field>");
+    expect(atoms.reset.debugLabel).toBe("field/reset/<unnamed-field>");
+    expect(atoms.ref.debugLabel).toBe("field/ref/<unnamed-field>");
+    expect(atoms._initialValue.debugLabel).toBe(
+      "field/_initialValue/<unnamed-field>"
+    );
+    expect(atoms._validateCount.debugLabel).toBe(
+      "field/_validateCount/<unnamed-field>"
+    );
+  });
+});
+
+describe("formAtom()", () => {
+  it("has atoms with debugLabels", () => {
+    const field = formAtom({});
+
+    const {
+      result: { current: atoms },
+    } = renderHook(() => useAtomValue(field));
+
+    expect(atoms.fields.debugLabel).toBe("form/fields");
+    expect(atoms.values.debugLabel).toBe("form/values");
+    expect(atoms.errors.debugLabel).toBe("form/errors");
+    expect(atoms.dirty.debugLabel).toBe("form/dirty");
+    expect(atoms.touchedFields.debugLabel).toBe("form/touchedFields");
+    expect(atoms.validate.debugLabel).toBe("form/validate");
+    expect(atoms.validateStatus.debugLabel).toBe("form/validateStatus");
+    expect(atoms.submit.debugLabel).toBe("form/submit");
+    expect(atoms.submitStatus.debugLabel).toBe("form/submitStatus");
+    expect(atoms.submitCount.debugLabel).toBe("form/submitCount");
+    expect(atoms.reset.debugLabel).toBe("form/reset");
   });
 });
 
