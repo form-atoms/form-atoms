@@ -329,7 +329,7 @@ export function formAtom<Fields extends FormFields>(
     reset: resetAtom,
   };
 
-  if (process.env.NODE_ENV !== "production") {
+  if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
     Object.entries(formAtoms).map(([atomName, atom]) => {
       atom.debugLabel = `form/${atomName}`;
     });
@@ -656,7 +656,7 @@ export function fieldAtom<Value>(
     _validateCount: validateCountAtom,
   };
 
-  if (process.env.NODE_ENV !== "production") {
+  if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
     Object.entries(fieldAtoms).map(([atomName, atom]) => {
       atom.debugLabel = `field/${atomName}/${config.name ?? "<unnamed-field>"}`;
     });
