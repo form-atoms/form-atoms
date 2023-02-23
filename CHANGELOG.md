@@ -1,9 +1,14 @@
-# [2.1.0](https://github.com/jaredLunde/form-atoms/compare/v2.0.0...v2.1.0) (2023-02-08)
+## [2.1.1](https://github.com/jaredLunde/form-atoms/compare/v2.1.0...v2.1.1) (2023-02-23)
 
+### Bug Fixes
+
+- add debug labels to form and field atoms ([#43](https://github.com/jaredLunde/form-atoms/issues/43)) ([ff29459](https://github.com/jaredLunde/form-atoms/commit/ff2945999656aea9cc4aa6de33b23c118d4ea963))
+
+# [2.1.0](https://github.com/jaredLunde/form-atoms/compare/v2.0.0...v2.1.0) (2023-02-08)
 
 ### Features
 
-* flatten output of form values, errors and touched fields generics ([#37](https://github.com/jaredLunde/form-atoms/issues/37)) ([7ede927](https://github.com/jaredLunde/form-atoms/commit/7ede927e0f80b256c7b88a6d1168da320e8a4df5))
+- flatten output of form values, errors and touched fields generics ([#37](https://github.com/jaredLunde/form-atoms/issues/37)) ([7ede927](https://github.com/jaredLunde/form-atoms/commit/7ede927e0f80b256c7b88a6d1168da320e8a4df5))
 
 # [2.0.0](https://github.com/jaredLunde/form-atoms/compare/v1.2.5...v2.0.0) (2023-02-02)
 
