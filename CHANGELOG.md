@@ -1,30 +1,34 @@
 # [3.0.0-next.2](https://github.com/jaredLunde/form-atoms/compare/v3.0.0-next.1...v3.0.0-next.2) (2023-02-09)
 
-
 ### Bug Fixes
 
-* fix number type to allow for null values ([#39](https://github.com/jaredLunde/form-atoms/issues/39)) ([4e4ad72](https://github.com/jaredLunde/form-atoms/commit/4e4ad72a63d1ac81e4069b167a5645bff3fa332b))
+- fix number type to allow for null values ([#39](https://github.com/jaredLunde/form-atoms/issues/39)) ([4e4ad72](https://github.com/jaredLunde/form-atoms/commit/4e4ad72a63d1ac81e4069b167a5645bff3fa332b))
 
 # [3.0.0-next.1](https://github.com/jaredLunde/form-atoms/compare/v2.1.0...v3.0.0-next.1) (2023-02-09)
 
-
 ### Features
 
-* add select/textarea and add rich input types to hooks ([#38](https://github.com/jaredLunde/form-atoms/issues/38)) ([c40c80b](https://github.com/jaredLunde/form-atoms/commit/c40c80be6f7623a3feb7017bd81c9f9a0baf86e8))
-
+- add select/textarea and add rich input types to hooks ([#38](https://github.com/jaredLunde/form-atoms/issues/38)) ([c40c80b](https://github.com/jaredLunde/form-atoms/commit/c40c80be6f7623a3feb7017bd81c9f9a0baf86e8))
 
 ### BREAKING CHANGES
 
-* Remove select/textarea types from useInputField().
+- Remove select/textarea types from useInputField().
 
 fix https://github.com/jaredLunde/form-atoms/issues/36
 
 # [2.1.0](https://github.com/jaredLunde/form-atoms/compare/v2.0.0...v2.1.0) (2023-02-08)
 
+## [2.1.1](https://github.com/jaredLunde/form-atoms/compare/v2.1.0...v2.1.1) (2023-02-23)
+
+### Bug Fixes
+
+- add debug labels to form and field atoms ([#43](https://github.com/jaredLunde/form-atoms/issues/43)) ([ff29459](https://github.com/jaredLunde/form-atoms/commit/ff2945999656aea9cc4aa6de33b23c118d4ea963))
+
+# [2.1.0](https://github.com/jaredLunde/form-atoms/compare/v2.0.0...v2.1.0) (2023-02-08)
 
 ### Features
 
-* flatten output of form values, errors and touched fields generics ([#37](https://github.com/jaredLunde/form-atoms/issues/37)) ([7ede927](https://github.com/jaredLunde/form-atoms/commit/7ede927e0f80b256c7b88a6d1168da320e8a4df5))
+- flatten output of form values, errors and touched fields generics ([#37](https://github.com/jaredLunde/form-atoms/issues/37)) ([7ede927](https://github.com/jaredLunde/form-atoms/commit/7ede927e0f80b256c7b88a6d1168da320e8a4df5))
 
 # [2.0.0](https://github.com/jaredLunde/form-atoms/compare/v1.2.5...v2.0.0) (2023-02-02)
 
