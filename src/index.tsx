@@ -355,7 +355,7 @@ export function formAtom<Fields extends FormFields>(
     set(submitResultAtom, "idle");
   });
 
-  return atom({
+  const formAtoms = {
     fields: fieldsAtom,
     values: valuesAtom,
     errors: errorsAtom,
@@ -367,7 +367,15 @@ export function formAtom<Fields extends FormFields>(
     submitStatus: submitResultAtom,
     submitCount: submitCountAtom,
     reset: resetAtom,
-  });
+  };
+
+  if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
+    Object.entries(formAtoms).map(([atomName, atom]) => {
+      atom.debugLabel = `form/${atomName}`;
+    });
+  }
+
+  return atom(formAtoms);
 }
 
 /**
@@ -679,7 +687,7 @@ export function fieldAtom<Value>(
     set(validateResultAtom, "valid");
   });
 
-  return atom({
+  const fieldAtoms = {
     name: nameAtom,
     value: valueAtom,
     touched: touchedAtom,
@@ -690,9 +698,16 @@ export function fieldAtom<Value>(
     reset: resetAtom,
     ref: refAtom,
     _initialValue: initialValueAtom,
-    _validateCallback: config.validate,
     _validateCount: validateCountAtom,
-  });
+  };
+
+  if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
+    Object.entries(fieldAtoms).map(([atomName, atom]) => {
+      atom.debugLabel = `field/${atomName}/${config.name ?? "<unnamed-field>"}`;
+    });
+  }
+
+  return atom({ ...fieldAtoms, _validateCallback: config.validate });
 }
 
 /**
