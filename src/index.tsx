@@ -84,9 +84,9 @@ export function InputField<
  * @param {FieldProps<Value>} props - Component props
  */
 export function SelectField<
-  Multiple extends Readonly<boolean> = false,
-  Value extends string = string
->(props: SelectFieldProps<Multiple, Value>) {
+  Value extends string = string,
+  Multiple extends Readonly<boolean> = false
+>(props: SelectFieldProps<Value, Multiple>) {
   const fieldAtom = useSelectField(props.atom, props);
   return render(props, fieldAtom);
 }
@@ -754,7 +754,7 @@ export function useFieldActions<Value>(
  * directly into an `<input>` element.
  *
  * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
- * @param {UseAtomOptions} options - Options to pass to the underlying `useAtomValue`
+ * @param {UseInputFieldPropsOptions} options - Options to pass to the underlying `useAtomValue`
  *  and `useSetAtom` hooks.
  * @returns A set of props that can be destructured directly into an `<input>`.
  */
@@ -850,7 +850,7 @@ const fileTypes = new Set(["file"] as const);
  * directly into an `<textarea>` element.
  *
  * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
- * @param {UseAtomOptions} options - Options to pass to the underlying `useAtomValue`
+ * @param {UseTextareaFieldPropsOptions} options - Options to pass to the underlying `useAtomValue`
  *  and `useSetAtom` hooks.
  * @returns A set of props that can be destructured directly into an `<textarea>`.
  */
@@ -873,17 +873,17 @@ export function useTextareaFieldProps<Value extends string>(
  * directly into an `<select>` element.
  *
  * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
- * @param {UseAtomOptions} options - Options to pass to the underlying `useAtomValue`
+ * @param {UseSelectFieldPropsOptions} options - Options to pass to the underlying `useAtomValue`
  *  and `useSetAtom` hooks.
  * @returns A set of props that can be destructured directly into an `<select>`.
  */
 export function useSelectFieldProps<
-  Multiple extends Readonly<boolean> = false,
-  Value extends string = string
+  Value extends string = string,
+  Multiple extends Readonly<boolean> = false
 >(
   fieldAtom: FieldAtom<Multiple extends true ? Value[] : Value>,
   options: UseSelectFieldPropsOptions<Multiple> = {}
-): UseSelectFieldProps<Multiple, Value> {
+): UseSelectFieldProps<Value, Multiple> {
   const field = useAtomValue(fieldAtom, options);
   const setValue = useSetAtom(field.value, options);
   const validate = useSetAtom(field.validate, options);
@@ -926,7 +926,7 @@ export function useSelectFieldProps<
           validate("change");
         });
       },
-    } as unknown as UseSelectFieldProps<Multiple, Value>;
+    } as unknown as UseSelectFieldProps<Value, Multiple>;
   }, [inputProps, validate, startTransition, setValue, multiple]);
 }
 
@@ -1081,19 +1081,19 @@ export function useSelectField<
   Value extends string = string
 >(
   fieldAtom: FieldAtom<Multiple extends true ? Value[] : Value>,
-  options?: UseSelectFieldOptions<Multiple, Value>
-): UseSelectField<Multiple, Value> {
-  const props = useSelectFieldProps<Multiple, Value>(fieldAtom, options);
+  options?: UseSelectFieldOptions<Value, Multiple>
+): UseSelectField<Value, Multiple> {
+  const props = useSelectFieldProps<Value, Multiple>(fieldAtom, options);
   // @ts-expect-error: it's fine
   return _useField<Multiple, Value>(fieldAtom, props, options);
 }
 
 /**
  * A hook that returns `props`, `state`, and `actions` of a field atom from
- * `useInputFieldProps`, `useFieldState`, and `useFieldActions`.
+ * `useTextareaFieldProps`, `useFieldState`, and `useFieldActions`.
  *
  * @param {FieldAtom<any>} fieldAtom - The atom that stores the field's state.
- * @param {UseInputFieldOptions} options - Options to pass to the underlying `useAtomValue`
+ * @param {UseTextareaFieldOptions} options - Options to pass to the underlying `useAtomValue`
  *  and `useSetAtom` hooks.
  */
 export function useTextareaField<Value extends string>(
@@ -1111,9 +1111,9 @@ function _useField<Value extends string>(
 ): UseTextareaField<Value>;
 function _useField<Multiple extends Readonly<boolean>, Value extends string>(
   fieldAtom: FieldAtom<Value>,
-  props: UseSelectFieldProps<Multiple, Value>,
-  options?: UseSelectFieldOptions<Multiple, Value>
-): UseSelectField<Multiple, Value>;
+  props: UseSelectFieldProps<Value, Multiple>,
+  options?: UseSelectFieldOptions<Value, Multiple>
+): UseSelectField<Value, Multiple>;
 function _useField<
   Type extends React.HTMLInputTypeAttribute,
   Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>
@@ -1261,9 +1261,9 @@ export type InputFieldProps<
   );
 
 export type SelectFieldProps<
-  Multiple extends Readonly<boolean>,
-  Value extends string
-> = (UseSelectFieldOptions<Multiple, Value> & {
+  Value extends string,
+  Multiple extends Readonly<boolean> = false
+> = (UseSelectFieldOptions<Value, Multiple> & {
   /**
    * A field atom
    */
@@ -1283,7 +1283,7 @@ export type SelectFieldProps<
          * @param actions - The actions of the field atom
          */
         render(
-          props: UseSelectFieldProps<Multiple, Value>,
+          props: UseSelectFieldProps<Value, Multiple>,
           state: UseFieldState<Multiple extends true ? Value[] : Value>,
           actions: UseFieldActions<Multiple extends true ? Value[] : Value>
         ): JSX.Element;
@@ -1294,7 +1294,7 @@ export type SelectFieldProps<
          */
         component:
           | "select"
-          | React.ComponentType<UseSelectFieldProps<Multiple, Value>>;
+          | React.ComponentType<UseSelectFieldProps<Value, Multiple>>;
       }
   );
 
@@ -1865,13 +1865,13 @@ export type InputFieldValueForType<Type extends React.HTMLInputTypeAttribute> =
     : string;
 
 export type UseSelectField<
-  Multiple extends Readonly<boolean>,
-  Value extends string
+  Value extends string,
+  Multiple extends Readonly<boolean> = false
 > = {
   /**
    * `<input>` props for the field
    */
-  props: UseSelectFieldProps<Multiple, Value>;
+  props: UseSelectFieldProps<Value, Multiple>;
   /**
    * Actions for managing the state of the field
    */
@@ -1883,8 +1883,8 @@ export type UseSelectField<
 };
 
 export type UseSelectFieldProps<
-  Multiple extends Readonly<boolean>,
-  Value extends string
+  Value extends string,
+  Multiple extends Readonly<boolean> = false
 > = {
   /**
    * The name of the field if there is one
@@ -2042,8 +2042,8 @@ export type UseInputFieldOptions<
   initialValue?: Value;
 };
 export type UseSelectFieldOptions<
-  Multiple extends Readonly<boolean> = false,
-  Value extends string = string
+  Value extends string = string,
+  Multiple extends Readonly<boolean> = false
 > = UseSelectFieldPropsOptions<Multiple> & {
   /**
    * The initial value of the field

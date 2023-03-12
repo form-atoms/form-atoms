@@ -102,17 +102,21 @@ by using it, but you gain a ton of performance and without footguns.
 
 ## Table of contents
 
-| Field atoms                                       | Description                                                                                                                                                                                          |
-| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`fieldAtom()`](#fieldatom)                       | An atom that represents a field in a form. It manages state for the field, including the name, value, errors, dirty, validation, and touched state.                                                  |
-| [`useField()`](#usefield)                         | A hook that returns `state` and `actions` of a field atom from `useFieldState`, and `useFieldActions`.                                                                                               |
-| [`useInputField()`](#useinputfield)               | A hook that returns `props`, `state`, and `actions` of a field atom from `useInputFieldProps`, `useFieldState`, and `useFieldActions`.                                                               |
-| [`useInputFieldProps()`](#useinputfieldprops)     | A hook that returns a set of props that can be destructured directly into an `<input>`, `<select>`, or `<textarea>` element.                                                                         |
-| [`useFieldState()`](#usefieldstate)               | A hook that returns the state of a field atom. This includes the field's value, whether it has been touched, whether it is dirty, the validation status, and any errors.                             |
-| [`useFieldActions()`](#usefieldactions)           | A hook that returns a set of actions that can be used to interact with the field atom state.                                                                                                         |
-| [`useFieldInitialValue()`](#usefieldinitialvalue) | A hook that sets the initial value of a field atom. Initial values can only be set once per scope. Therefore, if the initial value used is changed during rerenders, it won't update the atom value. |
-| [`useFieldValue()`](#usefieldvalue)               | A hook that returns the value of a field atom.                                                                                                                                                       |
-| [`useFieldErrors()`](#usefielderrors)             | A hook that returns the errors of a field atom.                                                                                                                                                      |
+| Field atoms                                         | Description                                                                                                                                                                                          |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`fieldAtom()`](#fieldatom)                         | An atom that represents a field in a form. It manages state for the field, including the name, value, errors, dirty, validation, and touched state.                                                  |
+| [`useField()`](#usefield)                           | A hook that returns `state` and `actions` of a field atom from `useFieldState`, and `useFieldActions`.                                                                                               |
+| [`useInputField()`](#useinputfield)                 | A hook that returns `props`, `state`, and `actions` of a field atom from `useInputFieldProps`, `useFieldState`, and `useFieldActions`.                                                               |
+| [`useInputFieldProps()`](#useinputfieldprops)       | A hook that returns a set of props that can be destructured directly into an `<input>`, `<select>`, or `<textarea>` element.                                                                         |
+| [`useTextareaField()`](#usetextareafield)           | A hook that returns `props`, `state`, and `actions` of a field atom from `useTextareaFieldProps`, `useFieldState`, and `useFieldActions`.                                                            |
+| [`useTextareaFieldProps()`](#usetextareafieldprops) | A hook that returns a set of props that can be destructured directly into a `<textarea>` element.                                                                                                    |
+| [`useSelectField()`](#useselectfield)               | A hook that returns `props`, `state`, and `actions` of a field atom from `useSelectFieldProps`, `useFieldState`, and `useFieldActions`.                                                              |
+| [`useSelectFieldProps()`](#useselectfieldprops)     | A hook that returns a set of props that can be destructured directly into a `<select>` element.                                                                                                      |
+| [`useFieldState()`](#usefieldstate)                 | A hook that returns the state of a field atom. This includes the field's value, whether it has been touched, whether it is dirty, the validation status, and any errors.                             |
+| [`useFieldActions()`](#usefieldactions)             | A hook that returns a set of actions that can be used to interact with the field atom state.                                                                                                         |
+| [`useFieldInitialValue()`](#usefieldinitialvalue)   | A hook that sets the initial value of a field atom. Initial values can only be set once per scope. Therefore, if the initial value used is changed during rerenders, it won't update the atom value. |
+| [`useFieldValue()`](#usefieldvalue)                 | A hook that returns the value of a field atom.                                                                                                                                                       |
+| [`useFieldErrors()`](#usefielderrors)               | A hook that returns the errors of a field atom.                                                                                                                                                      |
 
 | Form atoms                            | Description                                                                                                                                                                                                                                                                                                           |
 | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -125,11 +129,13 @@ by using it, but you gain a ton of performance and without footguns.
 | [`useFormStatus()`](#useformstatus)   | A hook that returns the `submitStatus` and `validateStatus` of the form atom.                                                                                                                                                                                                                                         |
 | [`useFormSubmit()`](#useformsubmit)   | A hook that returns a callback for handling form submission.                                                                                                                                                                                                                                                          |
 
-| Components                    | Description                                                                                                                                                                                              |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`<Form>`](#form)             | A React component that renders form atoms and their fields in an isolated scope using a Jotai Provider.                                                                                                  |
-| [`<InputField>`](#inputfield) | A React component that renders field atoms with initial values. This is useful for fields that are rendered as native HTML elements because the props can unpack directly into the underlying component. |
-| [`<Field>`](#field)           | A React component that renders field atoms with initial values. This is useful for fields that aren't rendered as native HTML elements.                                                                  |
+| Components                          | Description                                                                                                                                                                                              |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`<Form>`](#form)                   | A React component that renders form atoms and their fields in an isolated scope using a Jotai Provider.                                                                                                  |
+| [`<InputField>`](#inputfield)       | A React component that renders field atoms with initial values. This is useful for fields that are rendered as native HTML elements because the props can unpack directly into the underlying component. |
+| [`<TextareaField>`](#textareafield) | A React component that renders field atoms with initial values. This is useful for fields that are rendered as native HTML elements because the props can unpack directly into the underlying component. |
+| [`<SelectField>`](#selectfield)     | A React component that renders field atoms with initial values. This is useful for fields that are rendered as native HTML elements because the props can unpack directly into the underlying component. |
+| [`<Field>`](#field)                 | A React component that renders field atoms with initial values. This is useful for fields that aren't rendered as native HTML elements.                                                                  |
 
 | Utility Types               | Description                                                                  |
 | --------------------------- | ---------------------------------------------------------------------------- |
@@ -343,19 +349,22 @@ and [`useFieldActions`](#usefieldactions).
 
 #### Arguments
 
-| Name      | Type                          | Required? | Description                                                                                                                       |
-| --------- | ----------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| fieldAtom | `FieldAtom<Value>`            | Yes       | The atom that stores the field's state                                                                                            |
-| options   | `UseInputFieldOptions<Value>` | No        | Provide an `initialValue` here in additon to options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks. |
+| Name      | Type                                | Required? | Description                                                                                                                       |
+| --------- | ----------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| fieldAtom | `FieldAtom<Value>`                  | Yes       | The atom that stores the field's state                                                                                            |
+| options   | `UseInputFieldOptions<Type, Value>` | No        | Provide an `initialValue` here in additon to options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks. |
 
 #### Returns
 
 ```ts
-type UseInputField<Value> = {
+type UseInputField<
+  Type extends React.HTMLInputTypeAttribute,
+  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>
+> = {
   /**
-   * `<input>`, `<select>`, or `<textarea>` props for the field
+   * `<input>` props for the field
    */
-  props: UseInputFieldProps<Value>;
+  props: UseInputFieldProps<Type>;
   /**
    * Actions for managing the state of the field
    */
@@ -373,19 +382,109 @@ type UseInputField<Value> = {
 
 ### useInputFieldProps()
 
-A hook that returns a set of props that can be destructured directly into an `<input>`, `<select>`, or `<textarea>` element.
+A hook that returns a set of props that can be destructured directly into an `<input>` element.
 
 #### Arguments
 
-| Name      | Type               | Required? | Description                                                                         |
-| --------- | ------------------ | --------- | ----------------------------------------------------------------------------------- |
-| fieldAtom | `FieldAtom<Value>` | Yes       | The atom that stores the field's state                                              |
-| options   | `UseAtomOptions`   | No        | Options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks |
+| Name      | Type                              | Required? | Description                                                                                                  |
+| --------- | --------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------ |
+| fieldAtom | `FieldAtom<Value>`                | Yes       | The atom that stores the field's state                                                                       |
+| options   | `UseInputFieldPropsOptions<Type>` | No        | A `type` field and other options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks |
 
 #### Returns
 
 ```ts
-type UseInputFieldProps<Value> = {
+type UseInputFieldProps<Type extends React.HTMLInputTypeAttribute> = {
+  /**
+   * The name of the field if there is one
+   */
+  name: string | undefined;
+  /**
+   * The value of the field
+   */
+  value: Type extends DateType
+    ? string
+    : Type extends NumberType
+    ? number | string
+    : Type extends FileType
+    ? undefined
+    : string;
+  /**
+   * The type of the field
+   *
+   * @default "text"
+   */
+  type: Type;
+  /**
+   * A WAI-ARIA property that tells a screen reader whether the
+   * field is invalid
+   */
+  "aria-invalid": boolean;
+  /**
+   * A React callback ref that is used to bind the field atom to
+   * an `<input>` element so that it can be read and focused.
+   */
+  ref: React.RefCallback<HTMLInputElement>;
+  onBlur(event: React.FormEvent<HTMLInputElement>): void;
+  onChange(event: React.ChangeEvent<HTMLInputElement>): void;
+};
+```
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
+### useTextareaField()
+
+A hook that returns `props`, `state`, and `actions` of a field atom from
+[`useTextareaFieldProps`](#usetextareafieldprops), [`useFieldState`](#usefieldstate),
+and [`useFieldActions`](#usefieldactions).
+
+#### Arguments
+
+| Name      | Type                             | Required? | Description                                                                                                                       |
+| --------- | -------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| fieldAtom | `FieldAtom<Value>`               | Yes       | The atom that stores the field's state                                                                                            |
+| options   | `UseTextareaFieldOptions<Value>` | No        | Provide an `initialValue` here in additon to options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks. |
+
+#### Returns
+
+```ts
+type UseTextareaField<Value extends string> = {
+  /**
+   * `<input>` props for the field
+   */
+  props: UseTextareaFieldProps<Value>;
+  /**
+   * Actions for managing the state of the field
+   */
+  actions: UseFieldActions<Value>;
+  /**
+   * The current state of the field
+   */
+  state: UseFieldState<Value>;
+};
+```
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
+### useTextareaFieldProps()
+
+A hook that returns a set of props that can be destructured directly into a `<textarea>` element.
+
+#### Arguments
+
+| Name      | Type                           | Required? | Description                                                                                                  |
+| --------- | ------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------ |
+| fieldAtom | `FieldAtom<Value>`             | Yes       | The atom that stores the field's state                                                                       |
+| options   | `UseTextareaFieldPropsOptions` | No        | A `type` field and other options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks |
+
+#### Returns
+
+```ts
+type UseTextareaFieldProps<Value extends string> = {
   /**
    * The name of the field if there is one
    */
@@ -401,17 +500,98 @@ type UseInputFieldProps<Value> = {
   "aria-invalid": boolean;
   /**
    * A React callback ref that is used to bind the field atom to
-   * an `<input>`, `<select>`, or `<textarea>` element so that it
-   * can be read and focused.
+   * an `<input>` element so that it can be read and focused.
    */
-  ref: React.RefCallback<
-    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-  >;
-  onBlur(event: React.FormEvent<HTMLInputElement>): void;
+  ref: React.RefCallback<HTMLTextAreaElement>;
   onBlur(event: React.FormEvent<HTMLTextAreaElement>): void;
-  onBlur(event: React.FormEvent<HTMLSelectElement>): void;
-  onChange(event: React.ChangeEvent<HTMLInputElement>): void;
   onChange(event: React.ChangeEvent<HTMLTextAreaElement>): void;
+};
+```
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
+### useSelectField()
+
+A hook that returns `props`, `state`, and `actions` of a field atom from
+[`useSelectFieldProps`](#usetextareafieldprops), [`useFieldState`](#usefieldstate),
+and [`useFieldActions`](#usefieldactions).
+
+#### Arguments
+
+| Name      | Type                                     | Required? | Description                                                                                                                       |
+| --------- | ---------------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| fieldAtom | `FieldAtom<Value>`                       | Yes       | The atom that stores the field's state                                                                                            |
+| options   | `UseSelectFieldOptions<Value, Multiple>` | No        | Provide an `initialValue` here in additon to options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks. |
+
+#### Returns
+
+```ts
+type UseSelectField<
+  Value extends string,
+  Multiple extends Readonly<boolean> = false
+> = {
+  /**
+   * `<input>` props for the field
+   */
+  props: UseSelectFieldProps<Value, Multiple>;
+  /**
+   * Actions for managing the state of the field
+   */
+  actions: UseFieldActions<Multiple extends true ? Value[] : Value>;
+  /**
+   * The current state of the field
+   */
+  state: UseFieldState<Multiple extends true ? Value[] : Value>;
+};
+```
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
+### useSelectFieldProps()
+
+A hook that returns a set of props that can be destructured directly into a `<select>` element.
+
+#### Arguments
+
+| Name      | Type                                   | Required? | Description                                                                                                  |
+| --------- | -------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------ |
+| fieldAtom | `FieldAtom<Value>`                     | Yes       | The atom that stores the field's state                                                                       |
+| options   | `UseSelectFieldPropsOptions<Multiple>` | No        | A `type` field and other options that are forwarded to the `useAtom`, `useAtomValue`, and `useSetAtom` hooks |
+
+#### Returns
+
+```ts
+type UseSelectFieldProps<
+  Value extends string,
+  Multiple extends Readonly<boolean> = false
+> = {
+  /**
+   * The name of the field if there is one
+   */
+  name: string | undefined;
+  /**
+   * The value of the field
+   */
+  value: Multiple extends true ? Value[] : Value;
+  /**
+   * Whether the field is a multiple select
+   */
+  multiple?: Multiple;
+  /**
+   * A WAI-ARIA property that tells a screen reader whether the
+   * field is invalid
+   */
+  "aria-invalid": boolean;
+  /**
+   * A React callback ref that is used to bind the field atom to
+   * an `<input>` element so that it can be read and focused.
+   */
+  ref: React.RefCallback<HTMLSelectElement>;
+  onBlur(event: React.FormEvent<HTMLSelectElement>): void;
   onChange(event: React.ChangeEvent<HTMLSelectElement>): void;
 };
 ```
@@ -957,6 +1137,48 @@ the props can unpack directly into the underlying component.
 | ------------ | -------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------ |
 | atom         | `FieldAtom<Value>`                                                                     | Yes       | A field atom                                                 |
 | initialValue | `Value`                                                                                | No        | The initial value of the field                               |
+| type         | `Type`                                                                                 | No        | The type of the field. Defaults to `"text"`.                 |
+| store        | `AtomStore`                                                                            | No        | [A Jotai store](https://jotai.org/docs/api/core#createstore) |
+| component    | `React.ComponentType<{state: UseFieldState<Value>; actions: UseFieldActions<Value>;}>` | No        | A React component to render as the input field               |
+| render       | `(state: UseFieldState<Value>, actions: UseFieldActions<Value>) => JSX.Element`        | No        | A render prop                                                |
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
+### &lt;TextareaField&gt;
+
+A React component that renders field atoms with initial values. This is
+most useful for fields that are rendered as native HTML elements because
+the props can unpack directly into the underlying component.
+
+#### Props
+
+| Name         | Type                                                                                   | Required? | Description                                                  |
+| ------------ | -------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------ |
+| atom         | `FieldAtom<Value>`                                                                     | Yes       | A field atom                                                 |
+| initialValue | `Value`                                                                                | No        | The initial value of the field                               |
+| store        | `AtomStore`                                                                            | No        | [A Jotai store](https://jotai.org/docs/api/core#createstore) |
+| component    | `React.ComponentType<{state: UseFieldState<Value>; actions: UseFieldActions<Value>;}>` | No        | A React component to render as the input field               |
+| render       | `(state: UseFieldState<Value>, actions: UseFieldActions<Value>) => JSX.Element`        | No        | A render prop                                                |
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
+
+### &lt;SelectField&gt;
+
+A React component that renders field atoms with initial values. This is
+most useful for fields that are rendered as native HTML elements because
+the props can unpack directly into the underlying component.
+
+#### Props
+
+| Name         | Type                                                                                   | Required? | Description                                                  |
+| ------------ | -------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------ |
+| atom         | `FieldAtom<Value>`                                                                     | Yes       | A field atom                                                 |
+| initialValue | `Value`                                                                                | No        | The initial value of the field                               |
+| multiple     | `boolean`                                                                              | No        | Is this a multi-select field?                                |
 | store        | `AtomStore`                                                                            | No        | [A Jotai store](https://jotai.org/docs/api/core#createstore) |
 | component    | `React.ComponentType<{state: UseFieldState<Value>; actions: UseFieldActions<Value>;}>` | No        | A React component to render as the input field               |
 | render       | `(state: UseFieldState<Value>, actions: UseFieldActions<Value>) => JSX.Element`        | No        | A render prop                                                |
@@ -1080,7 +1302,7 @@ const nameForm = formAtom({
 #### ZodValidateConfig
 
 ```ts
-export type ZodValidateConfig = {
+type ZodValidateConfig = {
   /**
    * The event or events that triggers validation.
    */
