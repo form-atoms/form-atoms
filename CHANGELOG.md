@@ -1,9 +1,25 @@
-# [3.0.0-next.3](https://github.com/jaredLunde/form-atoms/compare/v3.0.0-next.2...v3.0.0-next.3) (2023-03-12)
-
+# [3.0.0](https://github.com/jaredLunde/form-atoms/compare/v2.1.1...v3.0.0) (2023-03-12)
 
 ### Bug Fixes
 
-* add debug labels to form and field atoms ([#43](https://github.com/jaredLunde/form-atoms/issues/43)) ([ff29459](https://github.com/jaredLunde/form-atoms/commit/ff2945999656aea9cc4aa6de33b23c118d4ea963))
+- fix number type to allow for null values ([#39](https://github.com/jaredLunde/form-atoms/issues/39)) ([4e4ad72](https://github.com/jaredLunde/form-atoms/commit/4e4ad72a63d1ac81e4069b167a5645bff3fa332b))
+
+### Features
+
+- add select/textarea and add rich input types to hooks ([#38](https://github.com/jaredLunde/form-atoms/issues/38)) ([c40c80b](https://github.com/jaredLunde/form-atoms/commit/c40c80be6f7623a3feb7017bd81c9f9a0baf86e8))
+- release v3 ([72de643](https://github.com/jaredLunde/form-atoms/commit/72de643db8f0326f0731c15a02bdb33af95fbf3f))
+
+### BREAKING CHANGES
+
+- Remove select/textarea types from useInputField().
+
+fix https://github.com/jaredLunde/form-atoms/issues/36
+
+# [3.0.0-next.3](https://github.com/jaredLunde/form-atoms/compare/v3.0.0-next.2...v3.0.0-next.3) (2023-03-12)
+
+### Bug Fixes
+
+- add debug labels to form and field atoms ([#43](https://github.com/jaredLunde/form-atoms/issues/43)) ([ff29459](https://github.com/jaredLunde/form-atoms/commit/ff2945999656aea9cc4aa6de33b23c118d4ea963))
 
 # [3.0.0-next.2](https://github.com/jaredLunde/form-atoms/compare/v3.0.0-next.1...v3.0.0-next.2) (2023-02-09)
 
