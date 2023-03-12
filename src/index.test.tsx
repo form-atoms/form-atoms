@@ -13,6 +13,8 @@ import {
   Field,
   Form,
   InputField,
+  SelectField,
+  TextareaField,
   fieldAtom,
   formAtom,
   useFieldErrors,
@@ -26,6 +28,8 @@ import {
   useFormSubmit,
   useFormValues,
   useInputField,
+  useSelectField,
+  useTextareaField,
 } from ".";
 
 vi.useFakeTimers();
@@ -146,6 +150,224 @@ describe("<InputField>", () => {
 
     render(
       <InputField
+        atom={atom}
+        initialValue="hello"
+        render={(props, state, actions) => {
+          return (
+            <button onClick={() => actions.setValue("foo")}>
+              {state.value}
+            </button>
+          );
+        }}
+      />
+    );
+
+    expect(screen.getByText("hello")).toBeInTheDocument();
+  });
+
+  it('should render "component" prop in scope w/ date type', () => {
+    const atom = fieldAtom<Date | null>({ name: "date", value: null });
+    render(
+      <InputField
+        atom={atom}
+        type="date"
+        component={(props) => <input data-testid="input" {...props} />}
+      />
+    );
+    expect(screen.getByTestId("input")).toHaveAttribute("type", "date");
+  });
+
+  it('should render "component" prop in scope w/ datetime-local type', () => {
+    const atom = fieldAtom<Date | null>({ value: null });
+    render(
+      <InputField
+        atom={atom}
+        type="datetime-local"
+        component={(props) => <input data-testid="input" {...props} />}
+      />
+    );
+    expect(screen.getByTestId("input")).toHaveAttribute(
+      "type",
+      "datetime-local"
+    );
+  });
+
+  it('should render "component" prop in scope w/ month type', () => {
+    const atom = fieldAtom<Date | null>({ value: null });
+    render(
+      <InputField
+        atom={atom}
+        type="month"
+        component={(props) => <input data-testid="input" {...props} />}
+      />
+    );
+    expect(screen.getByTestId("input")).toHaveAttribute("type", "month");
+  });
+
+  it('should render "component" prop in scope w/ week type', () => {
+    const atom = fieldAtom<Date | null>({ value: null });
+    render(
+      <InputField
+        atom={atom}
+        type="week"
+        component={(props) => <input data-testid="input" {...props} />}
+      />
+    );
+    expect(screen.getByTestId("input")).toHaveAttribute("type", "week");
+  });
+
+  it('should render "component" prop in scope w/ time type', () => {
+    const atom = fieldAtom<Date | null>({ value: null });
+    render(
+      <InputField
+        atom={atom}
+        type="time"
+        component={(props) => <input data-testid="input" {...props} />}
+      />
+    );
+    expect(screen.getByTestId("input")).toHaveAttribute("type", "time");
+  });
+
+  it('should render "component" prop in scope w/ file type', () => {
+    const atom = fieldAtom<FileList | null>({ value: null });
+    render(
+      <InputField
+        atom={atom}
+        type="file"
+        component={(props) => <input data-testid="input" {...props} />}
+      />
+    );
+    expect(screen.getByTestId("input")).toBeInTheDocument();
+  });
+
+  it('should render "component" prop in scope w/ number type', () => {
+    const atom = fieldAtom<number | null>({ value: 0 });
+    render(
+      <InputField
+        atom={atom}
+        type="number"
+        component={(props) => <input data-testid="input" {...props} />}
+      />
+    );
+    expect(screen.getByTestId("input")).toHaveAttribute("type", "number");
+  });
+
+  it('should render "component" prop in scope w/ range type', () => {
+    const atom = fieldAtom({ value: 0 });
+    render(<InputField atom={atom} type="range" component="input" />);
+    expect(screen.getByRole("slider")).toBeInTheDocument();
+  });
+});
+
+describe("<SelectField>", () => {
+  it('should render "component" prop in scope', () => {
+    const atom = fieldAtom({ value: "test" });
+    render(
+      <SelectField
+        atom={atom}
+        component={(props) => <select data-testid="select" {...props} />}
+      />
+    );
+    expect(screen.getByTestId("select")).toBeInTheDocument();
+  });
+
+  it('should render "render" prop', () => {
+    const atom = fieldAtom({ value: "test" });
+    render(
+      <SelectField
+        atom={atom}
+        render={(props) => <select data-testid="select" {...props} />}
+      />
+    );
+    expect(screen.getByTestId("select")).toBeInTheDocument();
+  });
+
+  it("should set initial value", () => {
+    const atom = fieldAtom({ value: "test" });
+
+    render(
+      <SelectField
+        atom={atom}
+        initialValue="hello"
+        render={(props, state, actions) => {
+          return (
+            <button onClick={() => actions.setValue("foo")}>
+              {state.value}
+            </button>
+          );
+        }}
+      />
+    );
+
+    expect(screen.getByText("hello")).toBeInTheDocument();
+  });
+
+  it('should render "component" with multiple prop in scope', () => {
+    const atom = fieldAtom({ value: ["test"] });
+    render(
+      <SelectField
+        atom={atom}
+        component={(props) => <select data-testid="select" {...props} />}
+        multiple
+      />
+    );
+    expect(screen.getByTestId("select")).toHaveAttribute("multiple");
+  });
+
+  it('should render multiple "render" prop', () => {
+    const atom = fieldAtom({ value: ["test"] });
+    render(
+      <SelectField
+        atom={atom}
+        multiple
+        render={(props) => <select data-testid="select" {...props} />}
+      />
+    );
+    expect(screen.getByTestId("select")).toHaveAttribute("multiple");
+  });
+
+  it("should set multiple initial values", () => {
+    const atom = fieldAtom({ value: ["test"] });
+
+    render(
+      <SelectField
+        atom={atom}
+        initialValue={["hello"]}
+        multiple
+        render={(props, state, actions) => {
+          return (
+            <button onClick={() => actions.setValue(["foo"])}>
+              {state.value.join("")}
+            </button>
+          );
+        }}
+      />
+    );
+
+    expect(screen.getByText("hello")).toBeInTheDocument();
+  });
+});
+
+describe("<TextareaField>", () => {
+  it('should render "component" prop in scope', () => {
+    const atom = fieldAtom({ value: "test" });
+    render(<TextareaField atom={atom} component="textarea" />);
+    expect(screen.getByRole("textbox")).toBeInTheDocument();
+  });
+
+  it('should render "render" prop', () => {
+    const atom = fieldAtom({ value: "test" });
+    render(
+      <TextareaField atom={atom} render={(props) => <textarea {...props} />} />
+    );
+    expect(screen.getByRole("textbox")).toBeInTheDocument();
+  });
+
+  it("should set initial value", () => {
+    const atom = fieldAtom({ value: "test" });
+
+    render(
+      <TextareaField
         atom={atom}
         initialValue="hello"
         render={(props, state, actions) => {
@@ -361,7 +583,9 @@ describe("useField()", () => {
     const firstNameAtom = fieldAtom(atomConfig);
     const { result } = renderHook(() => useInputField(firstNameAtom));
     domAct(() => {
-      result.current.props.onChange({ target: { value: "test" } } as any);
+      result.current.props.onChange({
+        currentTarget: { value: "test" },
+      } as any);
     });
 
     expect(atomConfig.validate).toHaveBeenCalledWith(
@@ -691,7 +915,7 @@ describe("useFieldInitialValue()", () => {
       useFieldInitialValue(firstNameAtom, "jared");
       return useInputField(firstNameAtom);
     });
-
+    field.result.current.props.type;
     expect(field.result.current.props.value).toBe("jared");
   });
 
@@ -792,6 +1016,111 @@ describe("useFieldErrors", () => {
       atom.result.current.actions.validate();
     });
     expect(result.current).toEqual(["error"]);
+  });
+});
+
+describe("useSelectField()", () => {
+  it("should be multiple", () => {
+    const atom = fieldAtom({
+      value: ["test"],
+    });
+    const { result } = renderHook(() =>
+      useSelectField(atom, { multiple: true })
+    );
+    expect(result.current.props.value).toStrictEqual(["test"]);
+    expect(result.current.props.multiple).toBe(true);
+    // @ts-expect-error
+    expect(result.current.props.type).toBe(undefined);
+
+    domAct(() => {
+      result.current.actions.setValue(["test", "test2"]);
+    });
+
+    expect(result.current.props.value).toStrictEqual(["test", "test2"]);
+  });
+
+  it("should be multiple onChange", () => {
+    const atom = fieldAtom({
+      value: ["test"],
+    });
+    const { result } = renderHook(() =>
+      useSelectField(atom, { multiple: true })
+    );
+    expect(result.current.props.value).toStrictEqual(["test"]);
+    expect(result.current.props.multiple).toBe(true);
+    // @ts-expect-error
+    expect(result.current.props.type).toBe(undefined);
+
+    domAct(() => {
+      result.current.props.onChange({
+        currentTarget: {
+          options: [
+            // @ts-expect-error
+            { value: "test", selected: true },
+            // @ts-expect-error
+            { value: "test2", selected: true },
+            // @ts-expect-error
+            { value: "test3", selected: false },
+          ],
+        },
+      });
+    });
+
+    expect(result.current.props.value).toStrictEqual(["test", "test2"]);
+  });
+
+  it("should be single by default", () => {
+    const atom = fieldAtom({
+      value: "",
+    });
+    const { result } = renderHook(() => useSelectField(atom));
+    expect(result.current.props.value).toBe("");
+    expect(result.current.props.multiple).toBe(undefined);
+
+    domAct(() => {
+      // @ts-expect-error
+      result.current.props.onChange({ currentTarget: { value: "test" } });
+    });
+
+    expect(result.current.props.value).toStrictEqual("test");
+  });
+
+  it("should have an initialValue", () => {
+    const atom = fieldAtom({
+      value: "",
+    });
+    const { result } = renderHook(() =>
+      useSelectField(atom, { initialValue: "test" })
+    );
+    expect(result.current.props.value).toBe("test");
+  });
+});
+
+describe("useTextareaField()", () => {
+  it("should change", () => {
+    const atom = fieldAtom({
+      value: "",
+    });
+    const { result } = renderHook(() => useTextareaField(atom));
+    expect(result.current.props.value).toBe("");
+    // @ts-expect-error
+    expect(result.current.props.type).toBe(undefined);
+
+    domAct(() => {
+      result.current.actions.setValue("test");
+    });
+
+    expect(result.current.props.value).toStrictEqual("test");
+  });
+
+  it("should have an initialValue", () => {
+    const atom = fieldAtom({
+      value: "",
+    });
+    const { result } = renderHook(() =>
+      useTextareaField(atom, { initialValue: "test" })
+    );
+    expect(result.current.props.value).toBe("test");
   });
 });
 
@@ -1705,11 +2034,9 @@ describe("formAtom()", () => {
   });
 });
 
-function createTextField<Value extends string | number | readonly string[]>(
-  fieldAtom: FieldAtom<Value>
-) {
+function createTextField<Value extends string>(fieldAtom: FieldAtom<Value>) {
   return function Field() {
     const field = useInputField(fieldAtom);
-    return <input type="text" {...field.props} />;
+    return <input {...field.props} />;
   };
 }
