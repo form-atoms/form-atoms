@@ -1,3 +1,10 @@
+# [3.0.0-next.3](https://github.com/jaredLunde/form-atoms/compare/v3.0.0-next.2...v3.0.0-next.3) (2023-03-12)
+
+
+### Bug Fixes
+
+* add debug labels to form and field atoms ([#43](https://github.com/jaredLunde/form-atoms/issues/43)) ([ff29459](https://github.com/jaredLunde/form-atoms/commit/ff2945999656aea9cc4aa6de33b23c118d4ea963))
+
 # [3.0.0-next.2](https://github.com/jaredLunde/form-atoms/compare/v3.0.0-next.1...v3.0.0-next.2) (2023-02-09)
 
 ### Bug Fixes
