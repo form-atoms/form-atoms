@@ -34,9 +34,6 @@ specifiers:
   vitest: ^0.28.3
   zod: ^3.20.2
 
-dependencies:
-  "@testing-library/user-event": 13.5.0
-
 devDependencies:
   "@commitlint/cli": 17.4.2
   "@commitlint/config-conventional": 17.4.2
@@ -45,6 +42,7 @@ devDependencies:
   "@testing-library/jest-dom": 5.16.5
   "@testing-library/react": 13.4.0_biqbaboplfbrettd7655fr4n2y
   "@testing-library/react-hooks": 8.0.1_5o4rppgvhtwde3ofpdnr72ma7q
+  "@testing-library/user-event": 13.5.0
   "@types/node": 18.14.0
   "@types/react": 18.0.27
   "@types/react-dom": 18.0.10
@@ -358,6 +356,7 @@ packages:
     engines: { node: ">=6.9.0" }
     dependencies:
       regenerator-runtime: 0.13.11
+    dev: true
 
   /@babel/template/7.20.7:
     resolution:
@@ -1567,7 +1566,7 @@ packages:
       "@testing-library/dom": ">=7.21.4"
     dependencies:
       "@babel/runtime": 7.20.13
-    dev: false
+    dev: true
 
   /@tootallnate/once/2.0.0:
     resolution:
@@ -7848,6 +7847,7 @@ packages:
       {
         integrity: sha512-kY1AZVr2Ra+t+piVaJ4gxaFaReZVH40AKNo7UCX6W+dEwBo/2oZJzqfuN1qLq1oL45o56cPaTXELwrTh8Fpggg==,
       }
+    dev: true
 
   /regexp.prototype.flags/1.4.3:
     resolution:
