@@ -50,9 +50,6 @@
   },
   "sideEffects": false,
   "types": "dist/index.d.ts",
-  "dependencies": {
-    "@testing-library/user-event": "^13.0.0"
-  },
   "peerDependencies": {
     "jotai": "^2.0.0",
     "react": ">=16.8"
@@ -65,6 +62,7 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/react-hooks": "^8.0.1",
+    "@testing-library/user-event": "^13.0.0",
     "@types/node": "^18.14.0",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
