@@ -1985,29 +1985,27 @@ describe("fieldAtom()", () => {
     expect(atoms._validateCount.debugLabel).toBe("field/_validateCount/city");
   });
 
-  it("debugLabels are unnamed when field name not specified", () => {
+  it("debugLabels contain atom id when field name not specified", () => {
     const field = fieldAtom({ value: "" });
 
     const {
       result: { current: atoms },
     } = renderHook(() => useAtomValue(field));
 
-    expect(atoms.name.debugLabel).toBe("field/name/<unnamed-field>");
-    expect(atoms.value.debugLabel).toBe("field/value/<unnamed-field>");
-    expect(atoms.touched.debugLabel).toBe("field/touched/<unnamed-field>");
-    expect(atoms.dirty.debugLabel).toBe("field/dirty/<unnamed-field>");
-    expect(atoms.validate.debugLabel).toBe("field/validate/<unnamed-field>");
+    expect(atoms.name.debugLabel).toBe(`field/name/${field}`);
+    expect(atoms.value.debugLabel).toBe(`field/value/${field}`);
+    expect(atoms.touched.debugLabel).toBe(`field/touched/${field}`);
+    expect(atoms.dirty.debugLabel).toBe(`field/dirty/${field}`);
+    expect(atoms.validate.debugLabel).toBe(`field/validate/${field}`);
     expect(atoms.validateStatus.debugLabel).toBe(
-      "field/validateStatus/<unnamed-field>"
+      `field/validateStatus/${field}`
     );
-    expect(atoms.errors.debugLabel).toBe("field/errors/<unnamed-field>");
-    expect(atoms.reset.debugLabel).toBe("field/reset/<unnamed-field>");
-    expect(atoms.ref.debugLabel).toBe("field/ref/<unnamed-field>");
-    expect(atoms._initialValue.debugLabel).toBe(
-      "field/_initialValue/<unnamed-field>"
-    );
+    expect(atoms.errors.debugLabel).toBe(`field/errors/${field}`);
+    expect(atoms.reset.debugLabel).toBe(`field/reset/${field}`);
+    expect(atoms.ref.debugLabel).toBe(`field/ref/${field}`);
+    expect(atoms._initialValue.debugLabel).toBe(`field/_initialValue/${field}`);
     expect(atoms._validateCount.debugLabel).toBe(
-      "field/_validateCount/<unnamed-field>"
+      `field/_validateCount/${field}`
     );
   });
 });

@@ -701,13 +701,15 @@ export function fieldAtom<Value>(
     _validateCount: validateCountAtom,
   };
 
+  const field = atom({ ...fieldAtoms, _validateCallback: config.validate });
+
   if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
     Object.entries(fieldAtoms).map(([atomName, atom]) => {
-      atom.debugLabel = `field/${atomName}/${config.name ?? "<unnamed-field>"}`;
+      atom.debugLabel = `field/${atomName}/${config.name ?? `${field}`}`;
     });
   }
 
-  return atom({ ...fieldAtoms, _validateCallback: config.validate });
+  return field;
 }
 
 /**
