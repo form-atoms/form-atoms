@@ -1,3 +1,9 @@
+# [3.1.0](https://github.com/jaredLunde/form-atoms/compare/v3.0.2...v3.1.0) (2023-06-27)
+
+### Features
+
+- add preprocess config to field atoms ([#50](https://github.com/jaredLunde/form-atoms/issues/50)) ([90d85c0](https://github.com/jaredLunde/form-atoms/commit/90d85c0b67245d79e9a194acdb59023474edca78))
+
 ## [3.0.2](https://github.com/jaredLunde/form-atoms/compare/v3.0.1...v3.0.2) (2023-05-20)
 
 ### Bug Fixes
