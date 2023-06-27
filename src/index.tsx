@@ -619,7 +619,15 @@ export function fieldAtom<Value>(
 ): FieldAtom<Value> {
   const nameAtom = atomWithReset(config.name);
   const initialValueAtom = atomWithReset<Value | undefined>(undefined);
-  const valueAtom = atomWithReset<Value>(config.value);
+  const baseValueAtom = atomWithReset(config.value);
+  const valueAtom = atom(
+    (get) => get(baseValueAtom),
+    (_get, set, value: Value | typeof RESET) => {
+      return config.preprocess && value !== RESET
+        ? set(baseValueAtom, config.preprocess(value))
+        : set(baseValueAtom, value);
+    }
+  ) as typeof baseValueAtom;
   const touchedAtom = atomWithReset(config.touched ?? false);
   const dirtyAtom = atom((get) => {
     const initialValue = get(initialValueAtom) ?? config.value;
@@ -2089,6 +2097,11 @@ export type FieldAtomConfig<Value> = {
    * The initial touched state of the field
    */
   touched?: boolean;
+  /**
+   * Transform the value of the field each time `setValue` is
+   * called and before validation
+   */
+  preprocess?: (value: Value) => Value;
   /**
    * A function that validates the value of the field any time
    * one of its atoms changes. It must either return an array of

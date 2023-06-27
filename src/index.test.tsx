@@ -92,6 +92,38 @@ describe("<Field>", () => {
     expect(screen.getByText("hello")).toBeInTheDocument();
   });
 
+  it("should preprocess value", () => {
+    const atom = fieldAtom<number | null>({
+      value: 0,
+      preprocess(value) {
+        if (value !== null && isNaN(value)) {
+          return null;
+        }
+
+        return value;
+      },
+    });
+
+    const { result } = renderHook(() =>
+      // @ts-expect-error: fine for this purpose
+      useInputField(atom, { type: "number", initialValue: "hello" })
+    );
+
+    expect(result.current.state.value).toBeNull();
+
+    domAct(() => {
+      result.current.actions.setValue(1);
+    });
+
+    expect(result.current.state.value).toBe(1);
+
+    domAct(() => {
+      result.current.actions.setValue(NaN);
+    });
+
+    expect(result.current.state.value).toBe(null);
+  });
+
   it("should set an object value", () => {
     const atom = fieldAtom({ value: { id: "0123", name: "Foo" } });
     const field = renderHook(() => useFieldValue(atom));
