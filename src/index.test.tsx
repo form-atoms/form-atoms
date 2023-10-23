@@ -5,7 +5,8 @@ import { render, screen } from "@testing-library/react";
 import { act as domAct, renderHook } from "@testing-library/react-hooks/dom";
 import userEvent from "@testing-library/user-event";
 import type { ExtractAtomValue } from "jotai";
-import { Provider, createStore, useAtomValue } from "jotai";
+import { Provider, useAtomValue } from "jotai";
+import { RESET } from "jotai/utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { FieldAtom, UseForm } from ".";
@@ -961,62 +962,42 @@ describe("useFieldInitialValue()", () => {
     expect(field.result.current.props.value).toBe("test");
   });
 
-  it("should set an initial value if initial value once", () => {
+  it("should reset if initial value is `RESET`", () => {
     const firstNameAtom = fieldAtom({
       value: "test",
     });
-    const firstStore = createStore();
     const field = renderHook(
-      ({ initialValue, store }) =>
-        useInputField(firstNameAtom, { initialValue, store }),
-      { initialProps: { initialValue: "jared", store: firstStore } }
+      ({ initialValue }) => useInputField(firstNameAtom, { initialValue }),
+      { initialProps: { initialValue: "jared" } }
     );
 
     expect(field.result.current.props.value).toBe("jared");
 
-    field.rerender({ initialValue: "john", store: firstStore });
-    expect(field.result.current.props.value).toBe("jared");
-
-    domAct(() => {
-      field.result.current.actions.setValue("jared l");
-    });
-
-    field.rerender({ initialValue: "john", store: createStore() });
-    expect(field.result.current.props.value).toBe("john");
-
-    field.rerender({ initialValue: "john", store: firstStore });
-    expect(field.result.current.props.value).toBe("jared l");
+    // @ts-expect-error
+    field.rerender({ initialValue: RESET });
+    expect(field.result.current.props.value).toBe("test");
   });
 
-  it("should not set initial value if field is dirty", () => {
+  it("should update initial value if field is not dirty", () => {
     const firstNameAtom = fieldAtom({
       value: "test",
     });
-    const firstStore = createStore();
     const field = renderHook(
-      ({ initialValue, store }) =>
-        useInputField(firstNameAtom, { initialValue, store }),
-      { initialProps: { initialValue: undefined, store: firstStore } }
+      ({ initialValue }) => useInputField(firstNameAtom, { initialValue }),
+      { initialProps: { initialValue: undefined } }
     );
 
     expect(field.result.current.props.value).toBe("test");
     // @ts-expect-error
-    field.rerender({ initialValue: "john", store: firstStore });
-    expect(field.result.current.props.value).toBe("test");
+    field.rerender({ initialValue: "john" });
+    expect(field.result.current.props.value).toBe("john");
 
     domAct(() => {
       field.result.current.actions.setValue("jared l");
     });
 
     // @ts-expect-error
-    field.rerender({ initialValue: "john", store: firstStore });
-    expect(field.result.current.props.value).toBe("jared l");
-
-    renderHook(
-      ({ store }) => useFieldInitialValue(firstNameAtom, "john", { store }),
-      { initialProps: { store: firstStore } }
-    );
-
+    field.rerender({ initialValue: "john" });
     expect(field.result.current.props.value).toBe("jared l");
   });
 });

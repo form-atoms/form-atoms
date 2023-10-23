@@ -1021,39 +1021,30 @@ export function useFieldErrors<Value>(
 }
 
 /**
- * Sets the initial value of a field atom. Initial values can only be set once
- * per scope. Therefore, if the initial value used is changed during rerenders,
- * it won't update the atom value.
+ * Sets the initial value of a field atom.
  *
  * @param {FieldAtom<any>} fieldAtom - The atom that you want to use to store the value.
- * @param {Value} initialValue - The initial value of the field.
+ * @param {Value} initialValue - The initial value of the field or `RESET` to reset the initial value.
  * @param {UseAtomOptions} options - Options to pass to the underlying `useAtomValue`
  *  and `useSetAtom` hooks.
  */
 export function useFieldInitialValue<Value>(
   fieldAtom: FieldAtom<Value>,
-  initialValue?: Value,
+  initialValue?: Value | typeof RESET,
   options?: UseAtomOptions
 ): UseFieldInitialValue {
   const field = useAtomValue(fieldAtom, options);
   const store = useStore(options);
 
-  React.useEffect(
-    () => {
-      if (
-        typeof initialValue === "undefined" ||
-        store.get(field._initialValue) !== undefined ||
-        store.get(field.dirty)
-      ) {
-        return;
-      }
-
-      store.set(field._initialValue, initialValue);
+  React.useEffect(() => {
+    if (initialValue === undefined) {
+      return;
+    }
+    if (!store.get(field.dirty)) {
       store.set(field.value, initialValue);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [store, field._initialValue, field.value, field.dirty]
-  );
+    }
+    store.set(field._initialValue, initialValue);
+  }, [store, field._initialValue, field.value, field.dirty, initialValue]);
 }
 
 /**
