@@ -1,3 +1,9 @@
+# [3.2.0](https://github.com/jaredLunde/form-atoms/compare/v3.1.0...v3.2.0) (2023-10-23)
+
+### Features
+
+- initial value can be updated ([#52](https://github.com/jaredLunde/form-atoms/issues/52)) ([#53](https://github.com/jaredLunde/form-atoms/issues/53)) ([d8d463c](https://github.com/jaredLunde/form-atoms/commit/d8d463c81f01e807e44b5666a0c9277d557e03a0))
+
 # [3.1.0](https://github.com/jaredLunde/form-atoms/compare/v3.0.2...v3.1.0) (2023-06-27)
 
 ### Features
