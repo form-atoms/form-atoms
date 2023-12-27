@@ -1,3 +1,9 @@
+## [3.2.1](https://github.com/jaredLunde/form-atoms/compare/v3.2.0...v3.2.1) (2023-12-27)
+
+### Bug Fixes
+
+- **validateCallback:** pass jotai setter ([#55](https://github.com/jaredLunde/form-atoms/issues/55)) ([1964828](https://github.com/jaredLunde/form-atoms/commit/196482857f6a660c26cab4c76fa4c026335dd05b))
+
 # [3.2.0](https://github.com/jaredLunde/form-atoms/compare/v3.1.0...v3.2.0) (2023-10-23)
 
 ### Features
