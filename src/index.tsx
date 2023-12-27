@@ -201,6 +201,7 @@ export function formAtom<Fields extends FormFields>(
 
         const maybePromise = fieldAtom._validateCallback?.({
           get,
+          set,
           value,
           dirty,
           touched: get(fieldAtom.touched),
@@ -657,6 +658,7 @@ export function fieldAtom<Value>(
 
         const maybeValidatePromise = config.validate?.({
           get,
+          set,
           dirty,
           touched: get(touchedAtom),
           value,
@@ -2105,6 +2107,10 @@ export type FieldAtomConfig<Value> = {
      * A Jotai getter that can read other atoms
      */
     get: Getter;
+    /**
+     * A Jotai setter that can write to atoms
+     */
+    set: Setter;
     /**
      * The current value of the field
      */
