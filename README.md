@@ -15,11 +15,11 @@ npm i form-atoms jotai
   <a aria-label="Types" href="https://www.npmjs.com/package/form-atoms">
     <img alt="Types" src="https://img.shields.io/npm/types/form-atoms?style=for-the-badge&labelColor=24292e">
   </a>
-  <a aria-label="Code coverage report" href="https://codecov.io/gh/jaredLunde/form-atoms">
-    <img alt="Code coverage" src="https://img.shields.io/codecov/c/gh/jaredLunde/form-atoms?style=for-the-badge&labelColor=24292e">
+  <a aria-label="Code coverage report" href="https://codecov.io/gh/form-atoms/form-atoms">
+    <img alt="Code coverage" src="https://img.shields.io/codecov/c/gh/form-atoms/form-atoms?style=for-the-badge&labelColor=24292e">
   </a>
-  <a aria-label="Build status" href="https://github.com/jaredLunde/form-atoms/actions/workflows/release.yml">
-    <img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/jaredLunde/form-atoms/release.yml?branch=main&style=for-the-badge&labelColor=24292e">
+  <a aria-label="Build status" href="https://github.com/form-atoms/form-atoms/actions/workflows/release.yml">
+    <img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/form-atoms/form-atoms/release.yml?branch=main&style=for-the-badge&labelColor=24292e">
   </a>
   <a aria-label="NPM version" href="https://www.npmjs.com/package/form-atoms">
     <img alt="NPM Version" src="https://img.shields.io/npm/v/form-atoms?style=for-the-badge&labelColor=24292e">
@@ -157,7 +157,7 @@ by using it, but you gain a ton of performance and without footguns.
 
 ## Projects using `form-atoms`
 
-- [**@form-atoms/field**](https://github.com/MiroslavPetrik/form-atoms-field) - Declarative & headless form fields build on top of Jotai & form-atoms
+- [**@form-atoms/field**](https://github.com/form-atoms/form-atoms-field) - Declarative & headless form fields build on top of Jotai & form-atoms
 
 ---
 
