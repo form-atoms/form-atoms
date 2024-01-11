@@ -238,7 +238,7 @@ export function formAtom<Fields extends FormFields>(
     await Promise.all(promises);
   }
 
-  const validateResultAtom = atom<ValidateStatus>((get) => {
+  const validateStatusAtom = atom<ValidateStatus>((get) => {
     const fields = get(fieldsAtom);
     let status: ValidateStatus = "valid";
 
@@ -279,7 +279,7 @@ export function formAtom<Fields extends FormFields>(
 
   const submitCountAtom = atom(0);
   const submitStatusCountAtom = atom(0);
-  const submitResultAtom = atom<SubmitStatus>("idle");
+  const submitStatusAtom = atom<SubmitStatus>("idle");
   const submitAtom = atom<
     null,
     [(value: FormFieldValues<Fields>) => void | Promise<void>],
@@ -292,11 +292,11 @@ export function formAtom<Fields extends FormFields>(
       set(submitStatusCountAtom, ptr);
       set(submitCountAtom, (count) => ++count);
       await validateFields(get, set, "submit");
-      const validateStatus = get(validateResultAtom);
+      const validateStatus = get(validateStatusAtom);
 
       if (validateStatus === "invalid") {
         return (
-          ptr === get(submitStatusCountAtom) && set(submitResultAtom, "idle")
+          ptr === get(submitStatusCountAtom) && set(submitStatusAtom, "idle")
         );
       }
 
@@ -305,14 +305,14 @@ export function formAtom<Fields extends FormFields>(
       try {
         if (isPromise(submission)) {
           ptr === get(submitStatusCountAtom) &&
-            set(submitResultAtom, "submitting");
+            set(submitStatusAtom, "submitting");
           await submission;
         }
         // eslint-disable-next-line no-empty
       } catch (err) {
       } finally {
         if (ptr === get(submitStatusCountAtom)) {
-          set(submitResultAtom, "submitted");
+          set(submitStatusAtom, "submitted");
         }
       }
     }
@@ -353,7 +353,7 @@ export function formAtom<Fields extends FormFields>(
     });
 
     set(submitStatusCountAtom, (current) => ++current);
-    set(submitResultAtom, "idle");
+    set(submitStatusAtom, "idle");
   });
 
   const formAtoms = {
@@ -363,9 +363,9 @@ export function formAtom<Fields extends FormFields>(
     dirty: dirtyAtom,
     touchedFields: touchedFieldsAtom,
     validate: validateAtom,
-    validateStatus: validateResultAtom,
+    validateStatus: validateStatusAtom,
     submit: submitAtom,
-    submitStatus: submitResultAtom,
+    submitStatus: submitStatusAtom,
     submitCount: submitCountAtom,
     reset: resetAtom,
   };
@@ -637,7 +637,7 @@ export function fieldAtom<Value>(
   const errorsAtom = atom<string[]>([]);
 
   const validateCountAtom = atom(0);
-  const validateResultAtom = atom<ValidateStatus>("valid");
+  const validateStatusAtom = atom<ValidateStatus>("valid");
   const validateAtom = atom<null, [] | [ValidateOn], void>(
     null,
     (get, set, event = "user") => {
@@ -667,7 +667,7 @@ export function fieldAtom<Value>(
 
         if (isPromise(maybeValidatePromise)) {
           ptr === get(validateCountAtom) &&
-            set(validateResultAtom, "validating");
+            set(validateStatusAtom, "validating");
           errors = (await maybeValidatePromise) ?? get(errorsAtom);
         } else {
           errors = maybeValidatePromise ?? get(errorsAtom);
@@ -675,7 +675,7 @@ export function fieldAtom<Value>(
 
         if (ptr === get(validateCountAtom)) {
           set(errorsAtom, errors);
-          set(validateResultAtom, errors.length > 0 ? "invalid" : "valid");
+          set(validateStatusAtom, errors.length > 0 ? "invalid" : "valid");
         }
       }
 
@@ -694,7 +694,7 @@ export function fieldAtom<Value>(
     // Need to set a new pointer to prevent stale validation results
     // from being set to state after this invocation.
     set(validateCountAtom, (count) => ++count);
-    set(validateResultAtom, "valid");
+    set(validateStatusAtom, "valid");
   });
 
   const fieldAtoms = {
@@ -703,7 +703,7 @@ export function fieldAtom<Value>(
     touched: touchedAtom,
     dirty: dirtyAtom,
     validate: validateAtom,
-    validateStatus: validateResultAtom,
+    validateStatus: validateStatusAtom,
     errors: errorsAtom,
     reset: resetAtom,
     ref: refAtom,
