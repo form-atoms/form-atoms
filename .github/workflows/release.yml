@@ -15,7 +15,7 @@ on:
 jobs:
   release:
     name: 🚀 Release
-    if: "!contains(github.event.head_commit.message, '[skip ci]') && !startsWith(github.event.head_commit.message, 'chore:') && !startsWith(github.event.head_commit.message, 'style:') && !contains(github.event.pull_request.title, '[skip ci]') && !startsWith(github.event.pull_request.title, 'chore:') && !startsWith(github.event.pull_request.title, 'style:') && !startsWith(github.event.head_commit.message, 'chore(') && !startsWith(github.event.head_commit.message, 'style(') && !startsWith(github.event.pull_request.title, 'chore(') && !startsWith(github.event.pull_request.title, 'style(')"
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') && !startsWith(github.event.head_commit.message, 'chore:') && !startsWith(github.event.head_commit.message, 'style:') && !contains(github.event.pull_request.title, '[skip ci]') && !startsWith(github.event.pull_request.title, 'chore:') && !startsWith(github.event.pull_request.title, 'style:') && !startsWith(github.event.head_commit.message, 'chore(') && !startsWith(github.event.head_commit.message, 'style(') && !startsWith(github.event.pull_request.title, 'chore(') && !startsWith(github.event.pull_request.title, 'style(') }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -62,15 +62,15 @@ jobs:
           fail_ci_if_error: false
 
       - name: Build
-        if: "github.event_name == 'push'"
+        if: ${{ github.event_name == 'push' }}
         run: pnpm build
 
       - name: Stage changes
-        if: "github.event_name == 'push'"
+        if: ${{ github.event_name == 'push' }}
         run: git add .
 
       - name: 🚀 Release
-        if: "github.event_name == 'push'"
+        if: ${{ github.event_name == 'push' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
