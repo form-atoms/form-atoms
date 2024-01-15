@@ -1,3 +1,10 @@
+## [3.2.2](https://github.com/form-atoms/form-atoms/compare/v3.2.1...v3.2.2) (2024-01-15)
+
+### Bug Fixes
+
+- expose validateAtoms as formAtom method ([#61](https://github.com/form-atoms/form-atoms/issues/61)) ([1739809](https://github.com/form-atoms/form-atoms/commit/17398098a901649059586dd3be815fffde14348c))
+- expose validateAtoms as formAtom method ([#61](https://github.com/form-atoms/form-atoms/issues/61)) ([#63](https://github.com/form-atoms/form-atoms/issues/63)) ([b86456c](https://github.com/form-atoms/form-atoms/commit/b86456c634ca013a10a569266418db44485cc036))
+
 ## [3.2.1](https://github.com/jaredLunde/form-atoms/compare/v3.2.0...v3.2.1) (2023-12-27)
 
 ### Bug Fixes
