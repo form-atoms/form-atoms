@@ -368,11 +368,14 @@ export function formAtom<Fields extends FormFields>(
     submitStatus: submitStatusAtom,
     submitCount: submitCountAtom,
     reset: resetAtom,
+    _validateFields: validateFields,
   };
 
   if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
     Object.entries(formAtoms).map(([atomName, atom]) => {
-      atom.debugLabel = `form/${atomName}`;
+      if (isAtom(atom)) {
+        atom.debugLabel = `form/${atomName}`;
+      }
     });
   }
 
@@ -709,13 +712,16 @@ export function fieldAtom<Value>(
     ref: refAtom,
     _initialValue: initialValueAtom,
     _validateCount: validateCountAtom,
+    _validateCallback: config.validate,
   };
 
-  const field = atom({ ...fieldAtoms, _validateCallback: config.validate });
+  const field = atom(fieldAtoms);
 
   if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
     Object.entries(fieldAtoms).map(([atomName, atom]) => {
-      atom.debugLabel = `field/${atomName}/${config.name ?? `${field}`}`;
+      if (isAtom(atom)) {
+        atom.debugLabel = `field/${atomName}/${config.name ?? `${field}`}`;
+      }
     });
   }
 
@@ -1576,6 +1582,11 @@ export type FormAtom<Fields extends FormFields> = Atom<{
    * An atom that contains the form's submission status
    */
   submitStatus: WritableAtom<SubmitStatus, [SubmitStatus], void>;
+  _validateFields: (
+    get: Getter,
+    set: Setter,
+    event: ValidateOn
+  ) => Promise<void>;
 }>;
 
 /**
