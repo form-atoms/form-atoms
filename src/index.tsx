@@ -1044,15 +1044,17 @@ export function useFieldInitialValue<Value>(
   const field = useAtomValue(fieldAtom, options);
   const store = useStore(options);
 
-  React.useEffect(() => {
-    if (initialValue === undefined) {
-      return;
-    }
-    if (!store.get(field.dirty)) {
-      store.set(field.value, initialValue);
-    }
+  if (initialValue === undefined) {
+    return;
+  }
+
+  if (!store.get(field.dirty) && initialValue !== store.get(field.value)) {
+    store.set(field.value, initialValue);
+  }
+
+  if (initialValue !== store.get(field._initialValue)) {
     store.set(field._initialValue, initialValue);
-  }, [store, field._initialValue, field.value, field.dirty, initialValue]);
+  }
 }
 
 /**
