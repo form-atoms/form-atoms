@@ -1039,22 +1039,36 @@ export function useFieldErrors<Value>(
 export function useFieldInitialValue<Value>(
   fieldAtom: FieldAtom<Value>,
   initialValue?: Value | typeof RESET,
-  options?: UseAtomOptions
+  options?: UseFieldInitialValueOptions<Value>
 ): UseFieldInitialValue {
   const field = useAtomValue(fieldAtom, options);
   const store = useStore(options);
+  const areEqual = (options && options.areEqual) || defaultValuesAreEqual;
 
   if (initialValue === undefined) {
     return;
   }
 
-  if (!store.get(field.dirty) && initialValue !== store.get(field.value)) {
+  if (
+    !store.get(field.dirty) &&
+    !areEqual(initialValue, store.get(field.value))
+  ) {
     store.set(field.value, initialValue);
   }
 
-  if (initialValue !== store.get(field._initialValue)) {
+  if (!areEqual(initialValue, store.get(field._initialValue))) {
     store.set(field._initialValue, initialValue);
   }
+}
+
+function defaultValuesAreEqual(a: unknown, b: unknown): boolean {
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return (
+      a.length === b.length && a.every((v, i) => defaultValuesAreEqual(v, b[i]))
+    );
+  }
+
+  return Object.is(a, b);
 }
 
 /**
@@ -2178,6 +2192,20 @@ export type UseAtomOptions = {
    * Optionally provide a Jotai store to use for the atom.
    */
   store?: AtomStore;
+};
+
+export type UseFieldInitialValueOptions<Value> = UseAtomOptions & {
+  /**
+   * When fields are not dirty and their current value is not equal to
+   * their initial value, the initial value will be set as the current
+   * value.
+   *
+   * @default Object.is
+   */
+  areEqual?: (
+    a: Value | typeof RESET,
+    b: Value | typeof RESET | undefined
+  ) => boolean;
 };
 
 type Flatten<T> = Identity<{ [K in keyof T]: T[K] }>;
