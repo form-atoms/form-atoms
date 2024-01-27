@@ -1043,22 +1043,30 @@ export function useFieldInitialValue<Value>(
 ): UseFieldInitialValue {
   const field = useAtomValue(fieldAtom, options);
   const store = useStore(options);
-  const areEqual = (options && options.areEqual) || defaultValuesAreEqual;
+  const areEqual = React.useRef(
+    (options && options.areEqual) || defaultValuesAreEqual
+  );
 
-  if (initialValue === undefined) {
-    return;
-  }
+  React.useLayoutEffect(() => {
+    areEqual.current = (options && options.areEqual) || defaultValuesAreEqual;
+  }, [options]);
 
-  if (
-    !store.get(field.dirty) &&
-    !areEqual(initialValue, store.get(field.value))
-  ) {
-    store.set(field.value, initialValue);
-  }
+  React.useLayoutEffect(() => {
+    if (initialValue === undefined) {
+      return;
+    }
 
-  if (!areEqual(initialValue, store.get(field._initialValue))) {
-    store.set(field._initialValue, initialValue);
-  }
+    if (
+      !store.get(field.dirty) &&
+      !areEqual.current(initialValue, store.get(field.value))
+    ) {
+      store.set(field.value, initialValue);
+    }
+
+    if (!areEqual.current(initialValue, store.get(field._initialValue))) {
+      store.set(field._initialValue, initialValue);
+    }
+  });
 }
 
 function defaultValuesAreEqual(a: unknown, b: unknown): boolean {
