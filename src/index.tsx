@@ -1067,7 +1067,8 @@ export function useFieldInitialValue<Value>(
 function defaultValuesAreEqual(a: unknown, b: unknown): boolean {
   if (Array.isArray(a) && Array.isArray(b)) {
     return (
-      a.length === b.length && a.every((v, i) => defaultValuesAreEqual(v, b[i]))
+      a.length === b.length &&
+      (Object.is(a, b) || a.every((v, i) => defaultValuesAreEqual(v, b[i])))
     );
   }
 
