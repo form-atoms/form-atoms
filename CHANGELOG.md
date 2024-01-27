@@ -1,3 +1,9 @@
+## [3.2.3](https://github.com/form-atoms/form-atoms/compare/v3.2.2...v3.2.3) (2024-01-27)
+
+### Bug Fixes
+
+- replace use effect with use layout effect in initial value hook ([#66](https://github.com/form-atoms/form-atoms/issues/66)) ([c7d2751](https://github.com/form-atoms/form-atoms/commit/c7d2751d53da2eb3be616eb32f4b71a66592ab5a)), closes [#64](https://github.com/form-atoms/form-atoms/issues/64)
+
 ## [3.2.2](https://github.com/form-atoms/form-atoms/compare/v3.2.1...v3.2.2) (2024-01-15)
 
 ### Bug Fixes
