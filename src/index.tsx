@@ -17,7 +17,7 @@ import {
   useSetAtom,
   useStore,
 } from "jotai";
-import { RESET, atomWithReset } from "jotai/utils";
+import { RESET, atomWithReset, useHydrateAtoms } from "jotai/utils";
 
 import { formatDateString, setPath } from "./utils";
 
@@ -1043,8 +1043,17 @@ export function useFieldInitialValue<Value>(
 ): UseFieldInitialValue {
   const field = useAtomValue(fieldAtom, options);
   const store = useStore(options);
+  useHydrateAtoms(
+    initialValue
+      ? [
+          [field._initialValue, initialValue],
+          [field.value, initialValue],
+        ]
+      : [],
+    options
+  );
 
-  React.useLayoutEffect(() => {
+  React.useEffect(() => {
     const areEqual = (options && options.areEqual) || defaultValuesAreEqual;
 
     if (initialValue === undefined) {
