@@ -1190,6 +1190,7 @@ describe("useForm()", () => {
     const atom = formAtom(config);
     const { result } = renderHook(() => useForm(atom));
     const form = renderHook(() => useFormState(atom));
+    const formActions = renderHook(() => useFormActions(atom));
     const nameField = renderHook(() => useInputField(config.name));
     const hobbiesField = renderHook(() => useInputField(config.hobbies[0]));
 
@@ -1200,6 +1201,15 @@ describe("useForm()", () => {
       hobbiesField.result.current.actions.setValue("test2");
       hobbiesField.result.current.actions.setTouched(true);
       hobbiesField.result.current.actions.setErrors(["def"]);
+      formActions.result.current.updateFields((fields) => {
+        return {
+          ...fields,
+          hobbies: [
+            ...fields.hobbies,
+            fieldAtom({ name: "hobbies.1", value: "test3" }),
+          ],
+        };
+      });
       result.current.submit(() => {});
     });
 
@@ -1214,6 +1224,7 @@ describe("useForm()", () => {
     expect(hobbiesField.result.current.state.touched).toBe(false);
     expect(hobbiesField.result.current.state.errors).toEqual([]);
     expect(form.result.current.submitStatus).toBe("idle");
+    expect(form.result.current.fieldAtoms.hobbies.length).toBe(1);
   });
 
   it("should prevent stale validations on reset", async () => {

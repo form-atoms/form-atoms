@@ -346,12 +346,11 @@ export function formAtom<Fields extends FormFields>(
   });
 
   const resetAtom = atom(null, (get, set) => {
-    const fields = get(fieldsAtom);
-    walkFields(fields, (field) => {
+    set(fieldsAtom, RESET);
+    walkFields(get(fieldsAtom), (field) => {
       const fieldAtom = get(field);
       set(fieldAtom.reset);
     });
-
     set(submitStatusCountAtom, (current) => ++current);
     set(submitStatusAtom, "idle");
   });
