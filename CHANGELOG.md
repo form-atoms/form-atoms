@@ -1,14 +1,18 @@
-# [4.0.0-next.1](https://github.com/form-atoms/form-atoms/compare/v3.2.3...v4.0.0-next.1) (2024-01-28)
+# [4.0.0-next.2](https://github.com/form-atoms/form-atoms/compare/v4.0.0-next.1...v4.0.0-next.2) (2024-02-11)
 
+### Bug Fixes
+
+- reset fields atom on form resets ([059bc93](https://github.com/form-atoms/form-atoms/commit/059bc932742909cff4c29a532a2a1b12a6609f6e))
+
+# [4.0.0-next.1](https://github.com/form-atoms/form-atoms/compare/v3.2.3...v4.0.0-next.1) (2024-01-28)
 
 ### Features
 
-* add hydration to initial value hook ([66cbfdc](https://github.com/form-atoms/form-atoms/commit/66cbfdcb8cb58fcf0543295bf9b0618fa133ad23))
-
+- add hydration to initial value hook ([66cbfdc](https://github.com/form-atoms/form-atoms/commit/66cbfdcb8cb58fcf0543295bf9b0618fa133ad23))
 
 ### BREAKING CHANGES
 
-* adds jotai hydration to the initial value hook which has potential side effects
+- adds jotai hydration to the initial value hook which has potential side effects
 
 ## [3.2.3](https://github.com/form-atoms/form-atoms/compare/v3.2.2...v3.2.3) (2024-01-27)
 
