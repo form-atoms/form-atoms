@@ -1,3 +1,9 @@
+## [3.2.4](https://github.com/form-atoms/form-atoms/compare/v3.2.3...v3.2.4) (2024-02-11)
+
+### Bug Fixes
+
+- add hydration to initial value hook ([#67](https://github.com/form-atoms/form-atoms/issues/67)) ([61fd2f3](https://github.com/form-atoms/form-atoms/commit/61fd2f306298379bf3ef502f703229490fd305b0))
+
 # [4.0.0-next.2](https://github.com/form-atoms/form-atoms/compare/v4.0.0-next.1...v4.0.0-next.2) (2024-02-11)
 
 ### Bug Fixes
