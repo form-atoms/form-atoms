@@ -5,7 +5,7 @@ import { render, screen } from "@testing-library/react";
 import { act as domAct, renderHook } from "@testing-library/react-hooks/dom";
 import userEvent from "@testing-library/user-event";
 import type { ExtractAtomValue } from "jotai";
-import { Provider, useAtomValue } from "jotai";
+import { Provider, createStore, useAtomValue } from "jotai";
 import { RESET } from "jotai/utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -316,7 +316,16 @@ describe("<SelectField>", () => {
   });
 
   it("should set initial value", () => {
-    const atom = fieldAtom({ value: "test" });
+    const atom = fieldAtom({
+      value: "test",
+      validate({ value }) {
+        return value === "world" ? ["error"] : [];
+      },
+    });
+    const other = createStore();
+    const { result } = renderHook(() =>
+      useInputField(atom, { initialValue: "world", store: other })
+    );
 
     render(
       <SelectField
@@ -333,6 +342,9 @@ describe("<SelectField>", () => {
     );
 
     expect(screen.getByText("hello")).toBeInTheDocument();
+    expect(result.current.state.dirty).toBeFalsy();
+    expect(result.current.state.touched).toBeFalsy();
+    expect(result.current.state.errors.length).toBe(0);
   });
 
   it('should render "component" with multiple prop in scope', () => {
@@ -1178,6 +1190,7 @@ describe("useForm()", () => {
     const atom = formAtom(config);
     const { result } = renderHook(() => useForm(atom));
     const form = renderHook(() => useFormState(atom));
+    const formActions = renderHook(() => useFormActions(atom));
     const nameField = renderHook(() => useInputField(config.name));
     const hobbiesField = renderHook(() => useInputField(config.hobbies[0]));
 
@@ -1188,6 +1201,15 @@ describe("useForm()", () => {
       hobbiesField.result.current.actions.setValue("test2");
       hobbiesField.result.current.actions.setTouched(true);
       hobbiesField.result.current.actions.setErrors(["def"]);
+      formActions.result.current.updateFields((fields) => {
+        return {
+          ...fields,
+          hobbies: [
+            ...fields.hobbies,
+            fieldAtom({ name: "hobbies.1", value: "test3" }),
+          ],
+        };
+      });
       result.current.submit(() => {});
     });
 
@@ -1202,6 +1224,7 @@ describe("useForm()", () => {
     expect(hobbiesField.result.current.state.touched).toBe(false);
     expect(hobbiesField.result.current.state.errors).toEqual([]);
     expect(form.result.current.submitStatus).toBe("idle");
+    expect(form.result.current.fieldAtoms.hobbies.length).toBe(1);
   });
 
   it("should prevent stale validations on reset", async () => {
