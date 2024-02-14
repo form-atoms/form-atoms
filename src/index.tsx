@@ -1028,6 +1028,31 @@ export function useFieldErrors<Value>(
 }
 
 /**
+ * Hydrates the field atom value on the first render.
+ *
+ * @param {FieldAtom<any>} fieldAtom - The atom that you want to be hydrated.
+ * @param {Value} initialValue - The initial value of the field or `RESET` to reset the initial value.
+ * @param {UseHydrateFieldOptions} options - Options to pass to the underlying `useAtomValue`
+ *  and `useHydrateAtoms` hooks.
+ */
+export function useHydrateField<Value>(
+  fieldAtom: FieldAtom<Value>,
+  initialValue?: Value | typeof RESET,
+  options?: UseHydrateFieldOptions
+) {
+  const field = useAtomValue(fieldAtom, options);
+  return useHydrateAtoms(
+    initialValue
+      ? [
+          [field._initialValue, initialValue],
+          [field.value, initialValue],
+        ]
+      : [],
+    options
+  );
+}
+
+/**
  * Sets the initial value of a field atom.
  *
  * @param {FieldAtom<any>} fieldAtom - The atom that you want to use to store the value.
@@ -1042,15 +1067,7 @@ export function useFieldInitialValue<Value>(
 ): UseFieldInitialValue {
   const field = useAtomValue(fieldAtom, options);
   const store = useStore(options);
-  useHydrateAtoms(
-    initialValue
-      ? [
-          [field._initialValue, initialValue],
-          [field.value, initialValue],
-        ]
-      : [],
-    options
-  );
+  useHydrateField(fieldAtom, initialValue, options);
 
   React.useEffect(() => {
     const areEqual = (options && options.areEqual) || defaultValuesAreEqual;
@@ -2218,6 +2235,13 @@ export type UseFieldInitialValueOptions<Value> = UseAtomOptions & {
     a: Value | typeof RESET,
     b: Value | typeof RESET | undefined
   ) => boolean;
+};
+
+export type UseHydrateFieldOptions = UseAtomOptions & {
+  /**
+   * Optionally force rehydration after the initial render.
+   */
+  dangerouslyForceHydrate?: boolean;
 };
 
 type Flatten<T> = Identity<{ [K in keyof T]: T[K] }>;
