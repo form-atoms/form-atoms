@@ -370,15 +370,18 @@ export function formAtom<Fields extends FormFields>(
     _validateFields: validateFields,
   };
 
+  const form = atom(formAtoms);
+
   if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
+    form.debugLabel = `form/${form}`;
     Object.entries(formAtoms).map(([atomName, atom]) => {
       if (isAtom(atom)) {
-        atom.debugLabel = `form/${atomName}`;
+        atom.debugLabel = `${form.debugLabel}/${atomName}`;
       }
     });
   }
 
-  return atom(formAtoms);
+  return form;
 }
 
 /**
@@ -717,11 +720,13 @@ export function fieldAtom<Value>(
   const field = atom(fieldAtoms);
 
   if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
+    field.debugLabel = `field/${config.name ?? `${field}`}`;
     Object.entries(fieldAtoms).map(([atomName, atom]) => {
       if (isAtom(atom)) {
-        atom.debugLabel = `field/${atomName}/${config.name ?? `${field}`}`;
+        atom.debugLabel = `${field.debugLabel}/${atomName}`;
       }
     });
+    baseValueAtom.debugPrivate = true;
   }
 
   return field;
