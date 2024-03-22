@@ -1095,9 +1095,9 @@ export function useField<Value>(
   fieldAtom: FieldAtom<Value>,
   options?: UseFieldOptions<Value>
 ): UseField<Value> {
+  useFieldInitialValue(fieldAtom, options?.initialValue, options);
   const actions = useFieldActions<Value>(fieldAtom, options);
   const state = useFieldState<Value>(fieldAtom, options);
-  useFieldInitialValue(fieldAtom, options?.initialValue, options);
   return React.useMemo(() => ({ actions, state }), [actions, state]);
 }
 
