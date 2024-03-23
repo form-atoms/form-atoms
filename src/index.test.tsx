@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/extend-expect";
-import React from "react";
+import React, { useState } from "react";
 
 import { render, screen } from "@testing-library/react";
 import { act as domAct, renderHook } from "@testing-library/react-hooks/dom";
@@ -18,6 +18,7 @@ import {
   TextareaField,
   fieldAtom,
   formAtom,
+  useField,
   useFieldErrors,
   useFieldInitialValue,
   useFieldValue,
@@ -948,6 +949,24 @@ describe("useField()", () => {
     vi.advanceTimersByTime(100);
     await domAct(() => Promise.resolve());
     expect(result.current.state.errors).toEqual(["50-error"]);
+  });
+
+  it("should use the initialValue on the first render (#75)", async () => {
+    const field = fieldAtom<string>({ value: "" });
+
+    const FirstValueProp = () => {
+      const {
+        state: { value },
+      } = useField(field, { initialValue: "test" });
+      const [firstValueProp] = useState(() => value);
+
+      return <input value={firstValueProp} placeholder={value} />;
+    };
+
+    render(<FirstValueProp />);
+
+    expect(screen.getByPlaceholderText("test")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("test")).toBeInTheDocument();
   });
 });
 
