@@ -2027,17 +2027,18 @@ describe("fieldAtom()", () => {
       result: { current: atoms },
     } = renderHook(() => useAtomValue(field));
 
-    expect(atoms.name.debugLabel).toBe("field/name/city");
-    expect(atoms.value.debugLabel).toBe("field/value/city");
-    expect(atoms.touched.debugLabel).toBe("field/touched/city");
-    expect(atoms.dirty.debugLabel).toBe("field/dirty/city");
-    expect(atoms.validate.debugLabel).toBe("field/validate/city");
-    expect(atoms.validateStatus.debugLabel).toBe("field/validateStatus/city");
-    expect(atoms.errors.debugLabel).toBe("field/errors/city");
-    expect(atoms.reset.debugLabel).toBe("field/reset/city");
-    expect(atoms.ref.debugLabel).toBe("field/ref/city");
-    expect(atoms._initialValue.debugLabel).toBe("field/_initialValue/city");
-    expect(atoms._validateCount.debugLabel).toBe("field/_validateCount/city");
+    expect(field.debugLabel).toBe("field/city");
+    expect(atoms.name.debugLabel).toBe("field/city/name");
+    expect(atoms.value.debugLabel).toBe("field/city/value");
+    expect(atoms.touched.debugLabel).toBe("field/city/touched");
+    expect(atoms.dirty.debugLabel).toBe("field/city/dirty");
+    expect(atoms.validate.debugLabel).toBe("field/city/validate");
+    expect(atoms.validateStatus.debugLabel).toBe("field/city/validateStatus");
+    expect(atoms.errors.debugLabel).toBe("field/city/errors");
+    expect(atoms.reset.debugLabel).toBe("field/city/reset");
+    expect(atoms.ref.debugLabel).toBe("field/city/ref");
+    expect(atoms._initialValue.debugLabel).toBe("field/city/_initialValue");
+    expect(atoms._validateCount.debugLabel).toBe("field/city/_validateCount");
   });
 
   it("debugLabels contain atom id when field name not specified", () => {
@@ -2047,43 +2048,45 @@ describe("fieldAtom()", () => {
       result: { current: atoms },
     } = renderHook(() => useAtomValue(field));
 
-    expect(atoms.name.debugLabel).toBe(`field/name/${field}`);
-    expect(atoms.value.debugLabel).toBe(`field/value/${field}`);
-    expect(atoms.touched.debugLabel).toBe(`field/touched/${field}`);
-    expect(atoms.dirty.debugLabel).toBe(`field/dirty/${field}`);
-    expect(atoms.validate.debugLabel).toBe(`field/validate/${field}`);
+    expect(field.debugLabel).toBe(`field/${field}`);
+    expect(atoms.name.debugLabel).toBe(`field/${field}/name`);
+    expect(atoms.value.debugLabel).toBe(`field/${field}/value`);
+    expect(atoms.touched.debugLabel).toBe(`field/${field}/touched`);
+    expect(atoms.dirty.debugLabel).toBe(`field/${field}/dirty`);
+    expect(atoms.validate.debugLabel).toBe(`field/${field}/validate`);
     expect(atoms.validateStatus.debugLabel).toBe(
-      `field/validateStatus/${field}`
+      `field/${field}/validateStatus`
     );
-    expect(atoms.errors.debugLabel).toBe(`field/errors/${field}`);
-    expect(atoms.reset.debugLabel).toBe(`field/reset/${field}`);
-    expect(atoms.ref.debugLabel).toBe(`field/ref/${field}`);
-    expect(atoms._initialValue.debugLabel).toBe(`field/_initialValue/${field}`);
+    expect(atoms.errors.debugLabel).toBe(`field/${field}/errors`);
+    expect(atoms.reset.debugLabel).toBe(`field/${field}/reset`);
+    expect(atoms.ref.debugLabel).toBe(`field/${field}/ref`);
+    expect(atoms._initialValue.debugLabel).toBe(`field/${field}/_initialValue`);
     expect(atoms._validateCount.debugLabel).toBe(
-      `field/_validateCount/${field}`
+      `field/${field}/_validateCount`
     );
   });
 });
 
 describe("formAtom()", () => {
   it("has atoms with debugLabels", () => {
-    const field = formAtom({});
+    const form = formAtom({});
 
     const {
       result: { current: atoms },
-    } = renderHook(() => useAtomValue(field));
+    } = renderHook(() => useAtomValue(form));
 
-    expect(atoms.fields.debugLabel).toBe("form/fields");
-    expect(atoms.values.debugLabel).toBe("form/values");
-    expect(atoms.errors.debugLabel).toBe("form/errors");
-    expect(atoms.dirty.debugLabel).toBe("form/dirty");
-    expect(atoms.touchedFields.debugLabel).toBe("form/touchedFields");
-    expect(atoms.validate.debugLabel).toBe("form/validate");
-    expect(atoms.validateStatus.debugLabel).toBe("form/validateStatus");
-    expect(atoms.submit.debugLabel).toBe("form/submit");
-    expect(atoms.submitStatus.debugLabel).toBe("form/submitStatus");
-    expect(atoms.submitCount.debugLabel).toBe("form/submitCount");
-    expect(atoms.reset.debugLabel).toBe("form/reset");
+    expect(form.debugLabel).toBe(`form/${form}`);
+    expect(atoms.fields.debugLabel).toBe(`form/${form}/fields`);
+    expect(atoms.values.debugLabel).toBe(`form/${form}/values`);
+    expect(atoms.errors.debugLabel).toBe(`form/${form}/errors`);
+    expect(atoms.dirty.debugLabel).toBe(`form/${form}/dirty`);
+    expect(atoms.touchedFields.debugLabel).toBe(`form/${form}/touchedFields`);
+    expect(atoms.validate.debugLabel).toBe(`form/${form}/validate`);
+    expect(atoms.validateStatus.debugLabel).toBe(`form/${form}/validateStatus`);
+    expect(atoms.submit.debugLabel).toBe(`form/${form}/submit`);
+    expect(atoms.submitStatus.debugLabel).toBe(`form/${form}/submitStatus`);
+    expect(atoms.submitCount.debugLabel).toBe(`form/${form}/submitCount`);
+    expect(atoms.reset.debugLabel).toBe(`form/${form}/reset`);
   });
 });
 
