@@ -1,3 +1,9 @@
+# [3.3.0](https://github.com/form-atoms/form-atoms/compare/v3.2.5...v3.3.0) (2024-08-19)
+
+### Features
+
+- add valibot validator ([#79](https://github.com/form-atoms/form-atoms/issues/79)) ([acafc2b](https://github.com/form-atoms/form-atoms/commit/acafc2bbbe780ea620982cb6dba9b5b0102a691d)), closes [#73](https://github.com/form-atoms/form-atoms/issues/73)
+
 ## [3.2.5](https://github.com/form-atoms/form-atoms/compare/v3.2.4...v3.2.5) (2024-03-24)
 
 ### Bug Fixes
