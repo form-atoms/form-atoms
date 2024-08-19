@@ -22,15 +22,15 @@ jobs:
         node-version: [18.x]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2.4.0
+        uses: pnpm/action-setup@v4
         with:
           version: ^8.14.0
 
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
