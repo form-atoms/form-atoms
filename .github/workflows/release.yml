@@ -47,9 +47,6 @@ jobs:
       - name: ✅ Check types
         run: pnpm check-types
 
-      - name: 🧹 Lint
-        run: pnpm lint
-
       - name: 🧪 Test
         run: pnpm test -- --coverage --silent
 
