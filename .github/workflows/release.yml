@@ -52,7 +52,7 @@ jobs:
 
       - name: Publish tests to Codecov
         if: always()
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v4
         with:
           directory: coverage
           verbose: false
