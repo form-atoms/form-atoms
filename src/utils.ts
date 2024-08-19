@@ -29,7 +29,7 @@ export function setPath(target: any, paths: string[], value: unknown) {
  */
 export function formatDateString(
   date: Date,
-  type: React.HTMLInputTypeAttribute
+  type: React.HTMLInputTypeAttribute,
 ) {
   // Adjust the date to account for the timezone offset.
   const isoDate = date.toISOString();
@@ -72,7 +72,7 @@ export function formatDateString(
 function getIsoWeek(date: Date): string {
   date = removeTzOffset(date);
   date = new Date(
-    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
   );
   // Set to nearest Thursday: current date + 4 - current day number
   // Make Sunday's day number 7
@@ -80,7 +80,7 @@ function getIsoWeek(date: Date): string {
   let year = date.getUTCFullYear();
   // Start of the year
   const startUtcTime = new Date(
-    Date.UTC(date.getUTCFullYear(), 0, 1)
+    Date.UTC(date.getUTCFullYear(), 0, 1),
   ).getTime();
   const time = date.getTime();
   // Calculate full weeks to nearest Thursday
@@ -94,7 +94,7 @@ function getIsoWeek(date: Date): string {
         1 +
         // If the year is a leap year, add 1 day
         (!(year % 4 || (!(year % 100) && year % 400)) ? 366 : 365)) /
-        7
+        7,
     );
     year = prevYear;
   }

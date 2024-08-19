@@ -1,16 +1,17 @@
 import { act as domAct, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { z } from "zod";
+import { custom, minLength, parseAsync, pipe, regex, string } from "valibot";
 
-import { zodValidate } from "./zod";
+import { createValibotValidator } from "./valibot";
 
 import { fieldAtom, useInputField } from ".";
+const valibotValidate = createValibotValidator(parseAsync);
 
-describe("zodValidate()", () => {
+describe("valibotValidate()", () => {
   it("should validate without a config", async () => {
     const nameAtom = fieldAtom({
       value: "",
-      validate: zodValidate(z.string().min(3, "3 plz")),
+      validate: valibotValidate(pipe(string(), minLength(3, "3 plz"))),
     });
 
     const field = renderHook(() => useInputField(nameAtom));
@@ -27,8 +28,8 @@ describe("zodValidate()", () => {
   it("should throw multiple errors", async () => {
     const nameAtom = fieldAtom({
       value: "",
-      validate: zodValidate(
-        z.string().min(3, "3 plz").regex(/foo/, "must match foo"),
+      validate: valibotValidate(
+        pipe(string(), minLength(3, "3 plz"), regex(/foo/, "must match foo")),
       ),
     });
 
@@ -49,8 +50,8 @@ describe("zodValidate()", () => {
   it("should throw first error in chain", async () => {
     const nameAtom = fieldAtom({
       value: "",
-      validate: zodValidate(
-        z.string().min(3, "3 plz").regex(/foo/, "must match foo"),
+      validate: valibotValidate(
+        pipe(string(), minLength(3, "3 plz"), regex(/foo/, "must match foo")),
         {
           on: "touch",
           when: "touched",
@@ -78,12 +79,12 @@ describe("zodValidate()", () => {
   it("should use custom error formatting", async () => {
     const nameAtom = fieldAtom({
       value: "",
-      validate: zodValidate(
-        z.string().min(3, "3 plz").regex(/foo/, "must match foo"),
+      validate: valibotValidate(
+        pipe(string(), minLength(3, "3 plz"), regex(/foo/, "must match foo")),
         {
           formatError: (err) =>
-            err.errors.map((e) =>
-              JSON.stringify({ code: e.code, message: e.message }),
+            err.issues.map((e) =>
+              JSON.stringify({ code: e.type, message: e.message }),
             ),
         },
       ),
@@ -98,15 +99,17 @@ describe("zodValidate()", () => {
     await domAct(() => Promise.resolve());
     expect(field.result.current.state.validateStatus).toBe("invalid");
     expect(field.result.current.state.errors).toEqual([
-      JSON.stringify({ code: "too_small", message: "3 plz" }),
-      JSON.stringify({ code: "invalid_string", message: "must match foo" }),
+      JSON.stringify({ code: "min_length", message: "3 plz" }),
+      JSON.stringify({ code: "regex", message: "must match foo" }),
     ]);
   });
 
   it("should validate 'on' a given event", async () => {
     const nameAtom = fieldAtom({
       value: "",
-      validate: zodValidate(z.string().min(3, "3 plz"), { on: "change" }),
+      validate: valibotValidate(pipe(string(), minLength(3, "3 plz")), {
+        on: "change",
+      }),
     });
 
     const field = renderHook(() => useInputField(nameAtom));
@@ -126,7 +129,7 @@ describe("zodValidate()", () => {
   it("should validate only when dirty", async () => {
     const nameAtom = fieldAtom({
       value: "",
-      validate: zodValidate(z.string().min(3, "3 plz"), {
+      validate: valibotValidate(pipe(string(), minLength(3, "3 plz")), {
         on: "change",
         when: "dirty",
       }),
@@ -154,7 +157,7 @@ describe("zodValidate()", () => {
   it("should validate only when touched", async () => {
     const nameAtom = fieldAtom({
       value: "",
-      validate: zodValidate(z.string().min(3, "3 plz"), {
+      validate: valibotValidate(pipe(string(), minLength(3, "3 plz")), {
         on: "change",
         when: "touched",
       }),
@@ -180,7 +183,7 @@ describe("zodValidate()", () => {
   it("should validate multiple conditions", async () => {
     const nameAtom = fieldAtom({
       value: "",
-      validate: zodValidate(z.string().min(3, "3 plz")).or({
+      validate: valibotValidate(pipe(string(), minLength(3, "3 plz"))).or({
         on: "change",
         when: "dirty",
       }),
@@ -216,7 +219,7 @@ describe("zodValidate()", () => {
   it("should validate with jotai getter", async () => {
     const nameAtom = fieldAtom({
       value: "",
-      validate: zodValidate(() => z.string().min(3, "3 plz")),
+      validate: valibotValidate(() => pipe(string(), minLength(3, "3 plz"))),
     });
 
     const field = renderHook(() => useInputField(nameAtom));
@@ -232,10 +235,13 @@ describe("zodValidate()", () => {
 
   it("should throw for unexpected errors", async () => {
     await expect(async () => {
-      await zodValidate(
-        z.string().refine(() => {
-          throw new Error("foo");
-        }),
+      await valibotValidate(
+        pipe(
+          string(),
+          custom(() => {
+            throw new Error("foo");
+          }),
+        ),
         // @ts-expect-error
       )({ value: "foo", event: "user" });
     }).rejects.toThrow();

@@ -11,20 +11,26 @@
     ".": {
       "import": "./dist/index.mjs",
       "module": "./dist/index.mjs",
-      "default": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./valibot": {
+      "import": "./dist/valibot.mjs",
+      "module": "./dist/valibot.mjs",
+      "types": "./dist/valibot.d.ts",
+      "default": "./dist/valibot.js"
     },
     "./zod": {
       "import": "./dist/zod.mjs",
       "module": "./dist/zod.mjs",
-      "default": "./dist/zod.js",
-      "types": "./dist/zod.d.ts"
+      "types": "./dist/zod.d.ts",
+      "default": "./dist/zod.js"
     },
     "./*": {
       "import": "./dist/*.mjs",
       "module": "./dist/*.mjs",
-      "default": "./dist/*.js",
-      "types": "./dist/*.d.ts"
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
     },
     "./package.json": "./package.json"
   },
@@ -38,10 +44,9 @@
     "check-types": "tsc --noEmit --incremental --tsBuildInfoFile .typescript/tsconfig.tsbuildinfo",
     "dev": "tsup --watch",
     "format": "prettier --write \"{,!(node_modules|dist|coverage)/**/}*.{ts,tsx,js,jsx,md,yml,json}\"",
-    "lint": "eslint . --ext .ts,.tsx",
     "prepare": "husky install",
     "test": "vitest",
-    "validate": "pnpm run check-types && pnpm run lint && pnpm test run -- --coverage"
+    "validate": "pnpm run check-types && pnpm test run -- --coverage"
   },
   "config": {
     "commitizen": {
@@ -55,38 +60,36 @@
     "react": ">=16.8"
   },
   "devDependencies": {
-    "@commitlint/cli": "^17.4.2",
-    "@commitlint/config-conventional": "^17.4.2",
+    "@commitlint/cli": "^19.4.0",
+    "@commitlint/config-conventional": "^19.2.2",
     "@semantic-release/changelog": "^6.0.2",
     "@semantic-release/git": "^10.0.1",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
+    "@testing-library/jest-dom": "^6.4.8",
+    "@testing-library/react": "^16.0.0",
     "@testing-library/react-hooks": "^8.0.1",
-    "@testing-library/user-event": "^13.0.0",
-    "@types/node": "^18.14.0",
-    "@types/react": "^18.0.27",
-    "@types/react-dom": "^18.0.10",
-    "@types/testing-library__jest-dom": "^5.14.5",
-    "@vitejs/plugin-react": "^3.0.1",
-    "@vitest/coverage-c8": "^0.28.3",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/node": "^22.4.1",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "@vitest/coverage-c8": "^0.33.0",
+    "@vitest/coverage-v8": "^2.0.5",
     "cz-conventional-changelog": "^3.3.0",
-    "eslint": "^8.32.0",
-    "eslint-config-lunde": "^0.8.2",
-    "eslint-plugin-prettier": "^4.2.1",
-    "happy-dom": "^8.2.0",
+    "happy-dom": "^14.12.3",
     "husky": "^8.0.3",
-    "jotai": "^2.0.0",
-    "lint-staged": "^13.1.0",
-    "prettier": "^2.8.3",
+    "jotai": "^2.9.3",
+    "lint-staged": "^15.2.9",
+    "prettier": "^3.3.3",
     "prettier-package-json": "^2.8.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-test-renderer": "^18.2.0",
-    "semantic-release": "^20.1.0",
-    "tsup": "^6.5.0",
-    "typescript": "^4.9.4",
-    "vitest": "^0.28.3",
-    "zod": "^3.20.2"
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-test-renderer": "^18.3.1",
+    "semantic-release": "^24.1.0",
+    "tsup": "^8.2.4",
+    "typescript": "^5.5.4",
+    "valibot": "^0.37.0",
+    "vitest": "^2.0.5",
+    "zod": "^3.23.8"
   },
   "keywords": [
     "atomic form",
@@ -107,36 +110,12 @@
       "@commitlint/config-conventional"
     ]
   },
-  "eslintConfig": {
-    "plugins": [
-      "prettier"
-    ],
-    "extends": [
-      "lunde",
-      "plugin:prettier/recommended"
-    ],
-    "rules": {
-      "jsdoc/no-undefined-types": "off"
-    }
-  },
-  "eslintIgnore": [
-    "node_modules",
-    "coverage",
-    "dist",
-    "/examples",
-    "/types",
-    "test",
-    "*.config.js"
-  ],
   "lint-staged": {
     "package.json": [
       "prettier-package-json --write"
     ],
-    "**/*.{md,yml,yaml,json}": [
+    "**/*.{md,yml,yaml,json,ts,tsx,js,cjs,mjs,jsx}": [
       "prettier --write"
-    ],
-    "**/*.{ts,tsx,js,cjs,mjs,jsx}": [
-      "eslint --ext .ts,.tsx,.js,.cjs,.mjs,.jsx --fix"
     ]
   },
   "release": {
@@ -170,6 +149,9 @@
   },
   "typesVersions": {
     "*": {
+      "valibot": [
+        "dist/valibot.d.ts"
+      ],
       "zod": [
         "dist/zod.d.ts"
       ]

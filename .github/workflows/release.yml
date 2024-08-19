@@ -19,47 +19,45 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [20.x]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2.4.0
+        uses: pnpm/action-setup@v4
         with:
-          version: ^8.14.0
+          version: ^9.0.0
 
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
       - name: Cache node_modules
         id: cache-node-modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Install
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: pnpm install --reporter=silent --frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: ✅ Check types
         run: pnpm check-types
-
-      - name: 🧹 Lint
-        run: pnpm lint
 
       - name: 🧪 Test
         run: pnpm test -- --coverage --silent
 
       - name: Publish tests to Codecov
         if: always()
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v4
         with:
           directory: coverage
           verbose: false
           fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Build
         if: ${{ github.event_name == 'push' }}

@@ -29,18 +29,18 @@ import type { Validate, ValidateOn } from ".";
  */
 export function zodValidate<Value>(
   schema: ((get: Getter) => z.Schema) | z.Schema,
-  config: ZodValidateConfig = {}
+  config: ZodValidateConfig = {},
 ) {
   const { on, when, formatError = (err) => err.flatten().formErrors } = config;
   const ors: ((
-    state: Parameters<Exclude<Validate<Value>, undefined>>[0]
+    state: Parameters<Exclude<Validate<Value>, undefined>>[0],
   ) => Promise<string[] | undefined>)[] = [];
   const ifDirty = !!when?.includes("dirty");
   const ifTouched = !!when?.includes("touched");
 
   const chain = Object.assign(
     async (
-      state: Parameters<Exclude<Validate<Value>, undefined>>[0]
+      state: Parameters<Exclude<Validate<Value>, undefined>>[0],
     ): Promise<string[] | undefined> => {
       let result: string[] | undefined;
       const shouldHandleEvent =
@@ -94,7 +94,7 @@ export function zodValidate<Value>(
         ors.push(or);
         return chain;
       },
-    }
+    },
   );
 
   return chain;

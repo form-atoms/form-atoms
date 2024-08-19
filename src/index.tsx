@@ -50,7 +50,7 @@ function FormAtom<Fields extends FormFields>(
     | {
         atom: FormAtom<Fields>;
         component: React.ComponentType<UseForm<Fields>>;
-      }
+      },
 ) {
   const form = useForm(props.atom);
 
@@ -70,7 +70,7 @@ function FormAtom<Fields extends FormFields>(
  */
 export function InputField<
   Type extends React.HTMLInputTypeAttribute,
-  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>
+  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>,
 >(props: InputFieldProps<Type, Value>) {
   const fieldAtom = useInputField(props.atom, props);
   return render(props, fieldAtom);
@@ -85,7 +85,7 @@ export function InputField<
  */
 export function SelectField<
   Value extends string = string,
-  Multiple extends Readonly<boolean> = false
+  Multiple extends Readonly<boolean> = false,
 >(props: SelectFieldProps<Value, Multiple>) {
   const fieldAtom = useSelectField(props.atom, props);
   return render(props, fieldAtom);
@@ -99,7 +99,7 @@ export function SelectField<
  * @param {FieldProps<Value>} props - Component props
  */
 export function TextareaField<Value extends string>(
-  props: TextareaFieldProps<Value>
+  props: TextareaFieldProps<Value>,
 ) {
   const fieldAtom = useTextareaField(props.atom, props);
   return render(props, fieldAtom);
@@ -114,11 +114,11 @@ function render(
             | UseTextareaFieldProps<any>
             | UseSelectFieldProps<any, any>,
           state: UseFieldState<any>,
-          actions: UseFieldActions<any>
+          actions: UseFieldActions<any>,
         ): JSX.Element;
       }
     | { component: string | React.ComponentType<any> },
-  fieldAtom: { props: any; state: any; actions: any }
+  fieldAtom: { props: any; state: any; actions: any },
 ) {
   if ("render" in props) {
     return props.render(fieldAtom.props, fieldAtom.state, fieldAtom.actions);
@@ -158,7 +158,7 @@ export function Field<Value>(props: FieldProps<Value>) {
  *   comprised of other atoms for managing the state of the form.
  */
 export function formAtom<Fields extends FormFields>(
-  fields: Fields
+  fields: Fields,
 ): FormAtom<Fields> {
   const fieldsAtom = atomWithReset(fields);
   const valuesAtom = atom((get) => {
@@ -175,7 +175,7 @@ export function formAtom<Fields extends FormFields>(
           setPath(values, path, []);
         }
       },
-      { includeEmptyArrays: true }
+      { includeEmptyArrays: true },
     );
 
     return values;
@@ -221,7 +221,7 @@ export function formAtom<Fields extends FormFields>(
           set(fieldAtom.errors, errors);
           set(
             fieldAtom.validateStatus,
-            errors.length > 0 ? "invalid" : "valid"
+            errors.length > 0 ? "invalid" : "valid",
           );
         }
 
@@ -262,7 +262,7 @@ export function formAtom<Fields extends FormFields>(
     null,
     (get, set, event = "user") => {
       event && validateFields(get, set, event);
-    }
+    },
   );
 
   const errorsAtom = atom((get) => {
@@ -396,7 +396,7 @@ export function formAtom<Fields extends FormFields>(
  */
 export function useForm<Fields extends FormFields>(
   formAtom: FormAtom<Fields>,
-  options?: UseAtomOptions
+  options?: UseAtomOptions,
 ): UseForm<Fields> {
   const form = useAtomValue(formAtom, options);
   const fieldAtoms = useAtomValue(form.fields, options);
@@ -428,7 +428,7 @@ export function useForm<Fields extends FormFields>(
         };
       },
     }),
-    [fieldAtoms, validate, reset, handleSubmit]
+    [fieldAtoms, validate, reset, handleSubmit],
   );
 }
 
@@ -445,7 +445,7 @@ export function useForm<Fields extends FormFields>(
  */
 export function useFormState<Fields extends FormFields>(
   formAtom: FormAtom<Fields>,
-  options?: UseAtomOptions
+  options?: UseAtomOptions,
 ): UseFormState<Fields> {
   const form = useAtomValue(formAtom, options);
   const fieldAtoms = useAtomValue(form.fields, options);
@@ -477,7 +477,7 @@ export function useFormState<Fields extends FormFields>(
       submitCount,
       submitStatus,
       validateStatus,
-    ]
+    ],
   );
 }
 
@@ -492,7 +492,7 @@ export function useFormState<Fields extends FormFields>(
  */
 export function useFormActions<Fields extends FormFields>(
   formAtom: FormAtom<Fields>,
-  options?: UseAtomOptions
+  options?: UseAtomOptions,
 ): UseFormActions<Fields> {
   const form = useAtomValue(formAtom, options);
   const updateFields = useSetAtom(form.fields, options);
@@ -505,7 +505,7 @@ export function useFormActions<Fields extends FormFields>(
         e?.preventDefault();
         handleSubmit(values);
       },
-    [handleSubmit]
+    [handleSubmit],
   );
   const [, startTransition] = useTransition();
 
@@ -520,7 +520,7 @@ export function useFormActions<Fields extends FormFields>(
       },
       submit,
     }),
-    [updateFields, reset, validate, submit]
+    [updateFields, reset, validate, submit],
   );
 }
 
@@ -534,7 +534,7 @@ export function useFormActions<Fields extends FormFields>(
  */
 export function useFormErrors<Fields extends FormFields>(
   formAtom: FormAtom<Fields>,
-  options?: UseAtomOptions
+  options?: UseAtomOptions,
 ): UseFormErrors<Fields> {
   const form = useAtomValue(formAtom, options);
   return useAtomValue(form.errors, options);
@@ -550,7 +550,7 @@ export function useFormErrors<Fields extends FormFields>(
  */
 export function useFormValues<Fields extends FormFields>(
   formAtom: FormAtom<Fields>,
-  options?: UseAtomOptions
+  options?: UseAtomOptions,
 ): UseFormValues<Fields> {
   const form = useAtomValue(formAtom, options);
   return useAtomValue(form.values, options);
@@ -568,7 +568,7 @@ export function useFormValues<Fields extends FormFields>(
  */
 export function useFormStatus<Fields extends FormFields>(
   formAtom: FormAtom<Fields>,
-  options?: UseAtomOptions
+  options?: UseAtomOptions,
 ): UseFormStatus {
   const form = useAtomValue(formAtom);
   const submitStatus = useAtomValue(form.submitStatus, options);
@@ -576,7 +576,7 @@ export function useFormStatus<Fields extends FormFields>(
 
   return React.useMemo(
     () => ({ submitStatus, validateStatus }),
-    [submitStatus, validateStatus]
+    [submitStatus, validateStatus],
   );
 }
 
@@ -592,7 +592,7 @@ export function useFormStatus<Fields extends FormFields>(
  */
 export function useFormSubmit<Fields extends FormFields>(
   formAtom: FormAtom<Fields>,
-  options?: UseAtomOptions
+  options?: UseAtomOptions,
 ): UseFormSubmit<Fields> {
   const [, startTransition] = useTransition();
   const form = useAtomValue(formAtom, options);
@@ -605,7 +605,7 @@ export function useFormSubmit<Fields extends FormFields>(
           handleSubmit(values);
         });
       },
-    [handleSubmit]
+    [handleSubmit],
   );
 }
 
@@ -621,7 +621,7 @@ export function useFormSubmit<Fields extends FormFields>(
  * @returns A FieldAtom.
  */
 export function fieldAtom<Value>(
-  config: FieldAtomConfig<Value>
+  config: FieldAtomConfig<Value>,
 ): FieldAtom<Value> {
   const nameAtom = atomWithReset(config.name);
   const initialValueAtom = atomWithReset<Value | undefined>(undefined);
@@ -632,7 +632,7 @@ export function fieldAtom<Value>(
       return config.preprocess && value !== RESET
         ? set(baseValueAtom, config.preprocess(value))
         : set(baseValueAtom, value);
-    }
+    },
   ) as typeof baseValueAtom;
   const touchedAtom = atomWithReset(config.touched ?? false);
   const dirtyAtom = atom((get) => {
@@ -685,7 +685,7 @@ export function fieldAtom<Value>(
       }
 
       resolveErrors();
-    }
+    },
   );
 
   const refAtom = atom<
@@ -743,7 +743,7 @@ export function fieldAtom<Value>(
  */
 export function useFieldActions<Value>(
   fieldAtom: FieldAtom<Value>,
-  options?: UseAtomOptions
+  options?: UseAtomOptions,
 ): UseFieldActions<Value> {
   const field = useAtomValue(fieldAtom, options);
   const setValue = useSetAtom(field.value, options);
@@ -782,7 +782,7 @@ export function useFieldActions<Value>(
       },
       reset,
     }),
-    [setErrors, reset, validate, setValue, setTouched, ref]
+    [setErrors, reset, validate, setValue, setTouched, ref],
   );
 }
 
@@ -797,10 +797,10 @@ export function useFieldActions<Value>(
  */
 export function useInputFieldProps<
   Type extends React.HTMLInputTypeAttribute,
-  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>
+  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>,
 >(
   fieldAtom: FieldAtom<Value>,
-  options: UseInputFieldPropsOptions<Type> = {}
+  options: UseInputFieldPropsOptions<Type> = {},
 ): UseInputFieldProps<Type> {
   const field = useAtomValue(fieldAtom, options);
   const name = useAtomValue(field.name, options);
@@ -819,12 +819,12 @@ export function useInputFieldProps<
       value: fileTypes.has(fieldType)
         ? undefined
         : value === null
-        ? ""
-        : Array.isArray(value)
-        ? value.map((v) => v + "")
-        : value instanceof Date
-        ? formatDateString(value, fieldType)
-        : value,
+          ? ""
+          : Array.isArray(value)
+            ? value.map((v) => v + "")
+            : value instanceof Date
+              ? formatDateString(value, fieldType)
+              : value,
       "aria-invalid": validateStatus === "invalid",
       // @ts-expect-error: it's fine because we default to string which == text
       type: fieldType,
@@ -847,11 +847,11 @@ export function useInputFieldProps<
                 fileTypes.has(anyFieldType)
                   ? "files"
                   : dateTypes.has(anyFieldType)
-                  ? "valueAsDate"
-                  : numberTypes.has(anyFieldType)
-                  ? "valueAsNumber"
-                  : "value"
-              ]
+                    ? "valueAsDate"
+                    : numberTypes.has(anyFieldType)
+                      ? "valueAsNumber"
+                      : "value"
+              ],
         );
 
         startTransition(() => {
@@ -868,7 +868,7 @@ export function useInputFieldProps<
       validate,
       setValue,
       fieldType,
-    ]
+    ],
   );
 }
 
@@ -893,7 +893,7 @@ const fileTypes = new Set(["file"] as const);
  */
 export function useTextareaFieldProps<Value extends string>(
   fieldAtom: FieldAtom<Value>,
-  options: UseTextareaFieldPropsOptions = {}
+  options: UseTextareaFieldPropsOptions = {},
 ): UseTextareaFieldProps<Value> {
   const props = useInputFieldProps<"text", Value>(fieldAtom, options);
   // @ts-expect-error: we are futzing around with onChange/onBlur/ref but
@@ -916,10 +916,10 @@ export function useTextareaFieldProps<Value extends string>(
  */
 export function useSelectFieldProps<
   Value extends string = string,
-  Multiple extends Readonly<boolean> = false
+  Multiple extends Readonly<boolean> = false,
 >(
   fieldAtom: FieldAtom<Multiple extends true ? Value[] : Value>,
-  options: UseSelectFieldPropsOptions<Multiple> = {}
+  options: UseSelectFieldPropsOptions<Multiple> = {},
 ): UseSelectFieldProps<Value, Multiple> {
   const field = useAtomValue(fieldAtom, options);
   const setValue = useSetAtom(field.value, options);
@@ -929,7 +929,7 @@ export function useSelectFieldProps<
   // @ts-expect-error: we will live
   const inputProps = useInputFieldProps<any, string | string[]>(
     fieldAtom,
-    options
+    options,
   );
 
   return React.useMemo(() => {
@@ -979,7 +979,7 @@ export function useSelectFieldProps<
  */
 export function useFieldState<Value>(
   fieldAtom: FieldAtom<Value>,
-  options?: UseAtomOptions
+  options?: UseAtomOptions,
 ): UseFieldState<Value> {
   const field = useAtomValue(fieldAtom, options);
   const value = useAtomValue(field.value, options);
@@ -996,7 +996,7 @@ export function useFieldState<Value>(
       validateStatus,
       errors,
     }),
-    [value, touched, dirty, validateStatus, errors]
+    [value, touched, dirty, validateStatus, errors],
   );
 }
 
@@ -1010,7 +1010,7 @@ export function useFieldState<Value>(
  */
 export function useFieldValue<Value>(
   fieldAtom: FieldAtom<Value>,
-  options?: UseAtomOptions
+  options?: UseAtomOptions,
 ): UseFieldValue<Value> {
   const field = useAtomValue(fieldAtom, options);
   return useAtomValue(field.value, options);
@@ -1026,7 +1026,7 @@ export function useFieldValue<Value>(
  */
 export function useFieldErrors<Value>(
   fieldAtom: FieldAtom<Value>,
-  options?: UseAtomOptions
+  options?: UseAtomOptions,
 ): UseFieldErrors<Value> {
   const field = useAtomValue(fieldAtom, options);
   return useAtomValue(field.errors, options);
@@ -1043,18 +1043,19 @@ export function useFieldErrors<Value>(
 export function useFieldInitialValue<Value>(
   fieldAtom: FieldAtom<Value>,
   initialValue?: Value | typeof RESET,
-  options?: UseFieldInitialValueOptions<Value>
+  options?: UseFieldInitialValueOptions<Value>,
 ): UseFieldInitialValue {
   const field = useAtomValue(fieldAtom, options);
   const store = useStore(options);
   useHydrateAtoms(
+    // @ts-expect-error: it's fine
     initialValue
       ? [
           [field._initialValue, initialValue],
           [field.value, initialValue],
         ]
       : [],
-    options
+    options,
   );
 
   React.useEffect(() => {
@@ -1098,7 +1099,7 @@ function defaultValuesAreEqual(a: unknown, b: unknown): boolean {
  */
 export function useField<Value>(
   fieldAtom: FieldAtom<Value>,
-  options?: UseFieldOptions<Value>
+  options?: UseFieldOptions<Value>,
 ): UseField<Value> {
   useFieldInitialValue(fieldAtom, options?.initialValue, options);
   const actions = useFieldActions<Value>(fieldAtom, options);
@@ -1116,10 +1117,10 @@ export function useField<Value>(
  */
 export function useInputField<
   Type extends React.HTMLInputTypeAttribute,
-  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>
+  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>,
 >(
   fieldAtom: FieldAtom<Value>,
-  options?: UseInputFieldOptions<Type, Value>
+  options?: UseInputFieldOptions<Type, Value>,
 ): UseInputField<Type, Value> {
   const props = useInputFieldProps(fieldAtom, options);
   return _useField<Type, Value>(fieldAtom, props, options);
@@ -1135,10 +1136,10 @@ export function useInputField<
  */
 export function useSelectField<
   Multiple extends Readonly<boolean> = false,
-  Value extends string = string
+  Value extends string = string,
 >(
   fieldAtom: FieldAtom<Multiple extends true ? Value[] : Value>,
-  options?: UseSelectFieldOptions<Value, Multiple>
+  options?: UseSelectFieldOptions<Value, Multiple>,
 ): UseSelectField<Value, Multiple> {
   const props = useSelectFieldProps<Value, Multiple>(fieldAtom, options);
   // @ts-expect-error: it's fine
@@ -1155,7 +1156,7 @@ export function useSelectField<
  */
 export function useTextareaField<Value extends string>(
   fieldAtom: FieldAtom<Value>,
-  options?: UseTextareaFieldOptions<Value>
+  options?: UseTextareaFieldOptions<Value>,
 ): UseTextareaField<Value> {
   const props = useTextareaFieldProps(fieldAtom, options);
   return _useField<Value>(fieldAtom, props, options);
@@ -1164,20 +1165,20 @@ export function useTextareaField<Value extends string>(
 function _useField<Value extends string>(
   fieldAtom: FieldAtom<Value>,
   props: UseTextareaFieldProps<Value>,
-  options?: UseTextareaFieldOptions<Value>
+  options?: UseTextareaFieldOptions<Value>,
 ): UseTextareaField<Value>;
 function _useField<Multiple extends Readonly<boolean>, Value extends string>(
   fieldAtom: FieldAtom<Value>,
   props: UseSelectFieldProps<Value, Multiple>,
-  options?: UseSelectFieldOptions<Value, Multiple>
+  options?: UseSelectFieldOptions<Value, Multiple>,
 ): UseSelectField<Value, Multiple>;
 function _useField<
   Type extends React.HTMLInputTypeAttribute,
-  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>
+  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>,
 >(
   fieldAtom: FieldAtom<Value>,
   props: UseInputFieldProps<Type>,
-  options?: UseInputFieldOptions<Type, Value>
+  options?: UseInputFieldOptions<Type, Value>,
 ): UseInputField<Type, Value>;
 function _useField(fieldAtom: FieldAtom<any>, props: any, options?: any): any {
   const field = useField(fieldAtom, options);
@@ -1225,7 +1226,7 @@ export function walkFields<Fields extends FormFields>(
   options: {
     includeEmptyArrays: true;
   },
-  path?: string[]
+  path?: string[],
 ): void;
 export function walkFields<Fields extends FormFields>(
   fields: Fields,
@@ -1233,7 +1234,7 @@ export function walkFields<Fields extends FormFields>(
   options: {
     includeEmptyArrays: false;
   },
-  path?: string[]
+  path?: string[],
 ): void;
 export function walkFields<Fields extends FormFields>(
   fields: Fields,
@@ -1241,13 +1242,13 @@ export function walkFields<Fields extends FormFields>(
   options?: {
     includeEmptyArrays?: boolean;
   },
-  path?: string[]
+  path?: string[],
 ): void;
 export function walkFields<Fields extends FormFields>(
   fields: Fields,
   visitor: (field: FieldAtom<any>, path: string[]) => void | false,
   options: any = {},
-  path: string[] = []
+  path: string[] = [],
 ): void {
   for (const key in fields) {
     path.push(key);
@@ -1283,7 +1284,7 @@ export function walkFields<Fields extends FormFields>(
 
 export type InputFieldProps<
   Type extends React.HTMLInputTypeAttribute,
-  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>
+  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>,
 > = (UseInputFieldOptions<Type, Value> & {
   /**
    * A field atom
@@ -1306,7 +1307,7 @@ export type InputFieldProps<
         render(
           props: UseInputFieldProps<Type>,
           state: UseFieldState<Value>,
-          actions: UseFieldActions<Value>
+          actions: UseFieldActions<Value>,
         ): JSX.Element;
       }
     | {
@@ -1319,7 +1320,7 @@ export type InputFieldProps<
 
 export type SelectFieldProps<
   Value extends string,
-  Multiple extends Readonly<boolean> = false
+  Multiple extends Readonly<boolean> = false,
 > = (UseSelectFieldOptions<Value, Multiple> & {
   /**
    * A field atom
@@ -1342,7 +1343,7 @@ export type SelectFieldProps<
         render(
           props: UseSelectFieldProps<Value, Multiple>,
           state: UseFieldState<Multiple extends true ? Value[] : Value>,
-          actions: UseFieldActions<Multiple extends true ? Value[] : Value>
+          actions: UseFieldActions<Multiple extends true ? Value[] : Value>,
         ): JSX.Element;
       }
     | {
@@ -1378,7 +1379,7 @@ export type TextareaFieldProps<Value extends string> =
           render(
             props: UseTextareaFieldProps<Value>,
             state: UseFieldState<Value>,
-            actions: UseFieldActions<Value>
+            actions: UseFieldActions<Value>,
           ): JSX.Element;
         }
       | {
@@ -1411,7 +1412,7 @@ export type FieldProps<Value> = (UseAtomOptions & {
          */
         render(
           state: UseFieldState<Value>,
-          actions: UseFieldActions<Value>
+          actions: UseFieldActions<Value>,
         ): JSX.Element;
       }
     | {
@@ -1532,8 +1533,8 @@ export type FieldAtom<Value> = Atom<{
             | HTMLInputElement
             | HTMLTextAreaElement
             | HTMLSelectElement
-            | null
-        ) => HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null)
+            | null,
+        ) => HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null),
     ],
     void
   >;
@@ -1546,7 +1547,7 @@ export type FieldAtom<Value> = Atom<{
       | Value
       | undefined
       | typeof RESET
-      | ((prev: Value | undefined) => Value | undefined)
+      | ((prev: Value | undefined) => Value | undefined),
     ],
     void
   >;
@@ -1618,7 +1619,7 @@ export type FormAtom<Fields extends FormFields> = Atom<{
   _validateFields: (
     get: Getter,
     set: Setter,
-    event: ValidateOn
+    event: ValidateOn,
   ) => Promise<void>;
 }>;
 
@@ -1645,11 +1646,8 @@ export type FormFields = {
  * type NameFormValues = FormValues<typeof nameForm>
  * ```
  */
-export type FormValues<Form extends FormAtom<any>> = Form extends FormAtom<
-  infer Fields
->
-  ? FormFieldValues<Fields>
-  : never;
+export type FormValues<Form extends FormAtom<any>> =
+  Form extends FormAtom<infer Fields> ? FormFieldValues<Fields> : never;
 
 /**
  * A utility type for inferring the error types of a form's nested field atoms.
@@ -1663,11 +1661,8 @@ export type FormValues<Form extends FormAtom<any>> = Form extends FormAtom<
  * type NameFormErrors = FormErrors<typeof nameForm>
  * ```
  */
-export type FormErrors<Form extends FormAtom<any>> = Form extends FormAtom<
-  infer Fields
->
-  ? FormFieldErrors<Fields>
-  : never;
+export type FormErrors<Form extends FormAtom<any>> =
+  Form extends FormAtom<infer Fields> ? FormFieldErrors<Fields> : never;
 
 /**
  * An object containing the values of a form's nested field atoms
@@ -1676,14 +1671,14 @@ export type FormFieldValues<Fields extends FormFields> = Flatten<{
   [Key in keyof Fields]: Fields[Key] extends FieldAtom<infer Value>
     ? Value
     : Fields[Key] extends FormFields
-    ? FormFieldValues<Fields[Key]>
-    : Fields[Key] extends Array<infer Item>
-    ? Item extends FieldAtom<infer Value>
-      ? Value[]
-      : Item extends FormFields
-      ? FormFieldValues<Item>[]
-      : never
-    : never;
+      ? FormFieldValues<Fields[Key]>
+      : Fields[Key] extends Array<infer Item>
+        ? Item extends FieldAtom<infer Value>
+          ? Value[]
+          : Item extends FormFields
+            ? FormFieldValues<Item>[]
+            : never
+        : never;
 }>;
 
 /**
@@ -1693,14 +1688,14 @@ export type FormFieldErrors<Fields extends FormFields> = Flatten<{
   [Key in keyof Fields]: Fields[Key] extends FieldAtom<any>
     ? string[]
     : Fields[Key] extends FormFields
-    ? FormFieldErrors<Fields[Key]>
-    : Fields[Key] extends Array<infer Item>
-    ? Item extends FieldAtom<any>
-      ? string[][]
-      : Item extends FormFields
-      ? FormFieldErrors<Item>[]
-      : never
-    : never;
+      ? FormFieldErrors<Fields[Key]>
+      : Fields[Key] extends Array<infer Item>
+        ? Item extends FieldAtom<any>
+          ? string[][]
+          : Item extends FormFields
+            ? FormFieldErrors<Item>[]
+            : never
+        : never;
 }>;
 
 /**
@@ -1710,14 +1705,14 @@ export type TouchedFields<Fields extends FormFields> = Flatten<{
   [Key in keyof Fields]: Fields[Key] extends FieldAtom<any>
     ? boolean
     : Fields[Key] extends FormFields
-    ? FormFieldValues<Fields[Key]>
-    : Fields[Key] extends Array<infer Item>
-    ? Item extends FieldAtom<any>
-      ? boolean[]
-      : Item extends FormFields
-      ? TouchedFields<Item>[]
-      : never
-    : never;
+      ? FormFieldValues<Fields[Key]>
+      : Fields[Key] extends Array<infer Item>
+        ? Item extends FieldAtom<any>
+          ? boolean[]
+          : Item extends FormFields
+            ? TouchedFields<Item>[]
+            : never
+        : never;
 }>;
 
 export type UseForm<Fields extends FormFields> = {
@@ -1732,7 +1727,7 @@ export type UseForm<Fields extends FormFields> = {
    *   when the form is submitted
    */
   submit(
-    handleSubmit: (values: FormFieldValues<Fields>) => void | Promise<void>
+    handleSubmit: (values: FormFieldValues<Fields>) => void | Promise<void>,
   ): (event?: React.FormEvent<HTMLFormElement>) => void;
   /**
    * A function that validates the form's nested field atoms with a
@@ -1758,9 +1753,9 @@ export type UseFormStatus = {
 };
 
 export type UseFormSubmit<Fields extends FormFields> = {
-  (values: (value: FormFieldValues<Fields>) => void | Promise<void>): (
-    event?: React.FormEvent<HTMLFormElement>
-  ) => void;
+  (
+    values: (value: FormFieldValues<Fields>) => void | Promise<void>,
+  ): (event?: React.FormEvent<HTMLFormElement>) => void;
 };
 
 export type UseFormState<Fields extends FormFields> = {
@@ -1807,7 +1802,7 @@ export type UseFormActions<Fields extends FormFields> = {
    *   fields.
    */
   updateFields(
-    fields: ExtractAtomArgs<ExtractAtomValue<FormAtom<Fields>>["fields"]>[0]
+    fields: ExtractAtomArgs<ExtractAtomValue<FormAtom<Fields>>["fields"]>[0],
   ): void;
   /**
    * A function for handling form submissions.
@@ -1816,7 +1811,7 @@ export type UseFormActions<Fields extends FormFields> = {
    *   when the form is submitted
    */
   submit(
-    handleSubmit: (values: FormFieldValues<Fields>) => void | Promise<void>
+    handleSubmit: (values: FormFieldValues<Fields>) => void | Promise<void>,
   ): (event?: React.FormEvent<HTMLFormElement>) => void;
   /**
    * A function that validates the form's nested field atoms with a
@@ -1846,7 +1841,7 @@ export type UseField<Value> = {
 
 export type UseInputField<
   Type extends React.HTMLInputTypeAttribute,
-  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>
+  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>,
 > = {
   /**
    * `<input>` props for the field
@@ -1873,10 +1868,10 @@ export type UseInputFieldProps<Type extends React.HTMLInputTypeAttribute> = {
   value: Type extends DateType
     ? string
     : Type extends NumberType
-    ? number | string
-    : Type extends FileType
-    ? undefined
-    : string;
+      ? number | string
+      : Type extends FileType
+        ? undefined
+        : string;
   /**
    * The type of the field
    *
@@ -1898,7 +1893,7 @@ export type UseInputFieldProps<Type extends React.HTMLInputTypeAttribute> = {
 };
 
 export type UseInputFieldPropsOptions<
-  Type extends React.HTMLInputTypeAttribute
+  Type extends React.HTMLInputTypeAttribute,
 > = UseAtomOptions & {
   /**
    * The type of the `<input>` element
@@ -1921,14 +1916,14 @@ export type InputFieldValueForType<Type extends React.HTMLInputTypeAttribute> =
   Type extends NumberType
     ? number | null
     : Type extends DateType
-    ? Date | null
-    : Type extends FileType
-    ? FileList | null
-    : string;
+      ? Date | null
+      : Type extends FileType
+        ? FileList | null
+        : string;
 
 export type UseSelectField<
   Value extends string,
-  Multiple extends Readonly<boolean> = false
+  Multiple extends Readonly<boolean> = false,
 > = {
   /**
    * `<input>` props for the field
@@ -1946,7 +1941,7 @@ export type UseSelectField<
 
 export type UseSelectFieldProps<
   Value extends string,
-  Multiple extends Readonly<boolean> = false
+  Multiple extends Readonly<boolean> = false,
 > = {
   /**
    * The name of the field if there is one
@@ -2035,7 +2030,7 @@ export type UseFieldActions<Value> = {
    * @param {Value} value - The new value of the field
    */
   setValue(
-    value: ExtractAtomArgs<ExtractAtomValue<FieldAtom<Value>>["value"]>[0]
+    value: ExtractAtomArgs<ExtractAtomValue<FieldAtom<Value>>["value"]>[0],
   ): void;
   /**
    * A function for changing the touched state of a field. This will trigger a
@@ -2044,7 +2039,7 @@ export type UseFieldActions<Value> = {
    * @param {boolean} touched - The new touched state of the field
    */
   setTouched(
-    touched: ExtractAtomArgs<ExtractAtomValue<FieldAtom<Value>>["touched"]>[0]
+    touched: ExtractAtomArgs<ExtractAtomValue<FieldAtom<Value>>["touched"]>[0],
   ): void;
   /**
    * A function for changing the error state of a field
@@ -2052,7 +2047,7 @@ export type UseFieldActions<Value> = {
    * @param {string[]} errors - The new error state of the field
    */
   setErrors(
-    errors: ExtractAtomArgs<ExtractAtomValue<FieldAtom<Value>>["errors"]>[0]
+    errors: ExtractAtomArgs<ExtractAtomValue<FieldAtom<Value>>["errors"]>[0],
   ): void;
   /**
    * Focuses the field atom's `<input>` element if there is one bound to it.
@@ -2096,7 +2091,7 @@ export type UseFieldInitialValue = void;
 export type UseFieldOptions<Value> = UseAtomOptions & { initialValue?: Value };
 export type UseInputFieldOptions<
   Type extends React.HTMLInputTypeAttribute,
-  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>
+  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>,
 > = UseInputFieldPropsOptions<Type> & {
   /**
    * The initial value of the field
@@ -2105,7 +2100,7 @@ export type UseInputFieldOptions<
 };
 export type UseSelectFieldOptions<
   Value extends string = string,
-  Multiple extends Readonly<boolean> = false
+  Multiple extends Readonly<boolean> = false,
 > = UseSelectFieldPropsOptions<Multiple> & {
   /**
    * The initial value of the field
@@ -2221,7 +2216,7 @@ export type UseFieldInitialValueOptions<Value> = UseAtomOptions & {
    */
   areEqual?: (
     a: Value | typeof RESET,
-    b: Value | typeof RESET | undefined
+    b: Value | typeof RESET | undefined,
   ) => boolean;
 };
 
