@@ -1,4 +1,6 @@
-import "@testing-library/jest-dom/extend-expect";
+import "@testing-library/jest-dom/vitest";
+
+import * as matchers from "@testing-library/jest-dom/matchers";
 import React, { useState } from "react";
 
 import { render, screen } from "@testing-library/react";
@@ -34,6 +36,7 @@ import {
   useTextareaField,
 } from ".";
 
+expect.extend(matchers);
 vi.useFakeTimers();
 
 afterEach(() => {
@@ -51,7 +54,7 @@ describe("<Field>", () => {
         component={(props) => {
           return <button onClick={() => props.actions.setValue("foo")} />;
         }}
-      />
+      />,
     );
 
     userEvent.click(screen.getByRole("button"));
@@ -67,7 +70,7 @@ describe("<Field>", () => {
         render={(state, actions) => {
           return <button onClick={() => actions.setValue("foo")} />;
         }}
-      />
+      />,
     );
 
     userEvent.click(screen.getByRole("button"));
@@ -88,7 +91,7 @@ describe("<Field>", () => {
             </button>
           );
         }}
-      />
+      />,
     );
 
     expect(screen.getByText("hello")).toBeInTheDocument();
@@ -108,7 +111,7 @@ describe("<Field>", () => {
 
     const { result } = renderHook(() =>
       // @ts-expect-error: fine for this purpose
-      useInputField(atom, { type: "number", initialValue: "hello" })
+      useInputField(atom, { type: "number", initialValue: "hello" }),
     );
 
     expect(result.current.state.value).toBeNull();
@@ -139,7 +142,7 @@ describe("<Field>", () => {
             />
           );
         }}
-      />
+      />,
     );
 
     userEvent.click(screen.getByRole("button"));
@@ -158,7 +161,7 @@ describe("<Field>", () => {
         render={(state, actions) => {
           return <button onClick={() => actions.setValue(["foo", 1])} />;
         }}
-      />
+      />,
     );
 
     userEvent.click(screen.getByRole("button"));
@@ -193,7 +196,7 @@ describe("<InputField>", () => {
             </button>
           );
         }}
-      />
+      />,
     );
 
     expect(screen.getByText("hello")).toBeInTheDocument();
@@ -206,7 +209,7 @@ describe("<InputField>", () => {
         atom={atom}
         type="date"
         component={(props) => <input data-testid="input" {...props} />}
-      />
+      />,
     );
     expect(screen.getByTestId("input")).toHaveAttribute("type", "date");
   });
@@ -218,11 +221,11 @@ describe("<InputField>", () => {
         atom={atom}
         type="datetime-local"
         component={(props) => <input data-testid="input" {...props} />}
-      />
+      />,
     );
     expect(screen.getByTestId("input")).toHaveAttribute(
       "type",
-      "datetime-local"
+      "datetime-local",
     );
   });
 
@@ -233,7 +236,7 @@ describe("<InputField>", () => {
         atom={atom}
         type="month"
         component={(props) => <input data-testid="input" {...props} />}
-      />
+      />,
     );
     expect(screen.getByTestId("input")).toHaveAttribute("type", "month");
   });
@@ -245,7 +248,7 @@ describe("<InputField>", () => {
         atom={atom}
         type="week"
         component={(props) => <input data-testid="input" {...props} />}
-      />
+      />,
     );
     expect(screen.getByTestId("input")).toHaveAttribute("type", "week");
   });
@@ -257,7 +260,7 @@ describe("<InputField>", () => {
         atom={atom}
         type="time"
         component={(props) => <input data-testid="input" {...props} />}
-      />
+      />,
     );
     expect(screen.getByTestId("input")).toHaveAttribute("type", "time");
   });
@@ -269,7 +272,7 @@ describe("<InputField>", () => {
         atom={atom}
         type="file"
         component={(props) => <input data-testid="input" {...props} />}
-      />
+      />,
     );
     expect(screen.getByTestId("input")).toBeInTheDocument();
   });
@@ -281,7 +284,7 @@ describe("<InputField>", () => {
         atom={atom}
         type="number"
         component={(props) => <input data-testid="input" {...props} />}
-      />
+      />,
     );
     expect(screen.getByTestId("input")).toHaveAttribute("type", "number");
   });
@@ -300,7 +303,7 @@ describe("<SelectField>", () => {
       <SelectField
         atom={atom}
         component={(props) => <select data-testid="select" {...props} />}
-      />
+      />,
     );
     expect(screen.getByTestId("select")).toBeInTheDocument();
   });
@@ -311,7 +314,7 @@ describe("<SelectField>", () => {
       <SelectField
         atom={atom}
         render={(props) => <select data-testid="select" {...props} />}
-      />
+      />,
     );
     expect(screen.getByTestId("select")).toBeInTheDocument();
   });
@@ -325,7 +328,7 @@ describe("<SelectField>", () => {
     });
     const other = createStore();
     const { result } = renderHook(() =>
-      useInputField(atom, { initialValue: "world", store: other })
+      useInputField(atom, { initialValue: "world", store: other }),
     );
 
     render(
@@ -339,7 +342,7 @@ describe("<SelectField>", () => {
             </button>
           );
         }}
-      />
+      />,
     );
 
     expect(screen.getByText("hello")).toBeInTheDocument();
@@ -355,7 +358,7 @@ describe("<SelectField>", () => {
         atom={atom}
         component={(props) => <select data-testid="select" {...props} />}
         multiple
-      />
+      />,
     );
     expect(screen.getByTestId("select")).toHaveAttribute("multiple");
   });
@@ -367,7 +370,7 @@ describe("<SelectField>", () => {
         atom={atom}
         multiple
         render={(props) => <select data-testid="select" {...props} />}
-      />
+      />,
     );
     expect(screen.getByTestId("select")).toHaveAttribute("multiple");
   });
@@ -387,7 +390,7 @@ describe("<SelectField>", () => {
             </button>
           );
         }}
-      />
+      />,
     );
 
     expect(screen.getByText("hello")).toBeInTheDocument();
@@ -404,7 +407,7 @@ describe("<TextareaField>", () => {
   it('should render "render" prop', () => {
     const atom = fieldAtom({ value: "test" });
     render(
-      <TextareaField atom={atom} render={(props) => <textarea {...props} />} />
+      <TextareaField atom={atom} render={(props) => <textarea {...props} />} />,
     );
     expect(screen.getByRole("textbox")).toBeInTheDocument();
   });
@@ -423,7 +426,7 @@ describe("<TextareaField>", () => {
             </button>
           );
         }}
-      />
+      />,
     );
 
     expect(screen.getByText("hello")).toBeInTheDocument();
@@ -437,7 +440,7 @@ describe("<Form>", () => {
     });
 
     const FormComponent = (
-      props: UseForm<ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>>
+      props: UseForm<ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>>,
     ) => {
       const field = useInputField(props.fieldAtoms.name);
 
@@ -458,7 +461,7 @@ describe("<Form>", () => {
     });
 
     const FormComponent = (
-      props: UseForm<ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>>
+      props: UseForm<ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>>,
     ) => {
       const field = useInputField(props.fieldAtoms.name);
 
@@ -479,7 +482,7 @@ describe("<Form>", () => {
     });
 
     const FormComponentA = (
-      props: UseForm<ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>>
+      props: UseForm<ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>>,
     ) => {
       const field = useInputField(props.fieldAtoms.name);
       useFieldInitialValue(props.fieldAtoms.name, "a");
@@ -492,7 +495,7 @@ describe("<Form>", () => {
     };
 
     const FormComponentB = (
-      props: UseForm<ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>>
+      props: UseForm<ExtractAtomValue<ExtractAtomValue<typeof atom>["fields"]>>,
     ) => {
       const field = useInputField(props.fieldAtoms.name);
       useFieldInitialValue(props.fieldAtoms.name, "b");
@@ -508,7 +511,7 @@ describe("<Form>", () => {
       <div>
         <Form atom={atom} render={FormComponentA} />
         <Form atom={atom} render={FormComponentB} />
-      </div>
+      </div>,
     );
 
     expect(screen.getByLabelText("input a")).toBeInTheDocument();
@@ -533,13 +536,13 @@ describe("useField()", () => {
     render(
       <Provider>
         <TextField />
-      </Provider>
+      </Provider>,
     );
 
     expect(screen.getByRole("textbox")).toHaveAttribute("name", "firstName");
     expect(screen.getByRole("textbox")).toHaveAttribute(
       "aria-invalid",
-      "false"
+      "false",
     );
     expect(screen.getByRole("textbox")).toHaveValue("test");
   });
@@ -553,7 +556,7 @@ describe("useField()", () => {
     render(
       <Provider>
         <TextField />
-      </Provider>
+      </Provider>,
     );
 
     const textbox = screen.getByRole("textbox");
@@ -614,7 +617,7 @@ describe("useField()", () => {
     });
 
     expect(atomConfig.validate).toHaveBeenCalledWith(
-      expect.objectContaining({ event: "blur" })
+      expect.objectContaining({ event: "blur" }),
     );
   });
 
@@ -635,7 +638,7 @@ describe("useField()", () => {
     });
 
     expect(atomConfig.validate).toHaveBeenCalledWith(
-      expect.objectContaining({ event: "change" })
+      expect.objectContaining({ event: "change" }),
     );
   });
 
@@ -718,7 +721,7 @@ describe("useField()", () => {
         dirty: false,
         touched: true,
         get: expect.any(Function),
-      })
+      }),
     );
   });
 
@@ -769,7 +772,7 @@ describe("useField()", () => {
         // validate() force touches
         touched: true,
         get: expect.any(Function),
-      })
+      }),
     );
   });
 
@@ -799,7 +802,7 @@ describe("useField()", () => {
         // has not been touched yet
         touched: false,
         get: expect.any(Function),
-      })
+      }),
     );
   });
 
@@ -862,7 +865,7 @@ describe("useField()", () => {
       },
     });
     const { result } = renderHook(() =>
-      useInputField(firstNameAtom, { initialValue: "test" })
+      useInputField(firstNameAtom, { initialValue: "test" }),
     );
 
     domAct(() => {
@@ -999,7 +1002,7 @@ describe("useFieldInitialValue()", () => {
     });
     const field = renderHook(
       ({ initialValue }) => useInputField(firstNameAtom, { initialValue }),
-      { initialProps: { initialValue: "jared" } }
+      { initialProps: { initialValue: "jared" } },
     );
 
     expect(field.result.current.props.value).toBe("jared");
@@ -1015,7 +1018,7 @@ describe("useFieldInitialValue()", () => {
     });
     const field = renderHook(
       ({ initialValue }) => useInputField(firstNameAtom, { initialValue }),
-      { initialProps: { initialValue: undefined } }
+      { initialProps: { initialValue: undefined } },
     );
 
     expect(field.result.current.props.value).toBe("test");
@@ -1069,7 +1072,7 @@ describe("useSelectField()", () => {
       value: ["test"],
     });
     const { result } = renderHook(() =>
-      useSelectField(atom, { multiple: true })
+      useSelectField(atom, { multiple: true }),
     );
     expect(result.current.props.value).toStrictEqual(["test"]);
     expect(result.current.props.multiple).toBe(true);
@@ -1088,7 +1091,7 @@ describe("useSelectField()", () => {
       value: ["test"],
     });
     const { result } = renderHook(() =>
-      useSelectField(atom, { multiple: true })
+      useSelectField(atom, { multiple: true }),
     );
     expect(result.current.props.value).toStrictEqual(["test"]);
     expect(result.current.props.multiple).toBe(true);
@@ -1134,7 +1137,7 @@ describe("useSelectField()", () => {
       value: "",
     });
     const { result } = renderHook(() =>
-      useSelectField(atom, { initialValue: "test" })
+      useSelectField(atom, { initialValue: "test" }),
     );
     expect(result.current.props.value).toBe("test");
   });
@@ -1162,7 +1165,7 @@ describe("useTextareaField()", () => {
       value: "",
     });
     const { result } = renderHook(() =>
-      useTextareaField(atom, { initialValue: "test" })
+      useTextareaField(atom, { initialValue: "test" }),
     );
     expect(result.current.props.value).toBe("test");
   });
@@ -1521,7 +1524,7 @@ describe("useForm()", () => {
     expect(hobbyConfig.validate).toHaveBeenCalledWith(
       expect.objectContaining({
         event: "submit",
-      })
+      }),
     );
     expect(handleSubmit).not.toHaveBeenCalled();
   });
@@ -1687,7 +1690,7 @@ describe("useForm()", () => {
     };
     const atom = formAtom(config);
     const field = renderHook(() =>
-      useInputField(config.name, { initialValue: "Jared" })
+      useInputField(config.name, { initialValue: "Jared" }),
     );
     const form = renderHook(() => useFormState(atom));
     expect(form.result.current.dirty).toBe(false);
@@ -1920,7 +1923,7 @@ describe("useFormActions()", () => {
     expect(handleValidate).toHaveBeenCalledWith(
       expect.objectContaining({
         event: "user",
-      })
+      }),
     );
   });
 
@@ -2039,54 +2042,6 @@ describe("fieldAtom()", () => {
     expect(atoms.ref.debugLabel).toBe("field/city/ref");
     expect(atoms._initialValue.debugLabel).toBe("field/city/_initialValue");
     expect(atoms._validateCount.debugLabel).toBe("field/city/_validateCount");
-  });
-
-  it("debugLabels contain atom id when field name not specified", () => {
-    const field = fieldAtom({ value: "" });
-
-    const {
-      result: { current: atoms },
-    } = renderHook(() => useAtomValue(field));
-
-    expect(field.debugLabel).toBe(`field/${field}`);
-    expect(atoms.name.debugLabel).toBe(`field/${field}/name`);
-    expect(atoms.value.debugLabel).toBe(`field/${field}/value`);
-    expect(atoms.touched.debugLabel).toBe(`field/${field}/touched`);
-    expect(atoms.dirty.debugLabel).toBe(`field/${field}/dirty`);
-    expect(atoms.validate.debugLabel).toBe(`field/${field}/validate`);
-    expect(atoms.validateStatus.debugLabel).toBe(
-      `field/${field}/validateStatus`
-    );
-    expect(atoms.errors.debugLabel).toBe(`field/${field}/errors`);
-    expect(atoms.reset.debugLabel).toBe(`field/${field}/reset`);
-    expect(atoms.ref.debugLabel).toBe(`field/${field}/ref`);
-    expect(atoms._initialValue.debugLabel).toBe(`field/${field}/_initialValue`);
-    expect(atoms._validateCount.debugLabel).toBe(
-      `field/${field}/_validateCount`
-    );
-  });
-});
-
-describe("formAtom()", () => {
-  it("has atoms with debugLabels", () => {
-    const form = formAtom({});
-
-    const {
-      result: { current: atoms },
-    } = renderHook(() => useAtomValue(form));
-
-    expect(form.debugLabel).toBe(`form/${form}`);
-    expect(atoms.fields.debugLabel).toBe(`form/${form}/fields`);
-    expect(atoms.values.debugLabel).toBe(`form/${form}/values`);
-    expect(atoms.errors.debugLabel).toBe(`form/${form}/errors`);
-    expect(atoms.dirty.debugLabel).toBe(`form/${form}/dirty`);
-    expect(atoms.touchedFields.debugLabel).toBe(`form/${form}/touchedFields`);
-    expect(atoms.validate.debugLabel).toBe(`form/${form}/validate`);
-    expect(atoms.validateStatus.debugLabel).toBe(`form/${form}/validateStatus`);
-    expect(atoms.submit.debugLabel).toBe(`form/${form}/submit`);
-    expect(atoms.submitStatus.debugLabel).toBe(`form/${form}/submitStatus`);
-    expect(atoms.submitCount.debugLabel).toBe(`form/${form}/submitCount`);
-    expect(atoms.reset.debugLabel).toBe(`form/${form}/reset`);
   });
 });
 

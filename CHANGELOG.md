@@ -1,9 +1,8 @@
 ## [3.2.5](https://github.com/form-atoms/form-atoms/compare/v3.2.4...v3.2.5) (2024-03-24)
 
-
 ### Bug Fixes
 
-* **debugLabels:** composite debug label with a common prefix ([#74](https://github.com/form-atoms/form-atoms/issues/74)) ([a8150ed](https://github.com/form-atoms/form-atoms/commit/a8150ed6f8b6b4a2a38ccde5630190851f152eb9)), closes [#72](https://github.com/form-atoms/form-atoms/issues/72)
+- **debugLabels:** composite debug label with a common prefix ([#74](https://github.com/form-atoms/form-atoms/issues/74)) ([a8150ed](https://github.com/form-atoms/form-atoms/commit/a8150ed6f8b6b4a2a38ccde5630190851f152eb9)), closes [#72](https://github.com/form-atoms/form-atoms/issues/72)
 
 ## [3.2.4](https://github.com/form-atoms/form-atoms/compare/v3.2.3...v3.2.4) (2024-02-11)
 

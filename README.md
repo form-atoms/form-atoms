@@ -4,13 +4,12 @@
 
 Atomic form primitives for [Jotai](https://jotai.org/docs/api/core)
 
-
 ```sh
 npm i form-atoms jotai
 ```
 
 <a href="https://flexstack.com"><img src="https://flexstack.com/images/supported-by-flexstack.svg" height="32" alt="Supported by FlexStack"></a>
-    
+
 <hr>
 
 <p>
@@ -44,7 +43,7 @@ npm i form-atoms jotai
 - [x] **Controlled inputs** because no, uncontrolled inputs are not preferrable
 - [x] **Ready for concurrent React** - validation updates have a lower priority
 - [x] **Familiar API** that is very similar to other form libraries
-- [x] **Async field-level validation** with [Zod support](https://github.com/colinhacks/zod)
+- [x] **Async field-level validation** with [Zod](https://github.com/colinhacks/zod) and [Valibot](https://valibot.dev/) support
 
 ## Quick start
 
@@ -145,9 +144,10 @@ by using it, but you gain a ton of performance and without footguns.
 | [`FormValues`](#formvalues) | A utility type for inferring the value types of a form's nested field atoms. |
 | [`FormErrors`](#formerrors) | A utility type for inferring the error types of a form's nested field atoms. |
 
-| Validator                          | Description                                                                                                |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| [`form-atoms/zod`](#form-atomszod) | A validator that can be used with the [Zod](https://github.com/colinhacks/zod) library to validate fields. |
+| Validator                                  | Description                                                                                                |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| [`form-atoms/valibot`](#form-atomsvalibot) | A validator that can be used with the [Valibot](https://valibot.dev) library to validate fields.           |
+| [`form-atoms/zod`](#form-atomszod)         | A validator that can be used with the [Zod](https://github.com/colinhacks/zod) library to validate fields. |
 
 ## Recipes
 
@@ -306,8 +306,8 @@ type FieldAtom<Value> = Atom<{
             | HTMLInputElement
             | HTMLTextAreaElement
             | HTMLSelectElement
-            | null
-        ) => HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null)
+            | null,
+        ) => HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null),
     ],
     void
   >;
@@ -367,7 +367,7 @@ and [`useFieldActions`](#usefieldactions).
 ```ts
 type UseInputField<
   Type extends React.HTMLInputTypeAttribute,
-  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>
+  Value extends InputFieldValueForType<Type> = InputFieldValueForType<Type>,
 > = {
   /**
    * `<input>` props for the field
@@ -413,10 +413,10 @@ type UseInputFieldProps<Type extends React.HTMLInputTypeAttribute> = {
   value: Type extends DateType
     ? string
     : Type extends NumberType
-    ? number | string
-    : Type extends FileType
-    ? undefined
-    : string;
+      ? number | string
+      : Type extends FileType
+        ? undefined
+        : string;
   /**
    * The type of the field
    *
@@ -538,7 +538,7 @@ and [`useFieldActions`](#usefieldactions).
 ```ts
 type UseSelectField<
   Value extends string,
-  Multiple extends Readonly<boolean> = false
+  Multiple extends Readonly<boolean> = false,
 > = {
   /**
    * `<input>` props for the field
@@ -575,7 +575,7 @@ A hook that returns a set of props that can be destructured directly into a `<se
 ```ts
 type UseSelectFieldProps<
   Value extends string,
-  Multiple extends Readonly<boolean> = false
+  Multiple extends Readonly<boolean> = false,
 > = {
   /**
    * The name of the field if there is one
@@ -680,7 +680,7 @@ type UseFieldActions<Value> = {
    * @param {Value} value - The new value of the field
    */
   setValue(
-    value: ExtractAtomArgs<ExtractAtomValue<FieldAtom<Value>>["value"]>[0]
+    value: ExtractAtomArgs<ExtractAtomValue<FieldAtom<Value>>["value"]>[0],
   ): void;
   /**
    * A function for changing the touched state of a field. This will trigger a
@@ -689,7 +689,7 @@ type UseFieldActions<Value> = {
    * @param {boolean} touched - The new touched state of the field
    */
   setTouched(
-    touched: ExtractAtomArgs<ExtractAtomValue<FieldAtom<Value>>["touched"]>[0]
+    touched: ExtractAtomArgs<ExtractAtomValue<FieldAtom<Value>>["touched"]>[0],
   ): void;
   /**
    * A function for changing the error state of a field
@@ -697,7 +697,7 @@ type UseFieldActions<Value> = {
    * @param {string[]} errors - The new error state of the field
    */
   setErrors(
-    errors: ExtractAtomArgs<ExtractAtomValue<FieldAtom<Value>>["errors"]>[0]
+    errors: ExtractAtomArgs<ExtractAtomValue<FieldAtom<Value>>["errors"]>[0],
   ): void;
   /**
    * Focuses the field atom's `<input>`, `<select>`, or `<textarea>` element
@@ -892,7 +892,7 @@ type UseFormAtom<Fields extends FormFields> = {
    *   when the form is submitted
    */
   submit(
-    handleSubmit: (values: FormFieldValues<Fields>) => void | Promise<void>
+    handleSubmit: (values: FormFieldValues<Fields>) => void | Promise<void>,
   ): (e?: React.FormEvent<HTMLFormElement>) => void;
   /**
    * A function that validates the form's nested field atoms with a
@@ -988,7 +988,7 @@ type UseFormActions<Fields extends FormFields> = {
    *   fields.
    */
   updateFields(
-    fields: ExtractAtomArgs<ExtractAtomValue<FormAtom<Fields>>["fields"]>[0]
+    fields: ExtractAtomArgs<ExtractAtomValue<FormAtom<Fields>>["fields"]>[0],
   ): void;
   /**
    * A function for handling form submissions.
@@ -997,7 +997,7 @@ type UseFormActions<Fields extends FormFields> = {
    *   when the form is submitted
    */
   submit(
-    handleSubmit: (values: FormFieldValues<Fields>) => void | Promise<void>
+    handleSubmit: (values: FormFieldValues<Fields>) => void | Promise<void>,
   ): (e?: React.FormEvent<HTMLFormElement>) => void;
   /**
    * A function that validates the form's nested field atoms with a
@@ -1103,9 +1103,9 @@ A hook that returns a callback for handling form submission.
 
 ```ts
 type UseFormSubmit<Fields extends FormFields> = {
-  (values: (value: FormFieldValues<Fields>) => void | Promise<void>): (
-    e?: React.FormEvent<HTMLFormElement>
-  ) => void;
+  (
+    values: (value: FormFieldValues<Fields>) => void | Promise<void>,
+  ): (e?: React.FormEvent<HTMLFormElement>) => void;
 };
 ```
 
@@ -1269,6 +1269,32 @@ type NameFormErrors = FormErrors<typeof nameForm>;
 ```
 
 #### [⇗ Back to top](#table-of-contents)
+
+---
+
+## form-atoms/valibot
+
+### createValibotValidator()
+
+Validate your field atoms with Valibot schemas. This function validates on every `"user"` and
+`"submit"` event, in addition to other events you specify.
+
+```ts
+import { formAtom, fieldAtom } from "form-atoms";
+import { createValibotValidator } from "form-atoms/valibot";
+import { parseAsync, string, pipe, minLength } from "valibot";
+
+const valibotValidate = createValibotValidator(parseAsync);
+//...
+const nameForm = formAtom({
+  name: fieldAtom({
+    validate: valibotValidate(pipe(string(), minLength(3, "uh oh")), {
+      on: "submit",
+      when: "dirty",
+    }),
+  }),
+});
+```
 
 ---
 
