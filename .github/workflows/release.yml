@@ -36,14 +36,14 @@ jobs:
 
       - name: Cache node_modules
         id: cache-node-modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: ${{ runner.os }}-modules-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Install
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: pnpm install --reporter=silent --frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: ✅ Check types
         run: pnpm check-types
 
