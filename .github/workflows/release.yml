@@ -57,6 +57,7 @@ jobs:
           directory: coverage
           verbose: false
           fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Build
         if: ${{ github.event_name == 'push' }}
