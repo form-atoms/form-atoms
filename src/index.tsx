@@ -300,7 +300,28 @@ export function formAtom<Fields extends FormFields>(
         );
       }
 
-      const submission = onSubmit(get(valuesAtom));
+      const fields = get(fieldsAtom);
+      const values = {} as FormFieldValues<Fields>;
+
+      walkFields(
+        fields,
+        (field, path) => {
+          if (field) {
+            const fieldAtom = get(field);
+            setPath(values, [...path, "value"], get(fieldAtom.value));
+            setPath(values, [...path, "dirty"], get(fieldAtom.dirty));
+            setPath(values, [...path, "touched"], get(fieldAtom.touched));
+            setPath(values, [...path, "setErrors"], (errors: string[]) => {
+              set(fieldAtom.errors, errors);
+            });
+          } else {
+            setPath(values, path, []);
+          }
+        },
+        { includeEmptyArrays: true },
+      );
+
+      const submission = onSubmit(values);
 
       try {
         if (isPromise(submission)) {
@@ -1664,17 +1685,23 @@ export type FormValues<Form extends FormAtom<any>> =
 export type FormErrors<Form extends FormAtom<any>> =
   Form extends FormAtom<infer Fields> ? FormFieldErrors<Fields> : never;
 
+export type FormFieldValue<V> = {
+  value: V;
+  dirty: boolean;
+  touched: boolean;
+  setErrors: (errors: string[]) => void;
+};
 /**
  * An object containing the values of a form's nested field atoms
  */
 export type FormFieldValues<Fields extends FormFields> = Flatten<{
   [Key in keyof Fields]: Fields[Key] extends FieldAtom<infer Value>
-    ? Value
+    ? FormFieldValue<Value>
     : Fields[Key] extends FormFields
       ? FormFieldValues<Fields[Key]>
       : Fields[Key] extends Array<infer Item>
         ? Item extends FieldAtom<infer Value>
-          ? Value[]
+          ? FormFieldValue<Value>[]
           : Item extends FormFields
             ? FormFieldValues<Item>[]
             : never

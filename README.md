@@ -64,7 +64,23 @@ function Form() {
   return (
     <form
       onSubmit={submit((values) => {
-        console.log(values);
+        // Each field includes metadata alongside the value
+        console.log("First name:", values.name.first.value);
+        console.log("Is first name dirty?", values.name.first.dirty);
+        console.log("Is first name touched?", values.name.first.touched);
+
+        // Include only modified fields to server
+        const changedFields = Object.entries(values.name)
+          .filter(([_, field]) => field.dirty)
+          .reduce((acc, [key, field]) => ({ ...acc, [key]: field.value }), {});
+
+        // Set custom validation errors
+        if (values.name.first.value === "admin") {
+          values.name.first.setErrors(["Name 'admin' is not allowed"]);
+          return;
+        }
+
+        console.log("Submitting:", changedFields);
       })}
     >
       <Field label="First name" atom={fieldAtoms.name.first} />
@@ -139,10 +155,11 @@ by using it, but you gain a ton of performance and without footguns.
 | [`<SelectField>`](#selectfield)     | A React component that renders field atoms with initial values. This is useful for fields that are rendered as native HTML elements because the props can unpack directly into the underlying component. |
 | [`<Field>`](#field)                 | A React component that renders field atoms with initial values. This is useful for fields that aren't rendered as native HTML elements.                                                                  |
 
-| Utility Types               | Description                                                                  |
-| --------------------------- | ---------------------------------------------------------------------------- |
-| [`FormValues`](#formvalues) | A utility type for inferring the value types of a form's nested field atoms. |
-| [`FormErrors`](#formerrors) | A utility type for inferring the error types of a form's nested field atoms. |
+| Utility Types                       | Description                                                                                                      |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| [`FormFieldValue`](#formfieldvalue) | A utility type representing the enhanced field value structure with metadata (value, dirty, touched, setErrors). |
+| [`FormValues`](#formvalues)         | A utility type for inferring the value types of a form's nested field atoms.                                     |
+| [`FormErrors`](#formerrors)         | A utility type for inferring the error types of a form's nested field atoms.                                     |
 
 | Validator                                  | Description                                                                                                |
 | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
@@ -1239,6 +1256,46 @@ void
 ---
 
 ## Utility types
+
+### FormFieldValue
+
+A utility type representing the enhanced field value structure passed to form submission handlers. Each field includes the value along with metadata and helper functions.
+
+```ts
+type FormFieldValue<V> = {
+  value: V; // The field's current value
+  dirty: boolean; // Whether the field has been modified
+  touched: boolean; // Whether the field has been interacted with
+  setErrors: (errors: string[]) => void; // Function to set validation errors
+};
+```
+
+#### Example Usage
+
+```ts
+const handleSubmit = (fields: FormFieldValues<typeof myForm>) => {
+  // Access field value and metadata
+  const emailField = fields.email;
+
+  if (emailField.dirty) {
+    console.log("Email changed to:", emailField.value);
+  }
+
+  if (!emailField.touched) {
+    console.log("User hasn't interacted with email field");
+  }
+
+  // Set custom validation errors
+  if (emailField.value === "admin@example.com") {
+    emailField.setErrors(["Admin email not allowed"]);
+    return;
+  }
+};
+```
+
+#### [⇗ Back to top](#table-of-contents)
+
+---
 
 ### FormValues
 
