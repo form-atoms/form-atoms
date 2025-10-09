@@ -1,9 +1,14 @@
-## [3.3.1](https://github.com/form-atoms/form-atoms/compare/v3.3.0...v3.3.1) (2024-08-19)
-
+## [3.3.2](https://github.com/form-atoms/form-atoms/compare/v3.3.1...v3.3.2) (2025-10-09)
 
 ### Bug Fixes
 
-* add valibot build ([#80](https://github.com/form-atoms/form-atoms/issues/80)) ([24774f8](https://github.com/form-atoms/form-atoms/commit/24774f869ac4ede73e0217ad83021a80b27495ff))
+- **types:** remove superfluous extend (fixes [#85](https://github.com/form-atoms/form-atoms/issues/85)) ([#89](https://github.com/form-atoms/form-atoms/issues/89)) ([1ce1f2c](https://github.com/form-atoms/form-atoms/commit/1ce1f2ca83fa654956e5196a0d1bd8f9e7b3a4f7))
+
+## [3.3.1](https://github.com/form-atoms/form-atoms/compare/v3.3.0...v3.3.1) (2024-08-19)
+
+### Bug Fixes
+
+- add valibot build ([#80](https://github.com/form-atoms/form-atoms/issues/80)) ([24774f8](https://github.com/form-atoms/form-atoms/commit/24774f869ac4ede73e0217ad83021a80b27495ff))
 
 # [3.3.0](https://github.com/form-atoms/form-atoms/compare/v3.2.5...v3.3.0) (2024-08-19)
 
