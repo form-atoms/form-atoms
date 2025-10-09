@@ -45,7 +45,7 @@
     "dev": "tsup --watch",
     "format": "prettier --write \"{,!(node_modules|dist|coverage)/**/}*.{ts,tsx,js,jsx,md,yml,json}\"",
     "prepare": "husky install",
-    "test": "vitest",
+    "test": "vitest --typecheck",
     "validate": "pnpm run check-types && pnpm test run -- --coverage"
   },
   "config": {
