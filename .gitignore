@@ -42,3 +42,5 @@ deno_dist/
 
 # VSCode suggestions
 !.vscode
+
+tsconfig.vitest-temp.json

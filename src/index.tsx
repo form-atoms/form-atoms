@@ -1646,7 +1646,7 @@ export type FormFields = {
  * type NameFormValues = FormValues<typeof nameForm>
  * ```
  */
-export type FormValues<Form extends FormAtom<any>> =
+export type FormValues<Form> =
   Form extends FormAtom<infer Fields> ? FormFieldValues<Fields> : never;
 
 /**
@@ -1661,7 +1661,7 @@ export type FormValues<Form extends FormAtom<any>> =
  * type NameFormErrors = FormErrors<typeof nameForm>
  * ```
  */
-export type FormErrors<Form extends FormAtom<any>> =
+export type FormErrors<Form> =
   Form extends FormAtom<infer Fields> ? FormFieldErrors<Fields> : never;
 
 /**
