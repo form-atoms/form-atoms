@@ -1124,12 +1124,12 @@ scope using a Jotai Provider.
 
 #### Props
 
-| Name      | Type                                                                                 | Required? | Description                                                  |
-| --------- | ------------------------------------------------------------------------------------ | --------- | ------------------------------------------------------------ |
-| atom      | `FormAtom<FormFields>`                                                               | Yes       | A form atom                                                  |
-| store     | `AtomStore`                                                                          | No        | [A Jotai store](https://jotai.org/docs/api/core#createstore) |
-| component | `React.ComponentType<{state: UseFormState<Value>; actions: UseFormActions<Value>;}>` | No        | A React component to render as the input field               |
-| render    | `(state: UseFormState<Value>, actions: UseFormActions<Value>) => JSX.Element`        | No        | A render prop                                                |
+| Name      | Type                                                                                 | Required? | Description                                                    |
+| --------- | ------------------------------------------------------------------------------------ | --------- | -------------------------------------------------------------- |
+| atom      | `FormAtom<FormFields>`                                                               | Yes       | A form atom                                                    |
+| store     | `AtomStore`                                                                          | No        | [A Jotai store](https://jotai.org/docs/core/store#createstore) |
+| component | `React.ComponentType<{state: UseFormState<Value>; actions: UseFormActions<Value>;}>` | No        | A React component to render as the input field                 |
+| render    | `(state: UseFormState<Value>, actions: UseFormActions<Value>) => JSX.Element`        | No        | A render prop                                                  |
 
 #### [⇗ Back to top](#table-of-contents)
 
@@ -1143,14 +1143,14 @@ the props can unpack directly into the underlying component.
 
 #### Props
 
-| Name         | Type                                                                                   | Required? | Description                                                  |
-| ------------ | -------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------ |
-| atom         | `FieldAtom<Value>`                                                                     | Yes       | A field atom                                                 |
-| initialValue | `Value`                                                                                | No        | The initial value of the field                               |
-| type         | `Type`                                                                                 | No        | The type of the field. Defaults to `"text"`.                 |
-| store        | `AtomStore`                                                                            | No        | [A Jotai store](https://jotai.org/docs/api/core#createstore) |
-| component    | `React.ComponentType<{state: UseFieldState<Value>; actions: UseFieldActions<Value>;}>` | No        | A React component to render as the input field               |
-| render       | `(state: UseFieldState<Value>, actions: UseFieldActions<Value>) => JSX.Element`        | No        | A render prop                                                |
+| Name         | Type                                                                                   | Required? | Description                                                    |
+| ------------ | -------------------------------------------------------------------------------------- | --------- | -------------------------------------------------------------- |
+| atom         | `FieldAtom<Value>`                                                                     | Yes       | A field atom                                                   |
+| initialValue | `Value`                                                                                | No        | The initial value of the field                                 |
+| type         | `Type`                                                                                 | No        | The type of the field. Defaults to `"text"`.                   |
+| store        | `AtomStore`                                                                            | No        | [A Jotai store](https://jotai.org/docs/core/store#createstore) |
+| component    | `React.ComponentType<{state: UseFieldState<Value>; actions: UseFieldActions<Value>;}>` | No        | A React component to render as the input field                 |
+| render       | `(state: UseFieldState<Value>, actions: UseFieldActions<Value>) => JSX.Element`        | No        | A render prop                                                  |
 
 #### [⇗ Back to top](#table-of-contents)
 
@@ -1164,13 +1164,13 @@ the props can unpack directly into the underlying component.
 
 #### Props
 
-| Name         | Type                                                                                   | Required? | Description                                                  |
-| ------------ | -------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------ |
-| atom         | `FieldAtom<Value>`                                                                     | Yes       | A field atom                                                 |
-| initialValue | `Value`                                                                                | No        | The initial value of the field                               |
-| store        | `AtomStore`                                                                            | No        | [A Jotai store](https://jotai.org/docs/api/core#createstore) |
-| component    | `React.ComponentType<{state: UseFieldState<Value>; actions: UseFieldActions<Value>;}>` | No        | A React component to render as the input field               |
-| render       | `(state: UseFieldState<Value>, actions: UseFieldActions<Value>) => JSX.Element`        | No        | A render prop                                                |
+| Name         | Type                                                                                   | Required? | Description                                                    |
+| ------------ | -------------------------------------------------------------------------------------- | --------- | -------------------------------------------------------------- |
+| atom         | `FieldAtom<Value>`                                                                     | Yes       | A field atom                                                   |
+| initialValue | `Value`                                                                                | No        | The initial value of the field                                 |
+| store        | `AtomStore`                                                                            | No        | [A Jotai store](https://jotai.org/docs/core/store#createstore) |
+| component    | `React.ComponentType<{state: UseFieldState<Value>; actions: UseFieldActions<Value>;}>` | No        | A React component to render as the input field                 |
+| render       | `(state: UseFieldState<Value>, actions: UseFieldActions<Value>) => JSX.Element`        | No        | A render prop                                                  |
 
 #### [⇗ Back to top](#table-of-contents)
 
@@ -1184,14 +1184,14 @@ the props can unpack directly into the underlying component.
 
 #### Props
 
-| Name         | Type                                                                                   | Required? | Description                                                  |
-| ------------ | -------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------ |
-| atom         | `FieldAtom<Value>`                                                                     | Yes       | A field atom                                                 |
-| initialValue | `Value`                                                                                | No        | The initial value of the field                               |
-| multiple     | `boolean`                                                                              | No        | Is this a multi-select field?                                |
-| store        | `AtomStore`                                                                            | No        | [A Jotai store](https://jotai.org/docs/api/core#createstore) |
-| component    | `React.ComponentType<{state: UseFieldState<Value>; actions: UseFieldActions<Value>;}>` | No        | A React component to render as the input field               |
-| render       | `(state: UseFieldState<Value>, actions: UseFieldActions<Value>) => JSX.Element`        | No        | A render prop                                                |
+| Name         | Type                                                                                   | Required? | Description                                                    |
+| ------------ | -------------------------------------------------------------------------------------- | --------- | -------------------------------------------------------------- |
+| atom         | `FieldAtom<Value>`                                                                     | Yes       | A field atom                                                   |
+| initialValue | `Value`                                                                                | No        | The initial value of the field                                 |
+| multiple     | `boolean`                                                                              | No        | Is this a multi-select field?                                  |
+| store        | `AtomStore`                                                                            | No        | [A Jotai store](https://jotai.org/docs/core/store#createstore) |
+| component    | `React.ComponentType<{state: UseFieldState<Value>; actions: UseFieldActions<Value>;}>` | No        | A React component to render as the input field                 |
+| render       | `(state: UseFieldState<Value>, actions: UseFieldActions<Value>) => JSX.Element`        | No        | A render prop                                                  |
 
 #### [⇗ Back to top](#table-of-contents)
 
@@ -1204,13 +1204,13 @@ most useful for fields that aren't rendered as native HTML elements.
 
 #### Props
 
-| Name         | Type                                                                                   | Required? | Description                                                  |
-| ------------ | -------------------------------------------------------------------------------------- | --------- | ------------------------------------------------------------ |
-| atom         | `FieldAtom<Value>`                                                                     | Yes       | A field atom                                                 |
-| initialValue | `Value`                                                                                | No        | The initial value of the field                               |
-| store        | `AtomStore`                                                                            | No        | [A Jotai store](https://jotai.org/docs/api/core#createstore) |
-| component    | `React.ComponentType<{state: UseFieldState<Value>; actions: UseFieldActions<Value>;}>` | No        | A React component to render as the field                     |
-| render       | `(state: UseFieldState<Value>, actions: UseFieldActions<Value>) => JSX.Element`        | No        | A render prop                                                |
+| Name         | Type                                                                                   | Required? | Description                                                    |
+| ------------ | -------------------------------------------------------------------------------------- | --------- | -------------------------------------------------------------- |
+| atom         | `FieldAtom<Value>`                                                                     | Yes       | A field atom                                                   |
+| initialValue | `Value`                                                                                | No        | The initial value of the field                                 |
+| store        | `AtomStore`                                                                            | No        | [A Jotai store](https://jotai.org/docs/core/store#createstore) |
+| component    | `React.ComponentType<{state: UseFieldState<Value>; actions: UseFieldActions<Value>;}>` | No        | A React component to render as the field                       |
+| render       | `(state: UseFieldState<Value>, actions: UseFieldActions<Value>) => JSX.Element`        | No        | A render prop                                                  |
 
 #### [⇗ Back to top](#table-of-contents)
 
