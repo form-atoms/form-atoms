@@ -161,7 +161,8 @@ by using it, but you gain a ton of performance and without footguns.
 
 ## Projects using `form-atoms`
 
-- [**@form-atoms/field**](https://github.com/form-atoms/form-atoms-field) - Declarative & headless form fields build on top of Jotai & form-atoms
+- [**@form-atoms/list-atom**](https://github.com/form-atoms/list-atom) - Render performant arrays of fields with easy controls
+- [**@form-atoms/field**](https://github.com/form-atoms/field) - Declarative & headless form fields build on top of Jotai & form-atoms
 
 ---
 
