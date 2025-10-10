@@ -157,6 +157,7 @@ by using it, but you gain a ton of performance and without footguns.
 1. [**How to validate using a Zod schema**](https://codesandbox.io/s/form-atoms-v2-validate-using-zod-1n1rrr?file=/src/App.tsx)
 1. [**How to create a nested fields**](https://codesandbox.io/s/form-atoms-v2-nested-fields-example-lirr6w)
 1. [**How to create an array of fields**](https://codesandbox.io/s/form-atoms-v2-array-fields-example-22kf4d?file=/src/App.tsx)
+1. [**How to read field metadata (dirty, touched, error) in the onSubmit callback**](https://codesandbox.io/p/sandbox/awesome-worker-nrxnjl)
 
 ## Projects using `form-atoms`
 
