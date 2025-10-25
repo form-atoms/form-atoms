@@ -1,3 +1,9 @@
+## [3.3.3](https://github.com/form-atoms/form-atoms/compare/v3.3.2...v3.3.3) (2025-10-25)
+
+### Bug Fixes
+
+- **config.preprocess:** pass Getter, preprocess initial config.value ([#91](https://github.com/form-atoms/form-atoms/issues/91)) ([7c73d9d](https://github.com/form-atoms/form-atoms/commit/7c73d9d43621df844c434316ff668e8b0514ff88))
+
 ## [3.3.2](https://github.com/form-atoms/form-atoms/compare/v3.3.1...v3.3.2) (2025-10-09)
 
 ### Bug Fixes
