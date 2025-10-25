@@ -198,9 +198,10 @@ type FieldAtomConfig<Value> = {
   touched?: boolean;
   /**
    * Transform the value of the field each time `setValue` is
-   * called and before validation
+   * called, before validation and when the field is initialized.
+   * Optionally subscribe to other atoms via the `get` function.
    */
-  preprocess?: (value: Value) => Value;
+  preprocess?: (value: Value, get: Getter) => Value;
   /**
    * A function that validates the value of the field any time
    * one of its atoms changes. It must either return an array of
