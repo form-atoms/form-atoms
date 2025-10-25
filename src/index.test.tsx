@@ -7,7 +7,7 @@ import { render, screen } from "@testing-library/react";
 import { act as domAct, renderHook } from "@testing-library/react-hooks/dom";
 import userEvent from "@testing-library/user-event";
 import type { ExtractAtomValue } from "jotai";
-import { Provider, createStore, useAtomValue } from "jotai";
+import { Provider, atom, createStore, useAtom, useAtomValue } from "jotai";
 import { RESET } from "jotai/utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -21,6 +21,7 @@ import {
   fieldAtom,
   formAtom,
   useField,
+  useFieldActions,
   useFieldErrors,
   useFieldInitialValue,
   useFieldValue,
@@ -2042,6 +2043,51 @@ describe("fieldAtom()", () => {
     expect(atoms.ref.debugLabel).toBe("field/city/ref");
     expect(atoms._initialValue.debugLabel).toBe("field/city/_initialValue");
     expect(atoms._validateCount.debugLabel).toBe("field/city/_validateCount");
+  });
+
+  it("should preprocess config value", () => {
+    const atom = fieldAtom<string>({
+      value: "sanitize  ",
+      preprocess(value) {
+        return value.trim();
+      },
+    });
+
+    const { result } = renderHook(() => useFieldValue(atom));
+
+    expect(result.current).toBe("sanitize");
+  });
+
+  it("should derive value from another atom", () => {
+    const min = atom(42);
+
+    const computed = fieldAtom<number>({
+      value: 21,
+      preprocess(value, get) {
+        return Math.max(get(min), value);
+      },
+    });
+
+    const { result } = renderHook(() => useFieldValue(computed));
+
+    expect(result.current).toBe(42);
+
+    const { result: actions } = renderHook(() => useFieldActions(computed));
+
+    domAct(() => {
+      actions.current.setValue(50);
+    });
+
+    expect(result.current).toBe(50);
+
+    const { result: useMin } = renderHook(() => useAtom(min));
+
+    domAct(() => {
+      const [, setMin] = useMin.current;
+      setMin(60);
+    });
+
+    expect(result.current).toBe(60);
   });
 });
 
